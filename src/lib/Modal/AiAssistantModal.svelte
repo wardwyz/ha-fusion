@@ -111,8 +111,7 @@ ${lines.join('\n')}
 		micState = 'processing';
 
 		try {
-			const isFirst = $aiConversation.messages.length === 1;
-			const payload = isFirst ? `${buildContext()}\n\n${text.trim()}` : text.trim();
+			const payload = `${buildContext()}\n\n${text.trim()}`;
 
 			console.debug('[AI Assistant] payload →', payload);
 
