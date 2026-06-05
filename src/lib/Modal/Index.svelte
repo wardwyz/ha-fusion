@@ -204,7 +204,9 @@
 				</button>
 			</div>
 
-			<slot />
+			<div class="body">
+				<slot />
+			</div>
 		</div>
 	</div>
 </div>
@@ -248,7 +250,7 @@
 	.contents {
 		padding: 1.6rem 1.9rem 1.9rem 1.9rem;
 		background-color: var(--theme-modal-background-color-modal);
-		display: block;
+		display: flex;
 		flex-direction: column;
 		pointer-events: auto;
 		max-height: 85vh;
@@ -257,7 +259,13 @@
 		position: relative;
 		box-shadow: rgba(0, 0, 0, 0.56) 0px 22px 70px 4px;
 		outline: 1px solid rgba(255, 255, 255, 0.25);
+		overflow: hidden;
+	}
+
+	.body {
 		overflow-y: auto;
+		flex: 1;
+		min-height: 0;
 	}
 
 	button {

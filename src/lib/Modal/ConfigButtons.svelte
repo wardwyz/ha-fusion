@@ -131,7 +131,12 @@
 	.container {
 		display: flex;
 		justify-content: space-between;
-		margin-top: 2.37rem;
+		position: sticky;
+		bottom: 0;
+		background: var(--theme-modal-background-color-modal);
+		padding-top: 0.8rem;
+		margin-top: 1.6rem;
+		z-index: 1;
 	}
 
 	.align-left {
