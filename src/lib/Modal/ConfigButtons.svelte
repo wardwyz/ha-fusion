@@ -133,7 +133,7 @@
 		justify-content: space-between;
 		position: sticky;
 		bottom: 0;
-		background: var(--theme-modal-background-color-modal);
+		background: var(--theme-modal-background-color-modal, rgb(38 39 38));
 		padding-top: 0.8rem;
 		margin-top: 1.6rem;
 		z-index: 1;
