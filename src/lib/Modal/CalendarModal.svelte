@@ -192,7 +192,7 @@
 
 <style>
 	div {
-		height: 75vh;
+		height: calc(75vh - 8rem);
 		margin-top: 1rem;
 	}
 
