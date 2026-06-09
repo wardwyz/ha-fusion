@@ -266,6 +266,28 @@
 		overflow-y: auto;
 		flex: 1;
 		min-height: 0;
+		/* pull body into right padding so scrollbar lands in padding zone */
+		margin-right: -1.9rem;
+		padding-right: 1.9rem;
+		/* reserve stable space for scrollbar to avoid content shift */
+		scrollbar-gutter: stable;
+	}
+
+	.body::-webkit-scrollbar {
+		width: 5px;
+	}
+
+	.body::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.body::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.2);
+		border-radius: 3px;
+	}
+
+	.body::-webkit-scrollbar-thumb:hover {
+		background: rgba(255, 255, 255, 0.35);
 	}
 
 	button {

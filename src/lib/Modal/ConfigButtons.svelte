@@ -135,8 +135,11 @@
 		bottom: 0;
 		background: var(--theme-modal-background-color-modal, rgb(38 39 38));
 		padding-top: 0.8rem;
+		padding-bottom: 0.1rem;
 		margin-top: 1.6rem;
 		z-index: 1;
+		/* soft top border to separate from scrolling content */
+		box-shadow: 0 -8px 12px 4px var(--theme-modal-background-color-modal, rgb(38 39 38));
 	}
 
 	.align-left {
