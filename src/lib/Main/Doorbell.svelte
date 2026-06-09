@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { editMode, itemHeight, states } from '$lib/Stores';
-	import { openModal } from 'svelte-modals';
+	import { modals, openModal } from 'svelte-modals';
 	import Loader from '$lib/Components/Loader.svelte';
 	import Icon from '@iconify/svelte';
 	import { getName } from '$lib/Utils';
@@ -83,7 +83,7 @@
 	{/if}
 
 	<!-- overlay -->
-	<div class="overlay">
+	<div class="overlay" style:display={$modals?.length > 0 ? 'none' : ''}>
 		<div class="icon-wrap">
 			<Icon icon="mdi:doorbell" height="1.5rem" />
 		</div>

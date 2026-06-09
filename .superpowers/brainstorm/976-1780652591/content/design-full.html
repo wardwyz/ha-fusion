@@ -1,0 +1,116 @@
+<h2>Design Completo — Review Grafica Modali</h2>
+<p class="subtitle">4 fasi · 2560×1440 + 768×1024 · scroll, layout, spaziatura</p>
+
+<!-- FASE 1 -->
+<div class="section" style="border-left:3px solid #4caf50;padding-left:1rem">
+  <div class="label" style="color:#4caf50">Fase 1 — Container Globale (Index.svelte + ConfigButtons.svelte)</div>
+  <h3 style="margin-top:0.4rem">Approvata ✅</h3>
+  <div style="font-size:0.88rem;line-height:1.7;color:#ccc">
+    <strong>Index.svelte:</strong> fix <code>display: flex</code>, nuovo <code>.body</code> wrapper, header sempre visibile, solo il corpo scrolla.<br>
+    <strong>ConfigButtons.svelte:</strong> <code>position: sticky; bottom: 0; background: var(--theme-modal-background-color-modal)</code> — pulsanti Done/Rimuovi sempre visibili in fondo.
+  </div>
+</div>
+
+<!-- FASE 2 -->
+<div class="section" style="margin-top:1.2rem;border-left:3px solid #7ec8e3;padding-left:1rem">
+  <div class="label" style="color:#7ec8e3">Fase 2 — Config Modali (~27 file)</div>
+  <h3 style="margin-top:0.4rem">Audit + fix mirati</h3>
+  <div style="font-size:0.88rem;line-height:1.7;color:#ccc;margin-bottom:0.8rem">
+    Dopo la Fase 1, la maggior parte delle config modali si sistema automaticamente. Restano da verificare i casi con layout custom:
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;font-size:0.83rem">
+    <div style="background:rgba(255,255,255,0.05);border-radius:6px;padding:0.8rem">
+      <div class="label">Priorità Alta</div>
+      <ul style="margin:0.4rem 0 0 1rem;line-height:1.8">
+        <li><strong>MainItemConfig</strong> — lista interna <code>height:10rem</code></li>
+        <li><strong>SidebarItemConfig</strong> — stessa struttura</li>
+        <li><strong>VisibilityConfig</strong> — condizioni nested</li>
+        <li><strong>CustomPanelConfig</strong> — <code>min-height:22rem</code></li>
+      </ul>
+    </div>
+    <div style="background:rgba(255,255,255,0.05);border-radius:6px;padding:0.8rem">
+      <div class="label">Priorità Normale</div>
+      <ul style="margin:0.4rem 0 0 1rem;line-height:1.8">
+        <li>ButtonConfig, CameraConfig</li>
+        <li>ClimateConfig, LightConfig…</li>
+        <li>ThemeEditor</li>
+        <li>ViewConfig, AppearanceConfig</li>
+      </ul>
+    </div>
+  </div>
+  <div style="margin-top:0.8rem;font-size:0.83rem;color:#aaa">
+    Fix comuni: rimuovere <code>height</code> fissi inutili, usare <code>min-height</code> dove serve, controllare spaziatura su QHD.
+  </div>
+</div>
+
+<!-- FASE 3 -->
+<div class="section" style="margin-top:1.2rem;border-left:3px solid #f0a500;padding-left:1rem">
+  <div class="label" style="color:#f0a500">Fase 3 — Entity Detail Modali (~43 file)</div>
+  <h3 style="margin-top:0.4rem">Audit per categoria entità</h3>
+  <div style="font-size:0.88rem;line-height:1.7;color:#ccc;margin-bottom:0.8rem">
+    Modali di interazione con le entità HA. La Fase 1 risolve il caso base, ma alcune hanno altezze fisse o layout speciali:
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.8rem;font-size:0.83rem">
+    <div style="background:rgba(255,255,255,0.05);border-radius:6px;padding:0.8rem">
+      <div class="label">Controllo</div>
+      <ul style="margin:0.4rem 0 0 1rem;line-height:1.8">
+        <li>LightModal</li>
+        <li>ClimateModal</li>
+        <li>MediaPlayerModal</li>
+        <li>FanModal</li>
+        <li>CoverModal</li>
+      </ul>
+    </div>
+    <div style="background:rgba(255,255,255,0.05);border-radius:6px;padding:0.8rem">
+      <div class="label">Lista/Select</div>
+      <ul style="margin:0.4rem 0 0 1rem;line-height:1.8">
+        <li>InputSelectModal</li>
+        <li>GroupModal</li>
+        <li>TodoModal</li>
+        <li>AutomationModal</li>
+        <li>ScriptModal</li>
+      </ul>
+    </div>
+    <div style="background:rgba(255,255,255,0.05);border-radius:6px;padding:0.8rem">
+      <div class="label">Layout speciale</div>
+      <ul style="margin:0.4rem 0 0 1rem;line-height:1.8">
+        <li>DeviceTrackerModal <span style="color:#f0a500">75vh</span></li>
+        <li>CalendarModal <span style="color:#f0a500">75vh</span></li>
+        <li>YoutubeModal</li>
+        <li>UpdateModal</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- FASE 4 -->
+<div class="section" style="margin-top:1.2rem;border-left:3px solid #e055a0;padding-left:1rem">
+  <div class="label" style="color:#e055a0">Fase 4 — Modali Speciali (6 file)</div>
+  <h3 style="margin-top:0.4rem">Fix architetturali per-modale</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;font-size:0.83rem;margin-top:0.6rem">
+    <div style="background:rgba(255,255,255,0.05);border-radius:6px;padding:0.8rem">
+      <div class="label" style="color:#e055a0">AiAssistantModal</div>
+      <p style="margin:0.4rem 0;color:#ccc">Attuale: <code>height:60vh</code> fisso per i messaggi. Su QHD dentro una modale <code>max-height:75vh</code> = layout soffocato.</p>
+      <p style="margin:0;color:#4caf50">Fix: usare <code>flex:1; min-height:0</code> per l'area messaggi, far determinare l'altezza al container.</p>
+    </div>
+    <div style="background:rgba(255,255,255,0.05);border-radius:6px;padding:0.8rem">
+      <div class="label" style="color:#e055a0">PictureElementsConfig</div>
+      <p style="margin:0.4rem 0;color:#ccc">Canvas editor con pannelli a scroll multipli. Altezza <code>75vh</code> fissa. Potrebbe aver bisogno di revisione separata.</p>
+      <p style="margin:0;color:#f0a500">Fix: adattare al flex container, verificare interazione con canvas Konva.</p>
+    </div>
+    <div style="background:rgba(255,255,255,0.05);border-radius:6px;padding:0.8rem">
+      <div class="label" style="color:#e055a0">DoorbellModal</div>
+      <p style="margin:0.4rem 0;color:#ccc">Video stream + pulsante apri porta. Struttura semplice ma verifica aspect ratio video su QHD.</p>
+    </div>
+    <div style="background:rgba(255,255,255,0.05);border-radius:6px;padding:0.8rem">
+      <div class="label" style="color:#e055a0">CameraModal</div>
+      <p style="margin:0.4rem 0;color:#ccc">Live stream camera. Verifica overflow e sizing dell'immagine su risoluzioni grandi.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div class="section" style="margin-top:1.5rem;background:rgba(255,255,255,0.04);border-radius:8px;padding:1rem">
+  <h3 style="margin-top:0">Questo design va bene?</h3>
+  <p style="font-size:0.88rem;color:#ccc">Se approvi, scrivo il documento di specifica e poi passiamo al piano di implementazione.</p>
+</div>

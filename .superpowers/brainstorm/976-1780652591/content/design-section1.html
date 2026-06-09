@@ -1,0 +1,94 @@
+<h2>Design — Sezione 1: Container Globale</h2>
+<p class="subtitle">Il bug radice di molti problemi di scroll</p>
+
+<div class="section">
+  <h3>Bug trovato in Index.svelte</h3>
+  <div style="background:rgba(220,50,50,0.12);border:1px solid rgba(220,50,50,0.4);border-radius:8px;padding:1rem;font-family:monospace;font-size:0.85rem;line-height:1.8">
+    <div style="color:#ff6b6b;">/* righe 252–253 — flex-direction ignorato! */</div>
+    <div><span style="color:#ff6b6b;">display: block;</span>        <span style="color:#888;">/* ❌ block ignora flex-direction */</span></div>
+    <div><span style="color:#ff6b6b;">flex-direction: column;</span>  <span style="color:#888;">/* ❌ non ha effetto */</span></div>
+    <div>overflow-y: auto;         <span style="color:#888;">/* tutta la modale scrolla, header compreso */</span></div>
+  </div>
+</div>
+
+<div class="split" style="margin-top:1.5rem">
+  <div class="mockup">
+    <div class="mockup-header" style="color:#ff6b6b">❌ Comportamento attuale</div>
+    <div class="mockup-body" style="padding:0">
+      <div style="background:rgba(255,255,255,0.05);border-radius:8px;height:260px;overflow-y:auto;display:block;padding:1rem;font-size:0.82rem">
+        <div style="display:flex;justify-content:space-between;padding-bottom:0.6rem;border-bottom:1px solid rgba(255,255,255,0.15)">
+          <strong>Titolo modale</strong>
+          <span style="color:#aaa">✕</span>
+        </div>
+        <div style="padding-top:0.8rem">
+          <div style="margin-bottom:0.5rem">Campo 1</div>
+          <div style="margin-bottom:0.5rem">Campo 2</div>
+          <div style="margin-bottom:0.5rem">Campo 3</div>
+          <div style="margin-bottom:0.5rem">Campo 4</div>
+          <div style="margin-bottom:0.5rem">Campo 5</div>
+          <div style="margin-bottom:0.5rem">Campo 6</div>
+          <div style="margin-bottom:0.5rem">Campo 7</div>
+          <div style="margin-bottom:0.5rem">Campo 8</div>
+          <div style="color:#888;font-size:0.78rem;margin-top:1rem">↑ Se scorri, il titolo e la X scompaiono</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header" style="color:#4caf50">✅ Dopo il fix</div>
+    <div class="mockup-body" style="padding:0">
+      <div style="background:rgba(255,255,255,0.05);border-radius:8px;height:260px;overflow:hidden;display:flex;flex-direction:column;padding:1rem;font-size:0.82rem">
+        <div style="display:flex;justify-content:space-between;padding-bottom:0.6rem;border-bottom:1px solid rgba(255,255,255,0.15);flex-shrink:0">
+          <strong>Titolo modale</strong>
+          <span style="color:#aaa">✕</span>
+        </div>
+        <div style="overflow-y:auto;flex:1;min-height:0;padding-top:0.8rem">
+          <div style="margin-bottom:0.5rem">Campo 1</div>
+          <div style="margin-bottom:0.5rem">Campo 2</div>
+          <div style="margin-bottom:0.5rem">Campo 3</div>
+          <div style="margin-bottom:0.5rem">Campo 4</div>
+          <div style="margin-bottom:0.5rem">Campo 5</div>
+          <div style="margin-bottom:0.5rem">Campo 6</div>
+          <div style="margin-bottom:0.5rem">Campo 7</div>
+          <div style="margin-bottom:0.5rem">Campo 8</div>
+        </div>
+        <div style="flex-shrink:0;padding-top:0.6rem;border-top:1px solid rgba(255,255,255,0.15);color:#888;font-size:0.78rem">↑ Titolo e X sempre visibili. Solo il corpo scrolla.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:1.5rem">
+  <h3>Modifiche CSS (Index.svelte)</h3>
+  <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:1rem;font-family:monospace;font-size:0.82rem;line-height:1.8">
+    <div style="color:#888">/* .contents */</div>
+    <div><span style="color:#ff6b6b;">- display: block;</span></div>
+    <div><span style="color:#4caf50;">+ display: flex;</span></div>
+    <div>  flex-direction: column; <span style="color:#888">/* ora funziona */</span></div>
+    <div><span style="color:#ff6b6b;">- overflow-y: auto; <span style="color:#888">/* rimosso da .contents */</span></span></div>
+    <div><span style="color:#4caf50;">+ overflow: hidden;</span></div>
+    <br>
+    <div style="color:#888">/* nuovo .body (wrapper per &lt;slot /&gt;) */</div>
+    <div><span style="color:#4caf50;">+ .body {</span></div>
+    <div><span style="color:#4caf50;">+   overflow-y: auto;</span></div>
+    <div><span style="color:#4caf50;">+   flex: 1;</span></div>
+    <div><span style="color:#4caf50;">+   min-height: 0; /* essenziale per flex scroll */</span></div>
+    <div><span style="color:#4caf50;">+ }</span></div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:1.2rem">
+  <h3>Sticky ConfigButtons (opzionale — Fase 1b)</h3>
+  <p>I pulsanti <em>Done / Rimuovi / Cambia tipo</em> in ConfigButtons.svelte possono essere resi sticky in fondo alla modale con <code>position: sticky; bottom: 0; background: var(--theme-modal-background-color-modal)</code>. Utile per config molto lunghe. Includiamo?</p>
+  <div class="options" style="margin-top:0.8rem">
+    <div class="option" data-choice="sticky-yes" onclick="toggleSelect(this)">
+      <div class="letter">Sì</div>
+      <div class="content"><h3>Includi sticky buttons</h3><p>I pulsanti restano sempre visibili in fondo alla modale</p></div>
+    </div>
+    <div class="option" data-choice="sticky-no" onclick="toggleSelect(this)">
+      <div class="letter">No</div>
+      <div class="content"><h3>Solo header sticky</h3><p>I pulsanti scrollano con il contenuto — più semplice, meno CSS</p></div>
+    </div>
+  </div>
+</div>

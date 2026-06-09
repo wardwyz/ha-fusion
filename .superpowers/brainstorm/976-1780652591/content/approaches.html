@@ -1,0 +1,76 @@
+<h2>Approcci per la Review Grafica Modali</h2>
+<p class="subtitle">101 file di modali, problemi di scroll + layout + spaziatura su più risoluzioni</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Global-first</h3>
+      <p>Fix del container globale in <code>Index.svelte</code> (max-height, overflow, breakpoint), poi revisione manuale delle modali più usate. Veloce, copre il caso comune ma può lasciare problemi specifici per modale.</p>
+      <div class="pros-cons" style="margin-top:0.8rem">
+        <div class="pros"><h4>Pro</h4><ul><li>Rapido</li><li>Fix immediato per tutti</li></ul></div>
+        <div class="cons"><h4>Contro</h4><ul><li>Non copre problemi per-modale</li><li>Revisione incompleta</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Modale per modale</h3>
+      <p>Review sistematica di tutti i 101 file: screenshot, analisi, fix. Massima copertura ma enormemente lento. Non pratico per una singola sessione.</p>
+      <div class="pros-cons" style="margin-top:0.8rem">
+        <div class="pros"><h4>Pro</h4><ul><li>Copertura completa</li><li>Nessun problema lasciato</li></ul></div>
+        <div class="cons"><h4>Contro</h4><ul><li>101 file = molto lento</li><li>Molte modali non hanno problemi</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Per categorie — Raccomandato</h3>
+      <p>Fix globale del container + revisione per categoria: <strong>Config modali</strong> (edit mode), <strong>Entity detail modali</strong> (interazione entità), <strong>Modali speciali</strong> (AI, Camera, PictureElements, Calendar). Bilanciato tra copertura e velocità.</p>
+      <div class="pros-cons" style="margin-top:0.8rem">
+        <div class="pros"><h4>Pro</h4><ul><li>Strutturato e completo</li><li>Fix sistemico + per-caso</li><li>Gestibile in una sessione</li></ul></div>
+        <div class="cons"><h4>Contro</h4><ul><li>Richiede prioritizzazione</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:1.5rem;padding:1rem;background:rgba(255,255,255,0.05);border-radius:8px;">
+  <h3 style="margin-bottom:0.5rem;">Dettaglio approccio C (categorie)</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;font-size:0.9rem">
+    <div>
+      <div class="label">Fase 1 — Globale</div>
+      <ul style="margin:0.4rem 0 0 1rem">
+        <li>Index.svelte: max-height, overflow, breakpoint</li>
+        <li>Modal.css: stili condivisi</li>
+      </ul>
+    </div>
+    <div>
+      <div class="label">Fase 2 — Config modali (edit mode)</div>
+      <ul style="margin:0.4rem 0 0 1rem">
+        <li>ButtonConfig, LightConfig, ClimateConfig…</li>
+        <li>SidebarItemConfig, MainItemConfig</li>
+        <li>VisibilityConfig</li>
+      </ul>
+    </div>
+    <div>
+      <div class="label">Fase 3 — Entity detail modali</div>
+      <ul style="margin:0.4rem 0 0 1rem">
+        <li>LightModal, ClimateModal, MediaPlayer…</li>
+        <li>Tutti i ~43 modal di entità</li>
+      </ul>
+    </div>
+    <div>
+      <div class="label">Fase 4 — Modali speciali</div>
+      <ul style="margin:0.4rem 0 0 1rem">
+        <li>AiAssistantModal (60vh custom)</li>
+        <li>PictureElementsConfig (canvas editor)</li>
+        <li>CalendarModal, DoorbellModal</li>
+      </ul>
+    </div>
+  </div>
+</div>

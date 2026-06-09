@@ -6,6 +6,7 @@
 	import { callService } from 'home-assistant-js-websocket';
 	import { getDomain } from '$lib/Utils';
 	import { onMount, onDestroy } from 'svelte';
+	import { closeModal } from 'svelte-modals';
 	import type { DoorbellItem } from '$lib/Types';
 
 	export let isOpen: boolean;
@@ -25,7 +26,7 @@
 			if (countdown === null) return;
 			countdown--;
 			if (countdown <= 0) {
-				isOpen = false;
+				closeModal();
 			}
 		}, 1000);
 	}
@@ -96,21 +97,23 @@
 			{/if}
 		</svelte:fragment>
 
-		<div class="camera-wrap">
-			<Camera
-				sel={{ ...sel, entity_id: sel?.camera_entity }}
-				responsive={true}
-				muted={false}
-				controls={true}
-			/>
-		</div>
+		<div class="modal-content">
+			<div class="camera-wrap">
+				<Camera
+					sel={{ ...sel, entity_id: sel?.camera_entity, size: 'contain' }}
+					responsive={true}
+					muted={false}
+					controls={true}
+				/>
+			</div>
 
-		{#if sel?.action_entity}
-			<button class="action-btn" on:click={handleAction}>
-				<Icon icon={getActionIcon()} height="1.6em" />
-				{getActionLabel()}
-			</button>
-		{/if}
+			{#if sel?.action_entity}
+				<button class="action-btn" on:click={handleAction}>
+					<Icon icon={getActionIcon()} height="1.6em" />
+					{getActionLabel()}
+				</button>
+			{/if}
+		</div>
 	</Modal>
 {/if}
 
@@ -130,22 +133,55 @@
 		padding-right: 0.5rem;
 	}
 
+	.modal-content {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		height: 100%;
+		min-height: 0;
+		padding: 0.5rem 0;
+	}
+
 	.camera-wrap {
 		position: relative;
-		margin-top: 0.75rem;
 		border-radius: 0.5rem;
 		overflow: hidden;
-		min-height: 12rem;
+		flex: 1;
+		min-height: 0;
+		max-height: calc(85vh - 14rem);
+		width: 100%;
+		background: black;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.camera-wrap :global(button) {
+		width: fit-content !important;
+		height: 100% !important;
+		max-width: 100% !important;
+		padding: 0 !important;
+		border: none !important;
+		background: black !important;
+		display: flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+	}
+
+	.camera-wrap :global(video) {
+		width: auto !important;
+		height: 100% !important;
+		max-width: 100% !important;
+		object-fit: contain !important;
 	}
 
 	.action-btn {
-		margin-top: 1rem;
 		width: 100%;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		gap: 0.6rem;
-		padding: 0.95rem;
+		padding: 0.9rem;
 		border-radius: 0.75rem;
 		border: none;
 		background: var(--theme-navigate-background-color, rgba(255, 255, 255, 0.15));
@@ -155,6 +191,7 @@
 		cursor: pointer;
 		transition: opacity 150ms ease;
 		letter-spacing: 0.02em;
+		flex-shrink: 0;
 	}
 
 	.action-btn:hover {
@@ -163,5 +200,33 @@
 
 	.action-btn:active {
 		opacity: 0.6;
+	}
+
+	/* Tablet portrait (Galaxy Tab A7 Lite and similar: 800x1280) */
+	@media (max-width: 1024px) {
+		.camera-wrap {
+			max-height: calc(80vh - 12rem);
+		}
+
+		.modal-content {
+			gap: 0.6rem;
+		}
+	}
+
+	/* Mobile phones */
+	@media (max-width: 768px) {
+		.camera-wrap {
+			max-height: calc(75vh - 11rem);
+		}
+
+		.modal-content {
+			gap: 0.5rem;
+			padding: 0;
+		}
+
+		.action-btn {
+			padding: 0.8rem;
+			font-size: 0.95rem;
+		}
 	}
 </style>
