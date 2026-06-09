@@ -191,7 +191,7 @@
 		text-overflow: ellipsis;
 		overflow: hidden;
 		justify-content: space-between;
-		height: 7.5rem;
+		min-height: 7.5rem;
 	}
 
 	.empty {
@@ -199,7 +199,7 @@
 		padding: 0.5em;
 		overflow: hidden;
 		text-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
-		height: 7.5rem;
+		min-height: 7.5rem;
 	}
 
 	.day {
