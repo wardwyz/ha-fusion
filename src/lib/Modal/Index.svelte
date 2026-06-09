@@ -269,8 +269,6 @@
 		/* pull body into right padding so scrollbar lands in padding zone */
 		margin-right: -1.9rem;
 		padding-right: 1.9rem;
-		/* reserve stable space for scrollbar to avoid content shift */
-		scrollbar-gutter: stable;
 	}
 
 	.body::-webkit-scrollbar {
