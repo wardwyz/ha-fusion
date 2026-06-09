@@ -204,31 +204,24 @@
 		/>
 
 		{#if isCustomDuration}
-			<div class="date-range">
-				<div class="date-field">
-					<label for="graph-start">{$lang('start_date')}</label>
-					<input
-						id="graph-start"
-						class="input"
-						type="date"
-						value={isoToDate(sel?.start_time)}
-						max={isoToDate(sel?.end_time) || undefined}
-						on:change={handleStartDate}
-					/>
-				</div>
-				<div class="date-field">
-					<label for="graph-end">{$lang('end_date')}</label>
-					<input
-						id="graph-end"
-						class="input"
-						type="date"
-						value={isoToDate(sel?.end_time)}
-						min={isoToDate(sel?.start_time) || undefined}
-						max={isoToDate(new Date().toISOString())}
-					on:change={handleEndDate}
-					/>
-				</div>
-			</div>
+			<h2>{$lang('start')}</h2>
+			<input
+				class="input"
+				type="date"
+				value={isoToDate(sel?.start_time)}
+				max={isoToDate(sel?.end_time) || undefined}
+				on:change={handleStartDate}
+			/>
+
+			<h2>{$lang('finish')}</h2>
+			<input
+				class="input"
+				type="date"
+				value={isoToDate(sel?.end_time)}
+				min={isoToDate(sel?.start_time) || undefined}
+				max={isoToDate(new Date().toISOString())}
+				on:change={handleEndDate}
+			/>
 		{/if}
 
 		<h2>{$lang('size')}</h2>
@@ -271,26 +264,6 @@
 <style>
 	.preview {
 		height: 9rem;
-	}
-
-	.date-range {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 0.75rem;
-		margin-top: 0.25rem;
-	}
-
-	.date-field {
-		display: flex;
-		flex-direction: column;
-		gap: 0.4rem;
-	}
-
-	.date-field label {
-		font-size: 0.78rem;
-		color: rgba(255, 255, 255, 0.5);
-		font-weight: 500;
-		letter-spacing: 0.03em;
 	}
 
 	input[type='date'] {
