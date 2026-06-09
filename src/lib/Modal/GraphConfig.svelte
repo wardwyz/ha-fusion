@@ -45,12 +45,12 @@
 		{ id: 'month', label: $lang('period_month') }
 	];
 
-	$: durationOptions = [
-		{ id: '24h', label: $lang('duration_24h') },
-		{ id: '7d', label: $lang('duration_7d') },
-		{ id: '30d', label: $lang('duration_30d') },
-		{ id: '3mo', label: $lang('duration_3mo') },
-		{ id: '1y', label: $lang('duration_1y') },
+	const durationOptions = [
+		{ id: '24h', label: '24h' },
+		{ id: '7d', label: '7d' },
+		{ id: '30d', label: '30d' },
+		{ id: '3mo', label: '3mo' },
+		{ id: '1y', label: '1y' },
 		{ id: 'custom', label: $lang('custom') }
 	];
 
