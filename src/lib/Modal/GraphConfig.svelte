@@ -51,7 +51,7 @@
 		{ id: '30d', label: $lang('duration_30d') },
 		{ id: '3mo', label: $lang('duration_3mo') },
 		{ id: '1y', label: $lang('duration_1y') },
-		{ id: 'custom', label: $lang('duration_custom') }
+		{ id: 'custom', label: $lang('custom') }
 	];
 
 	$: isCustomDuration = sel?.duration === 'custom';
