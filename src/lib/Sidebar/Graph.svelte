@@ -9,14 +9,36 @@
 	export let name: string | undefined = undefined;
 	export let period = 'day';
 	export let stroke = 2;
+	export let duration: string | undefined = undefined;
+	export let start_time_prop: string | undefined = undefined;
+	export let end_time_prop: string | undefined = undefined;
+
+	const DURATION_MS: Record<string, number> = {
+		'24h': 86400000,
+		'7d': 604800000,
+		'30d': 2592000000,
+		'3mo': 7776000000,
+		'1y': 31536000000
+	};
 
 	let width: number;
 	let height: number;
 	let chartData: any[] = [];
 	let resizeTimeout: ReturnType<typeof setTimeout>;
 	let isResizing: boolean;
-	let start_time = new Date(Date.now() - 2629800 * 1000).toISOString();
-	let end_time = new Date().toISOString();
+	let start_time: string;
+	let end_time: string;
+
+	$: {
+		if (duration === 'custom' && start_time_prop && end_time_prop) {
+			start_time = start_time_prop;
+			end_time = end_time_prop;
+		} else {
+			const ms = DURATION_MS[duration || '30d'] ?? 2592000000;
+			start_time = new Date(Date.now() - ms).toISOString();
+			end_time = new Date().toISOString();
+		}
+	}
 	let m = { x: 0, y: 0 };
 	let point: { [x: string]: any };
 	let xAccessor = (d: any) => d.x;
@@ -60,7 +82,7 @@
 		}, 200);
 	}
 
-	$: if (entity_id || period) {
+	$: if (entity_id || period || start_time || end_time) {
 		fetchData();
 	}
 

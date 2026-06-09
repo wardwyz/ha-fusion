@@ -31,16 +31,11 @@
 	}
 
 	let name = sel?.name;
-
 	let options: { id: string; label: string }[];
 	let stroke = sel?.stroke;
-
 	let numberElement: HTMLInputElement;
 
-	const range = {
-		min: 0,
-		max: 10
-	};
+	const range = { min: 0, max: 10 };
 
 	const periodOptions = [
 		{ id: '5minute', label: $lang('period_5minute') },
@@ -49,6 +44,43 @@
 		{ id: 'week', label: $lang('period_week') },
 		{ id: 'month', label: $lang('period_month') }
 	];
+
+	$: durationOptions = [
+		{ id: '24h', label: $lang('duration_24h') },
+		{ id: '7d', label: $lang('duration_7d') },
+		{ id: '30d', label: $lang('duration_30d') },
+		{ id: '3mo', label: $lang('duration_3mo') },
+		{ id: '1y', label: $lang('duration_1y') },
+		{ id: 'custom', label: $lang('duration_custom') }
+	];
+
+	$: isCustomDuration = sel?.duration === 'custom';
+
+	// convert YYYY-MM-DD (input type=date) to ISO string for storage
+	function dateToIso(dateStr: string, endOfDay = false): string {
+		if (!dateStr) return '';
+		const d = new Date(dateStr);
+		if (endOfDay) {
+			d.setHours(23, 59, 59, 999);
+		}
+		return d.toISOString();
+	}
+
+	// convert ISO string to YYYY-MM-DD for input type=date
+	function isoToDate(iso: string | undefined): string {
+		if (!iso) return '';
+		return iso.slice(0, 10);
+	}
+
+	function handleStartDate(e: Event) {
+		const value = (e.target as HTMLInputElement).value;
+		set('start_time', dateToIso(value));
+	}
+
+	function handleEndDate(e: Event) {
+		const value = (e.target as HTMLInputElement).value;
+		set('end_time', dateToIso(value, true));
+	}
 
 	function minMax(key: string | number | undefined) {
 		return Math.min(Math.max(parseInt(key as string), range.min), range.max);
@@ -109,6 +141,9 @@
 				name={sel?.name}
 				period={sel?.period}
 				stroke={minMax(stroke)}
+				duration={sel?.duration}
+				start_time_prop={sel?.start_time}
+				end_time_prop={sel?.end_time}
 			/>
 		</div>
 
@@ -148,7 +183,7 @@
 			/>
 		</InputClear>
 
-		<h2>{$lang('period')} (data_points)</h2>
+		<h2>{$lang('period')}</h2>
 
 		{#if periodOptions}
 			<Select
@@ -159,25 +194,42 @@
 			/>
 		{/if}
 
-		<h2>start_time</h2>
+		<h2>{$lang('duration')}</h2>
 
-		<input
-			class="input"
-			type="text"
-			placeholder={new Date(Date.now() - 2629800 * 1000).toISOString()}
-			autocomplete="off"
-			spellcheck="false"
+		<Select
+			options={durationOptions}
+			placeholder={$lang('duration_30d')}
+			value={sel?.duration || '30d'}
+			on:change={(event) => set('duration', event)}
 		/>
 
-		<h2>end_time</h2>
-
-		<input
-			class="input"
-			type="text"
-			placeholder={new Date().toISOString()}
-			autocomplete="off"
-			spellcheck="false"
-		/>
+		{#if isCustomDuration}
+			<div class="date-range">
+				<div class="date-field">
+					<label for="graph-start">{$lang('start_date')}</label>
+					<input
+						id="graph-start"
+						class="input"
+						type="date"
+						value={isoToDate(sel?.start_time)}
+						max={isoToDate(sel?.end_time) || undefined}
+						on:change={handleStartDate}
+					/>
+				</div>
+				<div class="date-field">
+					<label for="graph-end">{$lang('end_date')}</label>
+					<input
+						id="graph-end"
+						class="input"
+						type="date"
+						value={isoToDate(sel?.end_time)}
+						min={isoToDate(sel?.start_time) || undefined}
+						max={isoToDate(new Date().toISOString())}
+					on:change={handleEndDate}
+					/>
+				</div>
+			</div>
+		{/if}
 
 		<h2>{$lang('size')}</h2>
 
@@ -219,5 +271,30 @@
 <style>
 	.preview {
 		height: 9rem;
+	}
+
+	.date-range {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.75rem;
+		margin-top: 0.25rem;
+	}
+
+	.date-field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+	}
+
+	.date-field label {
+		font-size: 0.78rem;
+		color: rgba(255, 255, 255, 0.5);
+		font-weight: 500;
+		letter-spacing: 0.03em;
+	}
+
+	input[type='date'] {
+		color-scheme: dark;
+		cursor: pointer;
 	}
 </style>

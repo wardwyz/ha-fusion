@@ -222,6 +222,9 @@ export interface GraphItem {
 	period?: string;
 	stroke?: number;
 	hide_mobile?: boolean;
+	duration?: string;
+	start_time?: string;
+	end_time?: string;
 }
 
 export interface HistoryItem {
