@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { motion } from '$lib/Stores';
-	import { fade, scale } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
 	import Icon from '@iconify/svelte';
 
@@ -23,7 +23,7 @@
 		<button
 			class:select
 			tabindex="-1"
-			transition:scale={{ duration: $motion }}
+			transition:fade={{ duration: $motion }}
 			on:click={handleClick}
 		>
 			<Icon icon="mingcute:close-fill" height="auto" width="100%" />
