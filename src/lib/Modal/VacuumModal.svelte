@@ -171,6 +171,10 @@
 				</button>
 			{/if}
 
+			{#if supports?.TURN_ON && (supports?.START || supports?.PAUSE || supports?.STOP || supports?.RETURN_HOME || supports?.LOCATE)}
+				<div class="vdivider" />
+			{/if}
+
 			{#if supports?.START}
 				<button
 					title={$lang('start')}
@@ -214,6 +218,10 @@
 				<button title={$lang('locate')} on:click={() => handleClick('locate')} use:Ripple={$ripple}>
 					<div class="icon"><Icon icon="mdi:map-marker" height="none" /></div>
 				</button>
+			{/if}
+
+			{#if supports?.TURN_OFF && (supports?.START || supports?.PAUSE || supports?.STOP || supports?.RETURN_HOME || supports?.LOCATE || supports?.TURN_ON)}
+				<div class="vdivider" />
 			{/if}
 
 			{#if supports?.TURN_OFF}
@@ -314,6 +322,14 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+	}
+
+	.vdivider {
+		width: 1px;
+		align-self: stretch;
+		background-color: rgba(255, 255, 255, 0.1);
+		margin: 0 0.25rem;
+		flex-shrink: 0;
 	}
 
 	.icon {

@@ -296,7 +296,7 @@
 	}}
 >
 	<!-- overlay icon -->
-	<div class="overlay-icon">
+	<div class="overlay-icon" style:display={$modals?.length > 0 ? 'none' : ''}>
 		{#if overlayIconState === 'playing'}
 			<div
 				class="icon-state"
