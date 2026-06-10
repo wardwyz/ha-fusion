@@ -266,9 +266,11 @@
 		overflow-y: auto;
 		flex: 1;
 		min-height: 0;
-		/* pull body into right padding so scrollbar lands in padding zone */
+		/* extend into padding on both sides: right for scrollbar, left to avoid border clipping */
 		margin-right: -1.9rem;
 		padding-right: 1.9rem;
+		margin-left: -1px;
+		padding-left: 1px;
 	}
 
 	.body::-webkit-scrollbar {
