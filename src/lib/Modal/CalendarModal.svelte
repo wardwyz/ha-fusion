@@ -192,8 +192,22 @@
 
 <style>
 	div {
-		height: calc(75vh - 8rem);
+		height: calc(85vh - 8rem);
 		margin-top: 1rem;
+	}
+
+	/* FHD monitors (1366px – 1919px) — modal max-height drops to 80vh */
+	@media (min-width: 1366px) and (max-width: 1919px) {
+		div {
+			height: calc(80vh - 8rem);
+		}
+	}
+
+	/* QHD / 4K displays (≥ 1920px) — modal max-height drops to 75vh, extra padding */
+	@media (min-width: 1920px) {
+		div {
+			height: calc(75vh - 9rem);
+		}
 	}
 
 	/* header */
