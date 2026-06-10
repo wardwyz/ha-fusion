@@ -192,6 +192,8 @@
 				highlightedIndex = 0;
 				scrollToIndex = highlightedIndex;
 			}}
+			style:border-bottom-left-radius="0"
+			style:border-bottom-right-radius="0"
 			{...inputProps}
 		/>
 	{:else}
@@ -304,10 +306,10 @@
 	/* list */
 
 	.wrapper {
-		margin-top: 0.2rem;
+		margin-top: 0;
 		position: relative;
 		background-color: #1d1b18;
-		border-radius: 0.6rem;
+		border-radius: 0 0 0.6rem 0.6rem;
 		overflow: hidden;
 	}
 
