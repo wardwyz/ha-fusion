@@ -137,8 +137,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
-		height: 100%;
-		min-height: 0;
 		padding: 0.5rem 0;
 	}
 
@@ -146,9 +144,8 @@
 		position: relative;
 		border-radius: 0.5rem;
 		overflow: hidden;
-		flex: 1;
-		min-height: 0;
-		max-height: calc(85vh - 14rem);
+		height: calc(85vh - 14rem);
+		min-height: 50px;
 		width: 100%;
 		background: black;
 		display: flex;
@@ -205,7 +202,7 @@
 	/* Tablet portrait (Galaxy Tab A7 Lite and similar: 800x1280) */
 	@media (max-width: 1024px) {
 		.camera-wrap {
-			max-height: calc(80vh - 12rem);
+			height: calc(80vh - 12rem);
 		}
 
 		.modal-content {
@@ -216,7 +213,7 @@
 	/* Mobile phones */
 	@media (max-width: 768px) {
 		.camera-wrap {
-			max-height: calc(75vh - 11rem);
+			height: calc(75vh - 11rem);
 		}
 
 		.modal-content {
