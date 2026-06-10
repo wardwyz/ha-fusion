@@ -226,4 +226,18 @@
 			font-size: 0.95rem;
 		}
 	}
+
+	/* FHD monitors (1366px – 1919px) — modal max-height drops to 80vh */
+	@media (min-width: 1366px) and (max-width: 1919px) {
+		.camera-wrap {
+			height: calc(80vh - 11rem);
+		}
+	}
+
+	/* QHD / 4K displays (≥ 1920px) — modal max-height drops to 75vh, extra padding */
+	@media (min-width: 1920px) {
+		.camera-wrap {
+			height: calc(75vh - 13rem);
+		}
+	}
 </style>
