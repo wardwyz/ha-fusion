@@ -150,7 +150,8 @@ export type SidebarItem = BarItem &
 	WeatherItem &
 	WeatherForecastItem &
 	DividerItem &
-	AiAssistantItem;
+	AiAssistantItem &
+	PowerSummaryItem;
 
 export interface BinarySensorItem {
 	type?: string;
@@ -165,6 +166,23 @@ export interface BinarySensorItem {
 	icon_off?: string;
 	color_on?: string;
 	color_off?: string;
+	hide_mobile?: boolean;
+}
+
+export interface PowerSummaryGroup {
+	id?: number;
+	label?: string;
+	icon?: string;
+	domains?: string[];
+	exclude?: string[];
+	on_states?: string[];
+	count_suffix?: string;
+}
+
+export interface PowerSummaryItem {
+	type?: string;
+	id?: number;
+	groups?: PowerSummaryGroup[];
 	hide_mobile?: boolean;
 }
 
