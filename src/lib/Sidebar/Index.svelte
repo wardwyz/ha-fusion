@@ -36,6 +36,7 @@
 	let Timer: ComponentType;
 	let Weather: ComponentType;
 	let WeatherForecast: ComponentType;
+	let PowerSummary: ComponentType;
 
 	const imports = {
 		ai_assistant: () =>
@@ -61,7 +62,9 @@
 		timer: () => import('$lib/Sidebar/Timer.svelte').then((c) => (Timer = c.default)),
 		weather: () => import('$lib/Sidebar/Weather.svelte').then((c) => (Weather = c.default)),
 		weather_forecast: () =>
-			import('$lib/Sidebar/WeatherForecast.svelte').then((c) => (WeatherForecast = c.default))
+			import('$lib/Sidebar/WeatherForecast.svelte').then((c) => (WeatherForecast = c.default)),
+		power_summary: () =>
+			import('$lib/Sidebar/PowerSummary.svelte').then((c) => (PowerSummary = c.default))
 	};
 
 	$: if ($dashboard?.sidebar) importComponents();
@@ -143,6 +146,8 @@
 				openModal(() => import('$lib/Modal/WeatherConfig.svelte'), { sel });
 			} else if (sel?.type === 'weather_forecast') {
 				openModal(() => import('$lib/Modal/WeatherForecastConfig.svelte'), { sel });
+			} else if (sel?.type === 'power_summary') {
+				openModal(() => import('$lib/Modal/PowerSummaryConfig.svelte'), { sel });
 			} else {
 				openModal(() => import('$lib/Modal/SidebarItemConfig.svelte'), { sel });
 
@@ -451,6 +456,12 @@
 						<button on:click={() => handleClick(item?.id)}>
 							<svelte:component this={WeatherForecast} sel={item} />
 						</button>
+
+						<!-- POWER SUMMARY -->
+					{:else if PowerSummary && item?.type === 'power_summary' && !hide_mobile}
+						<div on:click={() => handleClick(item?.id)} on:keydown role="button" tabindex="0">
+							<svelte:component this={PowerSummary} sel={item} />
+						</div>
 					{/if}
 				</div>
 			{/each}
