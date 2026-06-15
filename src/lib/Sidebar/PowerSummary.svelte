@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { states, editMode, motion } from '$lib/Stores';
+	import { states, editMode, motion, lang } from '$lib/Stores';
 	import { getName } from '$lib/Utils';
 	import Icon from '@iconify/svelte';
 	import type { PowerSummaryItem, PowerSummaryGroup } from '$lib/Types';
@@ -16,12 +16,12 @@
 	// Demo data shown in the config modal preview
 	const demoResults: GroupResult[] = [
 		{
-			group: { label: 'Luci', icon: 'mdi:lightbulb', count_suffix: 'accese' } as any,
+			group: { label: 'Lights', icon: 'mdi:lightbulb', count_suffix: 'on' } as any,
 			count: 3,
-			displayText: '3 accese'
+			displayText: '3 on'
 		},
 		{
-			group: { label: 'Dispositivi', icon: 'mdi:television' } as any,
+			group: { label: 'Devices', icon: 'mdi:television' } as any,
 			count: 0,
 			displayText: ''
 		}
@@ -29,7 +29,10 @@
 
 	$: results = demo ? demoResults : computeGroups(sel?.groups ?? [], $states);
 
-	function computeGroups(groups: PowerSummaryGroup[], currentStates: typeof $states): GroupResult[] {
+	function computeGroups(
+		groups: PowerSummaryGroup[],
+		currentStates: typeof $states
+	): GroupResult[] {
 		return groups.map((group) => {
 			const domains = group.domains ?? [];
 			const excluded = new Set(group.exclude ?? []);
@@ -89,7 +92,7 @@
 		{/each}
 
 		{#if $editMode && (!sel?.groups || sel.groups.length === 0)}
-			<span class="placeholder">Power Summary</span>
+			<span class="placeholder">{$lang('power_summary')}</span>
 		{/if}
 	</div>
 {/if}
