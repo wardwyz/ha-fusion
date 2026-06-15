@@ -459,9 +459,9 @@
 
 						<!-- POWER SUMMARY -->
 					{:else if PowerSummary && item?.type === 'power_summary' && !hide_mobile}
-						<div on:click={() => handleClick(item?.id)} on:keydown role="button" tabindex="0">
+						<button on:click={() => handleClick(item?.id)}>
 							<svelte:component this={PowerSummary} sel={item} />
-						</div>
+						</button>
 					{/if}
 				</div>
 			{/each}
