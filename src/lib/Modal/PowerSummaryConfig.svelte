@@ -123,10 +123,7 @@
 	}
 
 	function handleDndConsider(event: CustomEvent) {
-		sel.groups = event.detail.items.filter(
-			(item: any) => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME]
-		);
-		sel.groups = sel.groups;
+		sel.groups = event.detail.items;
 	}
 
 	function handleDndFinalize(event: CustomEvent) {
@@ -271,7 +268,7 @@
 										</div>
 									{/if}
 								{:else}
-									<p class="hint">Select domains first</p>
+									<p class="hint">{$lang('select_domains_first')}</p>
 								{/if}
 
 								<h2>{$lang('count_suffix')}</h2>
