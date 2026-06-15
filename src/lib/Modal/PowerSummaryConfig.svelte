@@ -278,7 +278,7 @@
 										class="input"
 										type="text"
 										bind:value={group.count_suffix}
-										placeholder="accesi"
+										placeholder="on"
 										on:change={() => setGroup(i, 'count_suffix', group.count_suffix || undefined)}
 										style:padding
 										autocomplete="off"
