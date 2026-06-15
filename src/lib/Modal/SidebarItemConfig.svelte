@@ -32,6 +32,7 @@
 	import Template from '$lib/Sidebar/Template.svelte';
 	import Timer from '$lib/Sidebar/Timer.svelte';
 	import Notifications from '$lib/Sidebar/Notifications.svelte';
+	import PowerSummary from '$lib/Sidebar/PowerSummary.svelte';
 	import ConfigButtons from '$lib/Modal/ConfigButtons.svelte';
 	import Radial from '$lib/Sidebar/Radial.svelte';
 	import Ripple from 'svelte-ripple';
@@ -209,6 +210,12 @@
 			type: $lang('timer'),
 			component: Timer,
 			props: { sel: { ...sel, entity_id: $demo.timer } }
+		},
+		{
+			id: 'power_summary',
+			type: $lang('power_summary'),
+			component: PowerSummary,
+			props: { demo: true }
 		}
 	];
 
@@ -327,6 +334,10 @@
 					sel,
 					demo: $demo.timer
 				});
+				break;
+
+			case 'power_summary':
+				openModal(() => import('$lib/Modal/PowerSummaryConfig.svelte'), { sel });
 				break;
 
 			default:
