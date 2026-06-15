@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { states, editMode, motion } from '$lib/Stores';
 	import { getName } from '$lib/Utils';
-	import Icon, { loadIcon } from '@iconify/svelte';
+	import Icon from '@iconify/svelte';
 	import type { PowerSummaryItem, PowerSummaryGroup } from '$lib/Types';
 
 	export let sel: PowerSummaryItem | undefined = undefined;
@@ -70,13 +70,7 @@
 				style:transition="opacity {$motion}ms ease"
 			>
 				<span class="group-icon">
-					{#if group.icon}
-						{#await loadIcon(group.icon) then resolvedIcon}
-							<Icon icon={resolvedIcon} height="1em" width="1em" />
-						{/await}
-					{:else}
-						<Icon icon="mdi:circle-small" height="1em" width="1em" />
-					{/if}
+					<Icon icon={group.icon || 'mdi:circle-small'} height="1em" width="1em" />
 				</span>
 
 				<div class="group-body">
@@ -104,7 +98,6 @@
 	.container {
 		pointer-events: none;
 		text-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
-		font-family: 'Inter Variable';
 	}
 
 	.group-row {
