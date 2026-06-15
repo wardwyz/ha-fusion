@@ -10,7 +10,7 @@
 	import Modal from '$lib/Modal/Index.svelte';
 	import Ripple from 'svelte-ripple';
 	import Icon from '@iconify/svelte';
-	import { updateObj } from '$lib/Utils';
+	import { updateObj, generateId } from '$lib/Utils';
 	import type { PowerSummaryItem, PowerSummaryGroup } from '$lib/Types';
 
 	export let isOpen: boolean;
@@ -18,9 +18,7 @@
 
 	// Ensure groups array exists and every group has an id for DnD
 	if (!sel.groups) sel.groups = [];
-	sel.groups = sel.groups.map((g) =>
-		g.id ? g : { ...g, id: Math.random() * 1e9 | 0 }
-	);
+	sel.groups = sel.groups.map((g) => (g.id ? g : { ...g, id: generateId($dashboard) }));
 
 	let expandedIndex: number | null = sel.groups.length === 0 ? null : 0;
 
@@ -38,7 +36,7 @@
 
 	function setGroup(index: number, key: keyof PowerSummaryGroup, value: any) {
 		if (!sel.groups) return;
-		(sel.groups[index] as any)[key] = value === undefined ? undefined : value;
+		(sel.groups[index] as any)[key] = value;
 		sel.groups = [...sel.groups];
 		save();
 	}
@@ -52,7 +50,7 @@
 
 	function addGroup() {
 		const newGroup: PowerSummaryGroup = {
-			id: Math.random() * 1e9 | 0,
+			id: generateId($dashboard),
 			label: '',
 			icon: 'mdi:circle',
 			domains: [],
@@ -86,9 +84,7 @@
 		if (!sel.groups) return;
 		const group = sel.groups[index];
 		const current = group.on_states ?? [];
-		const next = current.includes(state)
-			? current.filter((s) => s !== state)
-			: [...current, state];
+		const next = current.includes(state) ? current.filter((s) => s !== state) : [...current, state];
 		setGroup(index, 'on_states', next);
 	}
 
@@ -104,7 +100,11 @@
 	function removeExclude(index: number, entityId: string) {
 		if (!sel.groups) return;
 		const group = sel.groups[index];
-		setGroup(index, 'exclude', (group.exclude ?? []).filter((id) => id !== entityId));
+		setGroup(
+			index,
+			'exclude',
+			(group.exclude ?? []).filter((id) => id !== entityId)
+		);
 	}
 
 	function getExcludeOptions(group: PowerSummaryGroup) {
@@ -127,10 +127,7 @@
 	}
 
 	function handleDndFinalize(event: CustomEvent) {
-		sel.groups = event.detail.items.filter(
-			(item: any) => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME]
-		);
-		sel.groups = sel.groups;
+		sel.groups = event.detail.items.filter((item: any) => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
 		save();
 	}
 
