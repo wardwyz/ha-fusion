@@ -8,6 +8,12 @@
 	export let sel: any = undefined;
 	export let disableChangeType: boolean | undefined = undefined;
 
+	function portalToModal(node: HTMLElement) {
+		const contents = node.closest('.contents') as HTMLElement | null;
+		if (contents) contents.appendChild(node);
+		return { destroy() {} };
+	}
+
 	/**
 	 * Checks if current id is in/from sidebar
 	 */
@@ -92,7 +98,7 @@
 	}
 </script>
 
-<div class="container">
+<div class="container" use:portalToModal>
 	<div class="align-left">
 		{#if $editMode && (sel?.type || sel?.sections)}
 			<button
@@ -131,13 +137,9 @@
 	.container {
 		display: flex;
 		justify-content: space-between;
-		position: sticky;
-		bottom: 0;
-		background: var(--theme-modal-background-color-modal, rgb(38 39 38));
-		padding-top: 0.8rem;
-		padding-bottom: 0.1rem;
-		margin-top: 1.6rem;
-		z-index: 1;
+		align-items: center;
+		margin: 0 -1.9rem -1.9rem;
+		padding: 0.75rem 1.9rem;
 		border-top: 1px solid rgba(255, 255, 255, 0.08);
 	}
 

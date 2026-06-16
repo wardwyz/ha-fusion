@@ -27,3 +27,4 @@ theme:
   navigate-background-color: rgba(255, 255, 255, 0.15)
   app-color: black
   modal-background-color-modal: none
+  modal-background-color-sticky: rgb(10 10 10)
