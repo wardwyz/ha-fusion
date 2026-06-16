@@ -62,6 +62,10 @@ export async function load({ params, request, cookies }): Promise<{
 
 	const VALID_PROFILE = /^[a-z0-9-]+$/;
 
+	if (profileParam && !VALID_PROFILE.test(profileParam)) {
+		error(404, 'Profile not found');
+	}
+
 	// Cookie redirect when no profile in URL
 	if (!profileParam) {
 		const cookieProfile = cookies.get('ha-fusion-profile');

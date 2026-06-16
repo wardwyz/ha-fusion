@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { lang, ripple, motion } from '$lib/Stores';
+	import { lang, ripple } from '$lib/Stores';
 	import { closeModal } from 'svelte-modals';
 	import Ripple from 'svelte-ripple';
 	import Modal from '$lib/Modal/Index.svelte';

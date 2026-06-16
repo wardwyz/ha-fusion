@@ -294,6 +294,7 @@
 	"precision": "Display precision",
 	"press": "Press",
 	"preview": "Preview",
+	"profile_exists": "A profile with this name already exists",
 	"profile_invalid_name": "Name can only contain lowercase letters, numbers and hyphens",
 	"profile_name": "Profile name",
 	"profiles": "Profiles",
