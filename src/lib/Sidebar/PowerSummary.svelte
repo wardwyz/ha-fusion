@@ -130,7 +130,6 @@
 	.group-label {
 		font-size: 0.72rem;
 		font-weight: 600;
-		opacity: 0.5;
 		text-transform: uppercase;
 		letter-spacing: 0.03em;
 		white-space: nowrap;
@@ -139,7 +138,7 @@
 	}
 
 	.group-text {
-		font-size: 0.9rem;
+		font-size: 0.95rem;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;

@@ -231,7 +231,7 @@
 											on:click={() => toggleDomain(i, domain)}
 											use:Ripple={$ripple}
 										>
-											{domain}
+											{$lang(domain) || domain}
 										</button>
 									{/each}
 								</div>
@@ -245,7 +245,7 @@
 											on:click={() => toggleOnState(i, state)}
 											use:Ripple={$ripple}
 										>
-											{state}
+											{$lang(state) || state}
 										</button>
 									{/each}
 								</div>
