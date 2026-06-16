@@ -61,16 +61,11 @@
 	}
 
 	function handleDeleteChip(id: string, label: string) {
-		openModal(
-			() => import('$lib/Modal/ConfirmModal.svelte'),
-			{
-				title: $lang('delete') + ' ' + label,
-				message: $lang('delete_profile_confirm')
-					.replace('{label}', label)
-					.replace('{name}', id),
-				onConfirm: () => deleteProfile(id)
-			}
-		);
+		openModal(() => import('$lib/Modal/ConfirmModal.svelte'), {
+			title: $lang('delete') + ' ' + label,
+			message: $lang('delete_profile_confirm').replace('{label}', label).replace('{name}', id),
+			onConfirm: () => deleteProfile(id)
+		});
 	}
 
 	async function deleteProfile(id: string) {
@@ -133,13 +128,10 @@
 			{/if}
 		</div>
 	{:else}
-		<button
-			class="add button"
-			title={$lang('add')}
-			on:click={startCreate}
-			use:Ripple={$ripple}
-		>
-			<Icon icon="gridicons:add-outline" height="none" />
+		<button class="add button" title={$lang('add')} on:click={startCreate} use:Ripple={$ripple}>
+			<figure>
+				<Icon icon="gridicons:add-outline" height="none" />
+			</figure>
 		</button>
 	{/if}
 </div>
