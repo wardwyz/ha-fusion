@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import '$lib/Drawer/Drawer.css';
-	import type { Configuration, Dashboard, Translations, ViewItem } from '$lib/Types';
+	import type { Configuration, Dashboard, Translations, ViewItem, ProfileConfig } from '$lib/Types';
 	import { loadIcons } from '@iconify/svelte';
 
 	export let data: {
@@ -12,6 +12,8 @@
 		dashboard: Dashboard;
 		theme: any;
 		translations: Translations;
+		profiles?: ProfileConfig[];
+		currentProfile?: string;
 	};
 	export let view: ViewItem | undefined;
 	export let toggleDrawer: () => void;
@@ -75,6 +77,12 @@
 			<div class="save push">
 				{#await import('$lib/Drawer/SaveButton.svelte') then SaveButton}
 					<svelte:component this={SaveButton.default} {modified} />
+				{/await}
+			</div>
+
+			<div class="profiles">
+				{#await import('$lib/Drawer/ProfileSelector.svelte') then ProfileSelector}
+					<svelte:component this={ProfileSelector.default} />
 				{/await}
 			</div>
 		{:else}
@@ -143,6 +151,10 @@
 		grid-area: save;
 	}
 
+	.profiles {
+		grid-area: profiles;
+	}
+
 	.code {
 		grid-area: code;
 	}
@@ -177,7 +189,9 @@
 	.grid-editmode {
 		display: grid;
 		gap: 0.5rem;
-		grid-template-areas: 'edit add appearance . history save';
+		grid-template-areas:
+			'edit add appearance . history save'
+			'profiles profiles profiles profiles profiles profiles';
 		grid-template-columns: auto auto auto 1fr auto auto;
 		width: 100%;
 	}
@@ -201,7 +215,8 @@
 			grid-template-columns: auto 1fr auto;
 			grid-template-areas:
 				'edit add appearance'
-				'history history save';
+				'history history save'
+				'profiles profiles profiles';
 		}
 
 		.save {
