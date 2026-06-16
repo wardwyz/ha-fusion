@@ -2,10 +2,12 @@ import { unlink, access } from 'fs/promises';
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
+const VALID_NAME = /^[a-z0-9-]+$/;
+
 export const DELETE: RequestHandler = async ({ request }) => {
 	const { name } = await request.json();
 
-	if (!name || name === 'default') {
+	if (!name || !VALID_NAME.test(name) || name === 'default') {
 		error(400, 'Cannot delete the default profile');
 	}
 
