@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { editMode, itemHeight, lang, dashboard, states } from '$lib/Stores';
+	import { editMode, itemHeight, lang, dashboard, states, onStates, motion } from '$lib/Stores';
 	import { openModal } from 'svelte-modals';
 	import Icon, { loadIcon } from '@iconify/svelte';
 	import { getSelected } from '$lib/Utils';
@@ -33,6 +33,10 @@
 			? ($lang(primaryState) || primaryState) + (primaryUnit ? ' ' + primaryUnit : '')
 			: undefined;
 
+	$: stateOn = primaryEntity
+		? ($onStates?.includes(primaryEntity.state?.toLocaleLowerCase()) ?? false)
+		: null;
+
 	function handleClick() {
 		if ($editMode) {
 			openModal(() => import('$lib/Modal/CustomPanelConfig.svelte'), { sel });
@@ -42,8 +46,14 @@
 	}
 </script>
 
-<button style:height="{$itemHeight}px" style:background-color={color} on:click={handleClick}>
-	<div class="icon">
+<button
+	style:height="{$itemHeight}px"
+	style:background-color={color}
+	style:transition="filter {$motion}ms ease"
+	data-state={stateOn}
+	on:click={handleClick}
+>
+	<div class="icon" data-state={stateOn}>
 		{#await loadIcon(tileIcon)}
 			<Icon icon="ph:dot" style="font-size: 1.6rem" />
 		{:then resolvedIcon}
@@ -54,9 +64,9 @@
 	</div>
 
 	<div class="label">
-		<span class="name">{name}</span>
+		<span class="name" data-state={stateOn}>{name}</span>
 		{#if primaryDisplay}
-			<span class="state">{primaryDisplay}</span>
+			<span class="state" data-state={stateOn}>{primaryDisplay}</span>
 		{/if}
 	</div>
 </button>
@@ -74,7 +84,6 @@
 		color: white;
 		font-family: inherit;
 		font-size: 0.95rem;
-		transition: filter 150ms ease;
 		overflow: hidden;
 	}
 
@@ -84,6 +93,14 @@
 
 	button:active {
 		filter: brightness(0.9);
+	}
+
+	button[data-state='false'] {
+		filter: brightness(0.6);
+	}
+
+	button[data-state='false']:hover {
+		filter: brightness(0.75);
 	}
 
 	.icon {
