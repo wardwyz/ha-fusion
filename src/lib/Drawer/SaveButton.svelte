@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { dashboard, editMode, motion, lang, ripple, history, historyIndex } from '$lib/Stores';
 	import { base } from '$app/paths';
+	import { page } from '$app/stores';
 	import { modals } from 'svelte-modals';
 	import Ripple from 'svelte-ripple';
 	import Icon from '@iconify/svelte';
@@ -31,7 +32,7 @@
 			const response = await fetch(`${base}/_api/save_dashboard`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify($dashboard)
+				body: JSON.stringify({ dashboard: $dashboard, profile: $page.data.currentProfile })
 			});
 
 			const data = await response.json();

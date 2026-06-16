@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import { dashboard, motion, lang, autocompleteList } from '$lib/Stores';
+	import { page } from '$app/stores';
 	import { fade } from 'svelte/transition';
 	import parser from 'js-yaml';
 	import CodeEditor from '$lib/Components/CodeEditor.svelte';
@@ -51,7 +52,7 @@
 			const response = await fetch(`${base}/_api/save_dashboard`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(_value)
+				body: JSON.stringify({ dashboard: _value, profile: $page.data.currentProfile })
 			});
 
 			const data = await response.json();
