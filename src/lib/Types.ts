@@ -3,6 +3,11 @@ import type { ShapeConfig } from 'konva/lib/Shape';
 
 // configuration.yaml
 
+export interface ProfileConfig {
+	id: string;
+	label: string;
+}
+
 export interface Configuration {
 	hassUrl?: string;
 	locale?: string;
@@ -11,6 +16,7 @@ export interface Configuration {
 	motion?: boolean;
 	addons?: Addons;
 	token?: string;
+	profiles?: ProfileConfig[];
 }
 
 export interface Addons {
