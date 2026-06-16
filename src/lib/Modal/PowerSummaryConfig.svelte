@@ -484,31 +484,7 @@
 		margin: 0;
 	}
 
-	.icon-gallery-container {
-		display: flex;
-		gap: 0.4rem;
-	}
-
 	.icon-gallery-container :global(.clear) {
 		flex: 1;
-	}
-
-	.icon-gallery {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: rgba(255, 255, 255, 0.06);
-		border: none;
-		border-radius: 0.5rem;
-		color: inherit;
-		cursor: pointer;
-		flex-shrink: 0;
-		padding: 0.84rem;
-		position: relative;
-		overflow: hidden;
-	}
-
-	.icon-gallery:hover {
-		background: rgba(255, 255, 255, 0.12);
 	}
 </style>
