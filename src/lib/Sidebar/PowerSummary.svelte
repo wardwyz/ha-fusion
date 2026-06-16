@@ -16,9 +16,9 @@
 	// Demo data shown in the config modal preview
 	const demoResults: GroupResult[] = [
 		{
-			group: { label: 'Lights', icon: 'mdi:lightbulb', count_suffix: 'on' } as any,
+			group: { label: 'Lights', icon: 'mdi:lightbulb' } as any,
 			count: 3,
-			displayText: '3 on'
+			displayText: ''
 		},
 		{
 			group: { label: 'Devices', icon: 'mdi:television' } as any,
@@ -49,8 +49,6 @@
 			let displayText = '';
 			if (count === 1) {
 				displayText = getName(undefined, active[0]) ?? active[0].entity_id.split('.')[1];
-			} else if (count > 1) {
-				displayText = group.count_suffix ? `${count} ${group.count_suffix}` : String(count);
 			}
 
 			return { group, count, displayText };

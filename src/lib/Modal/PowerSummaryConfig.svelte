@@ -277,24 +277,6 @@
 								{:else}
 									<p class="hint">{$lang('select_domains_first')}</p>
 								{/if}
-
-								<h2>{$lang('count_suffix')}</h2>
-								<InputClear
-									condition={group.count_suffix}
-									on:clear={() => removeGroupProp(i, 'count_suffix')}
-									let:padding
-								>
-									<input
-										class="input"
-										type="text"
-										bind:value={group.count_suffix}
-										placeholder="on"
-										on:change={() => setGroup(i, 'count_suffix', group.count_suffix || undefined)}
-										style:padding
-										autocomplete="off"
-										spellcheck="false"
-									/>
-								</InputClear>
 							</div>
 						{/if}
 					</div>

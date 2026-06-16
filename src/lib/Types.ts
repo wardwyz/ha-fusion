@@ -176,7 +176,6 @@ export interface PowerSummaryGroup {
 	domains?: string[];
 	exclude?: string[];
 	on_states?: string[];
-	count_suffix?: string;
 }
 
 export interface PowerSummaryItem {
