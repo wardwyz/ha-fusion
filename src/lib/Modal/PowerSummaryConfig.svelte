@@ -195,22 +195,32 @@
 								</InputClear>
 
 								<h2>{$lang('icon')}</h2>
-								<InputClear
-									condition={group.icon}
-									on:clear={() => setGroup(i, 'icon', '')}
-									let:padding
-								>
-									<input
-										class="input"
-										type="text"
-										bind:value={group.icon}
-										placeholder="mdi:lightbulb"
-										on:change={() => setGroup(i, 'icon', group.icon)}
-										style:padding
-										autocomplete="off"
-										spellcheck="false"
-									/>
-								</InputClear>
+								<div class="icon-gallery-container">
+									<InputClear
+										condition={group.icon}
+										on:clear={() => setGroup(i, 'icon', '')}
+										let:padding
+									>
+										<input
+											class="input"
+											type="text"
+											bind:value={group.icon}
+											placeholder="mdi:lightbulb"
+											on:change={() => setGroup(i, 'icon', group.icon)}
+											style:padding
+											autocomplete="off"
+											spellcheck="false"
+										/>
+									</InputClear>
+									<button
+										class="icon-gallery"
+										title={$lang('icon')}
+										on:click={() => window.open('https://icon-sets.iconify.design/', '_blank')}
+										use:Ripple={$ripple}
+									>
+										<Icon icon="majesticons:open-line" height="none" />
+									</button>
+								</div>
 
 								<h2>{$lang('domains')}</h2>
 								<div class="chips">
@@ -472,5 +482,33 @@
 		font-size: 0.8rem;
 		opacity: 0.45;
 		margin: 0;
+	}
+
+	.icon-gallery-container {
+		display: flex;
+		gap: 0.4rem;
+	}
+
+	.icon-gallery-container :global(.clear) {
+		flex: 1;
+	}
+
+	.icon-gallery {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(255, 255, 255, 0.06);
+		border: none;
+		border-radius: 0.5rem;
+		color: inherit;
+		cursor: pointer;
+		flex-shrink: 0;
+		padding: 0.84rem;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.icon-gallery:hover {
+		background: rgba(255, 255, 255, 0.12);
 	}
 </style>
