@@ -1,6 +1,6 @@
 import { readFile, readdir, access } from 'fs/promises';
 import { dev } from '$app/environment';
-import { redirect, error } from '@sveltejs/kit';
+import { redirect, error, isRedirect } from '@sveltejs/kit';
 import yaml from 'js-yaml';
 import type { Configuration, Dashboard, ProfileConfig, Translations } from '$lib/Types';
 import dotenv from 'dotenv';
@@ -58,17 +58,19 @@ export async function load({ params, request, cookies }): Promise<{
 	profiles: ProfileConfig[];
 	currentProfile: string;
 }> {
-	const profileParam = params.profile as string | undefined;
+	const profileParam = params.profile;
+
+	const VALID_PROFILE = /^[a-z0-9-]+$/;
 
 	// Cookie redirect when no profile in URL
 	if (!profileParam) {
 		const cookieProfile = cookies.get('ha-fusion-profile');
-		if (cookieProfile && cookieProfile !== 'default') {
+		if (cookieProfile && cookieProfile !== 'default' && VALID_PROFILE.test(cookieProfile)) {
 			try {
 				await access(`./data/dashboard-${cookieProfile}.yaml`);
 				redirect(302, `/${cookieProfile}`);
 			} catch (e: any) {
-				if (e.status) throw e;
+				if (isRedirect(e)) throw e;
 				// file gone — clear stale cookie and continue with default
 				cookies.delete('ha-fusion-profile', { path: '/' });
 			}
@@ -88,7 +90,7 @@ export async function load({ params, request, cookies }): Promise<{
 			path: '/',
 			maxAge: 31536000,
 			sameSite: 'lax',
-			httpOnly: false
+			httpOnly: false // profile name is not sensitive — readable by client JS
 		});
 	}
 
