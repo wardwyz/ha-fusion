@@ -20,3 +20,7 @@ data/configuration.yaml
 # Claude Code (locale, non versionare)
 .claude/
 CLAUDE.md
+
+# Superpowers plugin artifacts e documentazione interna
+.superpowers/
+docs/

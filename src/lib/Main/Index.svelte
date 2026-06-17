@@ -306,7 +306,13 @@
 					data-is-dnd-shadow-item-hint={section?.[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
 					use:dndzone={{
 						...dndOptions,
-						type: isDraggingHorizontalStack ? 'stack' : isDraggingVerticalStack ? 'vstack' : isDraggingScenes ? 'scenes' : 'section',
+						type: isDraggingHorizontalStack
+							? 'stack'
+							: isDraggingVerticalStack
+								? 'vstack'
+								: isDraggingScenes
+									? 'scenes'
+									: 'section',
 						items: section.sections
 					}}
 					on:consider={(event) => dragSection__stack(section.id, event)}
@@ -314,13 +320,17 @@
 				>
 					{#each section?.sections as stackSection (`${stackSection?.id}${stackSection?.[SHADOW_ITEM_MARKER_PROPERTY_NAME] ? '_' + stackSection?.[SHADOW_ITEM_MARKER_PROPERTY_NAME] : ''}`)}
 						{@const empty = $editMode && !stackSection?.items?.length}
-						{@const visibleItems = $editMode ? stackSection?.items : handleItemVisibility($editMode, stackSection?.items, $states, stackSection)}
+						{@const visibleItems = $editMode
+							? stackSection?.items
+							: handleItemVisibility($editMode, stackSection?.items, $states, stackSection)}
 						<section
 							id={String(stackSection.id)}
 							data-is-dnd-shadow-item-hint={stackSection?.[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
 							animate:flip={{ duration: $motion }}
 							style:overflow="hidden"
-							style:display={!$editMode && !stackSection?.items?.length && !stackSection?.spacer ? 'none' : ''}
+							style:display={!$editMode && !stackSection?.items?.length && !stackSection?.spacer
+								? 'none'
+								: ''}
 						>
 							<SectionHeader {view} section={stackSection} canBeSpacer={true} />
 							<div
@@ -353,7 +363,7 @@
 					{/each}
 				</div>
 
-			<!-- vertical stack -->
+				<!-- vertical stack -->
 			{:else if section?.type === 'vertical-stack'}
 				<VerticalStackHeader {view} {section} />
 
@@ -365,7 +375,13 @@
 					data-is-dnd-shadow-item-hint={section?.[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
 					use:dndzone={{
 						...dndOptions,
-						type: isDraggingHorizontalStack ? 'stack' : isDraggingVerticalStack ? 'vstack' : isDraggingScenes ? 'scenes' : 'section',
+						type: isDraggingHorizontalStack
+							? 'stack'
+							: isDraggingVerticalStack
+								? 'vstack'
+								: isDraggingScenes
+									? 'scenes'
+									: 'section',
 						items: section.sections
 					}}
 					on:consider={(event) => dragSection__stack(section.id, event)}
@@ -373,13 +389,17 @@
 				>
 					{#each section?.sections as stackSection (`${stackSection?.id}${stackSection?.[SHADOW_ITEM_MARKER_PROPERTY_NAME] ? '_' + stackSection?.[SHADOW_ITEM_MARKER_PROPERTY_NAME] : ''}`)}
 						{@const empty = $editMode && !stackSection?.items?.length}
-						{@const visibleItems = $editMode ? stackSection?.items : handleItemVisibility($editMode, stackSection?.items, $states, stackSection)}
+						{@const visibleItems = $editMode
+							? stackSection?.items
+							: handleItemVisibility($editMode, stackSection?.items, $states, stackSection)}
 						<section
 							id={String(stackSection.id)}
 							data-is-dnd-shadow-item-hint={stackSection?.[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
 							animate:flip={{ duration: $motion }}
 							style:overflow="hidden"
-							style:display={!$editMode && !stackSection?.items?.length && !stackSection?.spacer ? 'none' : ''}
+							style:display={!$editMode && !stackSection?.items?.length && !stackSection?.spacer
+								? 'none'
+								: ''}
 						>
 							<SectionHeader {view} section={stackSection} canBeSpacer={true} />
 							<div
@@ -415,7 +435,9 @@
 				<!-- scenes -->
 			{:else if section?.type === 'scenes'}
 				{@const empty = $editMode && !section?.items?.length}
-				{@const visibleItems = $editMode ? section?.items : handleItemVisibility($editMode, section?.items, $states, section)}
+				{@const visibleItems = $editMode
+					? section?.items
+					: handleItemVisibility($editMode, section?.items, $states, section)}
 				<SectionHeader {view} {section} />
 				<div
 					class="scenes"
@@ -446,7 +468,9 @@
 				<!-- normal -->
 			{:else}
 				{@const empty = $editMode && !section?.items?.length}
-				{@const visibleItems = $editMode ? section?.items : handleItemVisibility($editMode, section?.items, $states, section)}
+				{@const visibleItems = $editMode
+					? section?.items
+					: handleItemVisibility($editMode, section?.items, $states, section)}
 
 				<SectionHeader {view} {section} />
 

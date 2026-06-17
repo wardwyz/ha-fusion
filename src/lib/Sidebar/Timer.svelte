@@ -118,9 +118,7 @@
 		class="container"
 		style:pointer-events={$modals.length !== 0 ? 'none' : 'unset'}
 		style:cursor={$editMode || $modals.length !== 0 ? 'unset' : 'pointer'}
-		style:background-color={state === 'active' && entity_id
-			? 'rgba(0, 0, 0, 0.2)'
-			: 'transparent'}
+		style:background-color={state === 'active' && entity_id ? 'rgba(0, 0, 0, 0.2)' : 'transparent'}
 		style:transition="background-color {$motion}ms ease"
 	>
 		<div class="icon" style:color={finishes_at ? 'orange' : 'rgba(255, 255, 255, 0.5)'}>

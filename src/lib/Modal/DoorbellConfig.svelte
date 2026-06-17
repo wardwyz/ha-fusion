@@ -61,7 +61,11 @@
 			<button class:selected={!sel?.stream} on:click={() => set('stream')} use:Ripple={$ripple}>
 				{$lang('no')}
 			</button>
-			<button class:selected={sel?.stream === true} on:click={() => set('stream', true)} use:Ripple={$ripple}>
+			<button
+				class:selected={sel?.stream === true}
+				on:click={() => set('stream', true)}
+				use:Ripple={$ripple}
+			>
 				{$lang('yes')}
 			</button>
 		</div>

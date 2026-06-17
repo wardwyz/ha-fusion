@@ -61,7 +61,6 @@
 		object-fit: contain !important;
 	}
 
-
 	@media (max-width: 1024px) {
 		.camera-wrap {
 			max-height: calc(80vh - 12rem);

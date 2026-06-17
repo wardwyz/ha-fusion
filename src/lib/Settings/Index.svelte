@@ -137,44 +137,43 @@
 			<Motion />
 
 			<Logout />
-
-			<div class="buttons">
-				<div class="save-container">
-					<button
-						class="action save"
-						on:click|preventDefault={handleSubmit}
-						use:Ripple={{
-							...$ripple,
-							color: 'rgba(0, 0, 0, 0.35)'
-						}}
-					>
-						{$lang('save')}
-					</button>
-
-					{#if responseCode === 200}
-						<span class="res success" transition:fade={{ duration: $motion }}>
-							{$lang('successfully_saved')}
-						</span>
-					{:else if responseCode}
-						<span class="res error" transition:fade={{ duration: $motion }}>
-							{$lang('error_save_yaml')?.replace('{error}', `[${String(responseCode)}]`)}
-						</span>
-					{/if}
-				</div>
-
-				<button class="action done" on:click|preventDefault={closeModal} use:Ripple={$ripple}>
-					{$lang('done')}
-				</button>
-			</div>
 		</form>
+
+		<div slot="footer" class="buttons">
+			<div class="save-container">
+				<button
+					class="action save"
+					on:click|preventDefault={handleSubmit}
+					use:Ripple={{
+						...$ripple,
+						color: 'rgba(0, 0, 0, 0.35)'
+					}}
+				>
+					{$lang('save')}
+				</button>
+
+				{#if responseCode === 200}
+					<span class="res success" transition:fade={{ duration: $motion }}>
+						{$lang('successfully_saved')}
+					</span>
+				{:else if responseCode}
+					<span class="res error" transition:fade={{ duration: $motion }}>
+						{$lang('error_save_yaml')?.replace('{error}', `[${String(responseCode)}]`)}
+					</span>
+				{/if}
+			</div>
+
+			<button class="action done" on:click|preventDefault={closeModal} use:Ripple={$ripple}>
+				{$lang('done')}
+			</button>
+		</div>
 	</Modal>
 {/if}
 
 <style>
 	.buttons {
 		border-top: 1px solid rgba(255, 255, 255, 0.1);
-		margin-top: 0.9rem;
-		padding-top: 1.5rem;
+		padding-top: 0.9rem;
 		display: flex;
 		justify-content: space-between;
 	}

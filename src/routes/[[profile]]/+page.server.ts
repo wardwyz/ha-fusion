@@ -79,6 +79,13 @@ export async function load({ params, request, cookies }): Promise<{
 				cookies.delete('ha-fusion-profile', { path: '/' });
 			}
 		}
+		// Persist 'default' so future visits don't auto-redirect away
+		cookies.set('ha-fusion-profile', 'default', {
+			path: '/',
+			maxAge: 31536000,
+			sameSite: 'lax',
+			httpOnly: false
+		});
 	}
 
 	// Resolve dashboard file path

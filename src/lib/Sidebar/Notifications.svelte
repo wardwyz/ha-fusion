@@ -20,14 +20,16 @@
 	export let demo: boolean = false;
 	let expanded = false;
 
-	const demoNotifications: Record<string, { title?: string; message: string; created_at?: string }> =
-		{
-			'demo-1': {
-				title: 'Sistema aggiornato',
-				message: 'Home Assistant è pronto per il riavvio.',
-				created_at: new Date(Date.now() - 120000).toISOString()
-			}
-		};
+	const demoNotifications: Record<
+		string,
+		{ title?: string; message: string; created_at?: string }
+	> = {
+		'demo-1': {
+			title: 'Sistema aggiornato',
+			message: 'Home Assistant è pronto per il riavvio.',
+			created_at: new Date(Date.now() - 120000).toISOString()
+		}
+	};
 
 	$: notifications = demo ? demoNotifications : $persistentNotifications;
 	$: length = Object.entries(notifications)?.length;

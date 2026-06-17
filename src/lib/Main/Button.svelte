@@ -530,7 +530,9 @@
 	data-state={stateOn}
 	tabindex="-1"
 	style={!$editMode && !displayOnly ? 'cursor: pointer;' : ''}
-	style:touch-action={isLight && !$editMode && !displayOnly && entity?.state === 'on' ? 'none' : 'auto'}
+	style:touch-action={isLight && !$editMode && !displayOnly && entity?.state === 'on'
+		? 'none'
+		: 'auto'}
 	style:min-height="{$itemHeight}px"
 	on:pointerenter={!displayOnly || $editMode ? handlePointer : undefined}
 	on:pointerdown={!displayOnly || $editMode ? handlePointerDown : undefined}

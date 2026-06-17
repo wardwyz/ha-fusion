@@ -39,8 +39,7 @@
 	// does the current action require a code?
 	// if armed → we're disarming → check code_disarm_required
 	// if disarmed → we're arming → check code_arm_required
-	$: needsCode =
-		code_format !== null && (isArmed ? code_disarm_required : code_arm_required);
+	$: needsCode = code_format !== null && (isArmed ? code_disarm_required : code_arm_required);
 
 	$: showKeypad = needsCode && code_format === 'number';
 	$: showTextInput = needsCode && code_format === 'text';
@@ -150,7 +149,16 @@
 		<svelte:fragment slot="title">
 			<div class="title-row">
 				{#if wizardStep === 1}
-					<button type="button" class="header-back" on:mousedown|preventDefault|stopPropagation={() => {wizardStep = 0; clearCode();}} on:click|preventDefault|stopPropagation aria-label="back">
+					<button
+						type="button"
+						class="header-back"
+						on:mousedown|preventDefault|stopPropagation={() => {
+							wizardStep = 0;
+							clearCode();
+						}}
+						on:click|preventDefault|stopPropagation
+						aria-label="back"
+					>
 						<Icon icon="gravity-ui:chevron-left" height="none" style="width: 1.1rem;" />
 					</button>
 				{/if}
@@ -230,7 +238,11 @@
 									/>
 								</button>
 								<button on:click={enterCode} use:Ripple={$ripple} style:background-color="#293828">
-									<Icon icon="gravity-ui:check" height="none" style="width: 1.8rem; color: #67ad5b;" />
+									<Icon
+										icon="gravity-ui:check"
+										height="none"
+										style="width: 1.8rem; color: #67ad5b;"
+									/>
 								</button>
 							</div>
 						</div>
@@ -254,7 +266,9 @@
 										icon="gravity-ui:xmark"
 										height="none"
 										style={`width: 1.65rem; ${
-											code === '' ? '' : `color: #e15241; transition: background-color ${$motion}ms ease;`
+											code === ''
+												? ''
+												: `color: #e15241; transition: background-color ${$motion}ms ease;`
 										}`}
 									/>
 								</button>
@@ -262,12 +276,15 @@
 								<button on:click={() => addCode(0)} use:Ripple={$ripple}>0</button>
 
 								<button on:click={enterCode} use:Ripple={$ripple} style:background-color="#293828">
-									<Icon icon="gravity-ui:check" height="none" style="width: 1.8rem; color: #67ad5b;" />
+									<Icon
+										icon="gravity-ui:check"
+										height="none"
+										style="width: 1.8rem; color: #67ad5b;"
+									/>
 								</button>
 							</div>
 						</div>
 					{/if}
-
 				</div>
 			{/if}
 		</div>
@@ -280,7 +297,7 @@
 		flex-direction: column;
 		gap: 0.5rem;
 		height: 100%;
-		padding: 0.35rem 0; 
+		padding: 0.35rem 0;
 	}
 
 	.title-row {
@@ -300,7 +317,9 @@
 		align-items: center;
 		justify-content: center;
 		cursor: pointer;
-		transition: background-color 150ms ease, border-color 150ms ease;
+		transition:
+			background-color 150ms ease,
+			border-color 150ms ease;
 		pointer-events: all;
 		z-index: 10;
 		flex-shrink: 0;

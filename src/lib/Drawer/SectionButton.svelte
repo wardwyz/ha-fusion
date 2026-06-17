@@ -54,4 +54,3 @@
 
 	{$lang('section')}
 </button>
-

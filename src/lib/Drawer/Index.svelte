@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import '$lib/Drawer/Drawer.css';
-	import type { Configuration, Dashboard, Translations, ViewItem, ProfileConfig } from '$lib/Types';
+	import type { Configuration, Dashboard, Translations, ViewItem } from '$lib/Types';
 	import { loadIcons } from '@iconify/svelte';
 
 	export let data: {
@@ -12,8 +12,6 @@
 		dashboard: Dashboard;
 		theme: any;
 		translations: Translations;
-		profiles?: ProfileConfig[];
-		currentProfile?: string;
 	};
 	export let view: ViewItem | undefined;
 	export let toggleDrawer: () => void;
@@ -26,10 +24,12 @@
 		// preload drawer $editMode icons
 		loadIcons([
 			'gridicons:add-outline',
+			'gridicons:chevron-down',
 			'material-symbols:invert-colors-rounded',
 			'ion:arrow-undo-sharp',
 			'ion:arrow-redo-sharp',
 			'ic:round-save',
+			'solar:layers-bold-duotone',
 			'solar:sidebar-minimalistic-bold-duotone',
 			'solar:file-bold-duotone',
 			'gg:row-first',
@@ -79,16 +79,16 @@
 					<svelte:component this={SaveButton.default} {modified} />
 				{/await}
 			</div>
-
-			<div class="profiles">
-				{#await import('$lib/Drawer/ProfileSelector.svelte') then ProfileSelector}
-					<svelte:component this={ProfileSelector.default} />
-				{/await}
-			</div>
 		{:else}
 			<div class="code">
 				{#await import('$lib/Drawer/CodeButton.svelte') then CodeButton}
 					<svelte:component this={CodeButton.default} />
+				{/await}
+			</div>
+
+			<div class="profiles">
+				{#await import('$lib/Drawer/ProfileDropdown.svelte') then ProfileDropdown}
+					<svelte:component this={ProfileDropdown.default} />
 				{/await}
 			</div>
 
@@ -181,17 +181,15 @@
 	.grid {
 		display: grid;
 		gap: 0.5rem;
-		grid-template-areas: 'edit code div search docs settings';
-		grid-template-columns: auto auto auto 1fr auto auto;
+		grid-template-areas: 'edit code profiles div search docs settings';
+		grid-template-columns: auto auto auto auto 1fr auto auto;
 		width: 100%;
 	}
 
 	.grid-editmode {
 		display: grid;
 		gap: 0.5rem;
-		grid-template-areas:
-			'edit add appearance . history save'
-			'profiles profiles profiles profiles profiles profiles';
+		grid-template-areas: 'edit add appearance . history save';
 		grid-template-columns: auto auto auto 1fr auto auto;
 		width: 100%;
 	}
@@ -205,18 +203,17 @@
 		}
 
 		.grid {
-			grid-template-columns: auto auto 1fr auto auto;
+			grid-template-columns: auto auto auto 1fr auto auto;
 			grid-template-areas:
-				'edit code . docs settings'
-				'search search search search search';
+				'edit code profiles . docs settings'
+				'search search search search search search';
 		}
 
 		.grid-editmode {
 			grid-template-columns: auto 1fr auto;
 			grid-template-areas:
 				'edit add appearance'
-				'history history save'
-				'profiles profiles profiles';
+				'history history save';
 		}
 
 		.save {

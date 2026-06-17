@@ -1,5 +1,13 @@
 <script lang="ts">
-	import { connection, states, dashboard, configuration, aiConversation, lang, motion } from '$lib/Stores';
+	import {
+		connection,
+		states,
+		dashboard,
+		configuration,
+		aiConversation,
+		lang,
+		motion
+	} from '$lib/Stores';
 	import Modal from '$lib/Modal/Index.svelte';
 	import Icon from '@iconify/svelte';
 	import { getAllEntityIds, toSpeechLang } from '$lib/Utils';
@@ -55,9 +63,7 @@
 				: voices.filter((v) => v.lang.toLowerCase().startsWith(prefix));
 		if (!candidates.length) return null;
 		// Prefer neural/natural/enhanced voices (much higher quality)
-		return (
-			candidates.find((v) => /natural|neural|enhanced/i.test(v.name)) ?? candidates[0]
-		);
+		return candidates.find((v) => /natural|neural|enhanced/i.test(v.name)) ?? candidates[0];
 	}
 
 	function getVoiceByName(name: string): SpeechSynthesisVoice | undefined {
@@ -82,7 +88,9 @@
 			.map((id) => {
 				const s = $states[id];
 				const name = s.attributes?.friendly_name || id;
-				const unit = s.attributes?.unit_of_measurement ? ` ${s.attributes.unit_of_measurement}` : '';
+				const unit = s.attributes?.unit_of_measurement
+					? ` ${s.attributes.unit_of_measurement}`
+					: '';
 				return `- ${name} (${id}): ${s.state}${unit}`;
 			});
 
@@ -160,7 +168,11 @@ ${lines.join('\n')}
 			? (getVoiceByName(sel.tts_voice) ?? getBestVoice(speechLang))
 			: getBestVoice(speechLang);
 		if (voice) utterance.voice = voice;
-		console.debug('[AI Assistant] TTS voice →', voice?.name ?? 'browser default', `(${speechLang})`);
+		console.debug(
+			'[AI Assistant] TTS voice →',
+			voice?.name ?? 'browser default',
+			`(${speechLang})`
+		);
 		window.speechSynthesis.speak(utterance);
 	}
 
@@ -383,12 +395,22 @@ ${lines.join('\n')}
 		animation: blink 1.2s infinite;
 		opacity: 0;
 	}
-	.dots span:nth-child(2) { animation-delay: 0.2s; }
-	.dots span:nth-child(3) { animation-delay: 0.4s; }
+	.dots span:nth-child(2) {
+		animation-delay: 0.2s;
+	}
+	.dots span:nth-child(3) {
+		animation-delay: 0.4s;
+	}
 
 	@keyframes blink {
-		0%, 80%, 100% { opacity: 0; }
-		40% { opacity: 1; }
+		0%,
+		80%,
+		100% {
+			opacity: 0;
+		}
+		40% {
+			opacity: 1;
+		}
 	}
 
 	/* input area */
@@ -428,7 +450,9 @@ ${lines.join('\n')}
 		justify-content: center;
 		flex-shrink: 0;
 		opacity: 0.7;
-		transition: opacity 150ms ease, color 150ms ease;
+		transition:
+			opacity 150ms ease,
+			color 150ms ease;
 	}
 
 	.mic-btn:hover,
@@ -458,11 +482,18 @@ ${lines.join('\n')}
 	}
 
 	@keyframes pulse {
-		0%, 100% { transform: scale(1); }
-		50% { transform: scale(1.18); }
+		0%,
+		100% {
+			transform: scale(1);
+		}
+		50% {
+			transform: scale(1.18);
+		}
 	}
 
 	@keyframes spin {
-		to { transform: rotate(360deg); }
+		to {
+			transform: rotate(360deg);
+		}
 	}
 </style>

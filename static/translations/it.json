@@ -294,6 +294,7 @@
 	"profile_exists": "Esiste già un profilo con questo nome",
 	"profile_invalid_name": "Il nome può contenere solo lettere minuscole, numeri e trattini",
 	"profile_name": "Nome profilo",
+	"new_profile": "Nuovo profilo",
 	"profiles": "Profili",
 	"quiet": "Tranquillo",
 	"raw": "Editor di configurazione testuale",

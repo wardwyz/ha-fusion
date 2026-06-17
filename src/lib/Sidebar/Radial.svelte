@@ -64,11 +64,13 @@
 			{getName({ name }, entity)}
 
 			<br />
-			<span class="percent">{Intl.NumberFormat($selectedLanguage, {
-				style: 'percent',
-				minimumFractionDigits: 0,
-				maximumFractionDigits: 1
-			}).format(state / 100)}</span>
+			<span class="percent"
+				>{Intl.NumberFormat($selectedLanguage, {
+					style: 'percent',
+					minimumFractionDigits: 0,
+					maximumFractionDigits: 1
+				}).format(state / 100)}</span
+			>
 		</div>
 	</div>
 </div>

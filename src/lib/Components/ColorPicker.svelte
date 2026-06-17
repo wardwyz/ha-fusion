@@ -80,7 +80,11 @@
 				g: rgbColor[1],
 				b: rgbColor[2]
 			};
-		} else if (colorMode === 'color_temp' && colorTempKelvin && colorTempKelvin !== prevColorTempKelvin) {
+		} else if (
+			colorMode === 'color_temp' &&
+			colorTempKelvin &&
+			colorTempKelvin !== prevColorTempKelvin
+		) {
 			prevColorTempKelvin = colorTempKelvin;
 			picker.color.kelvin = colorTempKelvin;
 		}

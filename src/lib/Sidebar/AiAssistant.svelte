@@ -16,35 +16,60 @@
 			? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
 			: null;
 
-	const isMobile =
-		typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+	const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
 
 	let wakeRec: any = null;
 	let destroyed = false;
 	let restartTimer: ReturnType<typeof setTimeout> | null = null;
 
 	function scheduleRestart(ms: number) {
-		if (restartTimer !== null) { clearTimeout(restartTimer); restartTimer = null; }
+		if (restartTimer !== null) {
+			clearTimeout(restartTimer);
+			restartTimer = null;
+		}
 		if (!destroyed && sel?.wake_word) {
-			restartTimer = setTimeout(() => { restartTimer = null; startWakeListener(); }, ms);
+			restartTimer = setTimeout(() => {
+				restartTimer = null;
+				startWakeListener();
+			}, ms);
 		}
 	}
 
 	// Central lifecycle: pause when any modal is open (releases the mic), restart when closed
 	$: if (typeof window !== 'undefined') {
 		if ($modals.length > 0) {
-			if (restartTimer !== null) { clearTimeout(restartTimer); restartTimer = null; }
-			if (wakeRec) { wakeRec.stop(); wakeRec = null; }
+			if (restartTimer !== null) {
+				clearTimeout(restartTimer);
+				restartTimer = null;
+			}
+			if (wakeRec) {
+				wakeRec.stop();
+				wakeRec = null;
+			}
 		} else if (sel?.wake_word && !wakeRec && !destroyed && restartTimer === null) {
 			scheduleRestart(300);
 		} else if (!sel?.wake_word) {
-			if (restartTimer !== null) { clearTimeout(restartTimer); restartTimer = null; }
-			if (wakeRec) { wakeRec.stop(); wakeRec = null; }
+			if (restartTimer !== null) {
+				clearTimeout(restartTimer);
+				restartTimer = null;
+			}
+			if (wakeRec) {
+				wakeRec.stop();
+				wakeRec = null;
+			}
 		}
 	}
 
 	function startWakeListener() {
-		if (!SpeechRecognition || !sel?.wake_word || destroyed || wakeRec || isMobile || $modals.length > 0) return;
+		if (
+			!SpeechRecognition ||
+			!sel?.wake_word ||
+			destroyed ||
+			wakeRec ||
+			isMobile ||
+			$modals.length > 0
+		)
+			return;
 
 		try {
 			const rec = new SpeechRecognition();
@@ -58,7 +83,12 @@
 				if (!keyword) return;
 				for (let i = event.resultIndex; i < event.results.length; i++) {
 					const transcript = event.results[i][0].transcript.toLowerCase();
-					console.debug('[Wake word] heard:', JSON.stringify(transcript), '| looking for:', JSON.stringify(keyword));
+					console.debug(
+						'[Wake word] heard:',
+						JSON.stringify(transcript),
+						'| looking for:',
+						JSON.stringify(keyword)
+					);
 					if (transcript.includes(keyword)) {
 						wakeRec = null;
 						rec.stop();
@@ -94,7 +124,10 @@
 
 	onDestroy(() => {
 		destroyed = true;
-		if (restartTimer !== null) { clearTimeout(restartTimer); restartTimer = null; }
+		if (restartTimer !== null) {
+			clearTimeout(restartTimer);
+			restartTimer = null;
+		}
 		wakeRec?.stop();
 		wakeRec = null;
 	});
@@ -159,7 +192,14 @@
 	}
 
 	@keyframes pulse {
-		0%, 100% { opacity: 0.4; transform: scale(1); }
-		50% { opacity: 1; transform: scale(1.3); }
+		0%,
+		100% {
+			opacity: 0.4;
+			transform: scale(1);
+		}
+		50% {
+			opacity: 1;
+			transform: scale(1.3);
+		}
 	}
 </style>

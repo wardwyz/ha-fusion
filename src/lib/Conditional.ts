@@ -47,7 +47,10 @@ export function handleItemVisibility(
 
 	return items.filter((item: any) => {
 		if (section?.item_visibility_template && item?.entity_id) {
-			const templateConditions = applyItemVisibilityTemplate(item, section.item_visibility_template);
+			const templateConditions = applyItemVisibilityTemplate(
+				item,
+				section.item_visibility_template
+			);
 			if (templateConditions) {
 				const meetsTemplate = templateConditions.every((condition: any) =>
 					validateConditionForItem($editMode, states, item, condition)

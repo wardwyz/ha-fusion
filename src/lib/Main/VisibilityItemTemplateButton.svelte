@@ -14,7 +14,8 @@
 		});
 	}
 
-	$: conditions = section?.item_visibility_template && section?.item_visibility_template?.length > 0;
+	$: conditions =
+		section?.item_visibility_template && section?.item_visibility_template?.length > 0;
 </script>
 
 <button
@@ -30,7 +31,7 @@
 	style:transition="background-color {$motion}ms ease"
 >
 	<div class="icon">
-		<Icon icon="lucide:scan-eye" height="none" />
+		<Icon icon="mdi:eye-settings" height="none" />
 	</div>
 </button>
 

@@ -49,19 +49,26 @@
 
 	function getActionLabel(): string {
 		switch (actionDomain) {
-			case 'lock': return $lang('open_door');
+			case 'lock':
+				return $lang('open_door');
 			case 'button':
-			case 'input_button': return $lang('press');
-			case 'cover': return $lang('open_cover');
-			default: return $lang('open_door');
+			case 'input_button':
+				return $lang('press');
+			case 'cover':
+				return $lang('open_cover');
+			default:
+				return $lang('open_door');
 		}
 	}
 
 	function getActionIcon(): string {
 		switch (actionDomain) {
-			case 'lock': return 'mdi:lock-open-outline';
-			case 'cover': return 'mdi:garage-open';
-			default: return 'mdi:door-open';
+			case 'lock':
+				return 'mdi:lock-open-outline';
+			case 'cover':
+				return 'mdi:garage-open';
+			default:
+				return 'mdi:door-open';
 		}
 	}
 
@@ -72,13 +79,22 @@
 
 		let service: string;
 		switch (domain) {
-			case 'lock': service = 'unlock'; break;
+			case 'lock':
+				service = 'unlock';
+				break;
 			case 'button':
-			case 'input_button': service = 'press'; break;
-			case 'cover': service = 'open_cover'; break;
+			case 'input_button':
+				service = 'press';
+				break;
+			case 'cover':
+				service = 'open_cover';
+				break;
 			case 'switch':
-			case 'input_boolean': service = 'turn_on'; break;
-			default: service = 'turn_on';
+			case 'input_boolean':
+				service = 'turn_on';
+				break;
+			default:
+				service = 'turn_on';
 		}
 
 		await callService($connection, domain, service, { entity_id: sel.action_entity });

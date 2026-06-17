@@ -38,7 +38,7 @@
 			const excluded = new Set(group.exclude ?? []);
 			const onStates = new Set(group.on_states ?? ['on']);
 
-			const active = Object.entries(currentStates)
+			const active = Object.entries(currentStates ?? {})
 				.filter(([id, entity]) => {
 					const domain = id.split('.')[0];
 					return domains.includes(domain) && !excluded.has(id) && onStates.has(entity.state);

@@ -25,6 +25,12 @@ import {
 import { openModal, closeModal } from 'svelte-modals';
 import type { Configuration, PersistentNotification } from '$lib/Types';
 
+// Module-level reference to the active connection. Prevents authentication()
+// from creating a duplicate connection on every profile switch (which would
+// abandon the old subscribeEntities callback and leave states empty until the
+// new subscription fires).
+let _activeConn: any = null;
+
 const options = {
 	hassUrl: undefined as string | undefined,
 	async loadTokens() {
@@ -54,6 +60,10 @@ export async function authentication(configuration: Configuration) {
 		return;
 	}
 
+	// Skip if a connection is already established — avoids creating a second
+	// WebSocket on profile switches where the token/URL haven't changed.
+	if (_activeConn) return;
+
 	let auth: Auth | undefined;
 
 	try {
@@ -67,23 +77,22 @@ export async function authentication(configuration: Configuration) {
 			openModal(() => import('$lib/Components/TokenModal.svelte'));
 			return;
 
-		// default auth flow
+			// default auth flow
 		} else {
 			const isIngress = window.location.pathname.includes('/api/hassio_ingress/');
-			const redirectUrl = isIngress
-					? `${window.location.origin}/?auth_callback=1`
-					: undefined;
+			const redirectUrl = isIngress ? `${window.location.origin}/?auth_callback=1` : undefined;
 
 			auth = await getAuth({
-					...options,
-					hassUrl: configuration?.hassUrl,
-					...(redirectUrl && { redirectUrl })
+				...options,
+				hassUrl: configuration?.hassUrl,
+				...(redirectUrl && { redirectUrl })
 			});
 			if (auth.expired) auth.refreshAccessToken();
 		}
 
 		// connection
 		const conn = await createConnection({ auth });
+		_activeConn = conn;
 		connection.set(conn);
 
 		// states
@@ -115,6 +124,7 @@ export async function authentication(configuration: Configuration) {
 
 		conn.addEventListener('reconnect-error', () => {
 			console.error('ERR_INVALID_AUTH.');
+			_activeConn = null; // allow a fresh authentication() attempt
 			connected.set(false);
 		});
 

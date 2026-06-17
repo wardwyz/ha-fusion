@@ -207,6 +207,12 @@
 			<div class="body">
 				<slot />
 			</div>
+
+			{#if $$slots.footer}
+				<div class="footer">
+					<slot name="footer" />
+				</div>
+			{/if}
 		</div>
 	</div>
 </div>
@@ -271,6 +277,7 @@
 		padding-right: 1.9rem;
 		margin-left: -1px;
 		padding-left: 1px;
+		padding-bottom: 0.6rem;
 	}
 
 	.body::-webkit-scrollbar {
@@ -288,6 +295,10 @@
 
 	.body::-webkit-scrollbar-thumb:hover {
 		background: rgba(255, 255, 255, 0.35);
+	}
+
+	.footer {
+		flex-shrink: 0;
 	}
 
 	button {
@@ -313,6 +324,10 @@
 			max-height: 90vh;
 			padding: 1.1rem 1.1rem 1.3rem;
 			border-radius: 0.9rem;
+		}
+
+		.body {
+			padding-bottom: 0.45rem;
 		}
 	}
 
@@ -346,6 +361,10 @@
 			padding: 2rem 2.5rem 2.5rem;
 			max-height: 75vh;
 			border-radius: 1.5rem;
+		}
+
+		.body {
+			padding-bottom: 0.75rem;
 		}
 	}
 </style>

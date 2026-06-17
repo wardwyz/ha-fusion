@@ -34,38 +34,44 @@
 
 	// Priority: user config → HA entity icon → device_class → entity_id heuristics
 	$: currentIcon = isOn
-		? icon_on || entity?.attributes?.icon || getDeviceClassIcon(entity?.attributes?.device_class, true) || getHeuristicIcon(entity_id, true)
-		: icon_off || entity?.attributes?.icon || getDeviceClassIcon(entity?.attributes?.device_class, false) || getHeuristicIcon(entity_id, false);
+		? icon_on ||
+			entity?.attributes?.icon ||
+			getDeviceClassIcon(entity?.attributes?.device_class, true) ||
+			getHeuristicIcon(entity_id, true)
+		: icon_off ||
+			entity?.attributes?.icon ||
+			getDeviceClassIcon(entity?.attributes?.device_class, false) ||
+			getHeuristicIcon(entity_id, false);
 
 	$: currentColor = isUnavailable ? undefined : isOn ? color_on : color_off;
 
 	function getDeviceClassIcon(deviceClass: string | undefined, on: boolean): string | undefined {
 		if (!deviceClass) return undefined;
 		const map: Record<string, [string, string]> = {
-			door:         ['mdi:door-open',         'mdi:door-closed'],
-			garage_door:  ['mdi:garage-open',        'mdi:garage'],
-			window:       ['mdi:window-open',        'mdi:window-closed'],
-			motion:       ['mdi:motion-sensor',      'mdi:motion-sensor-off'],
-			occupancy:    ['mdi:home-account',       'mdi:home-outline'],
-			presence:     ['mdi:home-account',       'mdi:home-outline'],
-			smoke:        ['mdi:smoke-detector-alert','mdi:smoke-detector'],
-			lock:         ['mdi:lock-open',          'mdi:lock'],
-			connectivity: ['mdi:wifi',               'mdi:wifi-off'],
-			power:        ['mdi:power-plug',         'mdi:power-plug-off'],
-			light:        ['mdi:brightness-5',       'mdi:brightness-auto'],
-			moisture:     ['mdi:water',              'mdi:water-off'],
-			battery:      ['mdi:battery',            'mdi:battery-outline'],
-			gas:          ['mdi:molecule-co2',       'mdi:molecule-co2'],
-			sound:        ['mdi:music-note',         'mdi:music-note-off'],
-			vibration:    ['mdi:vibrate',            'mdi:vibrate-off'],
-			cold:         ['mdi:snowflake',          'mdi:snowflake-off'],
-			heat:         ['mdi:fire',               'mdi:fire-off'],
-			plug:         ['mdi:power-plug',         'mdi:power-plug-off'],
-			problem:      ['mdi:alert-circle',       'mdi:check-circle'],
-			running:      ['mdi:play-circle',        'mdi:stop-circle'],
-			safety:       ['mdi:shield-alert',       'mdi:shield-check'],
-			tamper:       ['mdi:alert',              'mdi:check'],
-			update:       ['mdi:package-up',         'mdi:package-check']
+			door: ['mdi:door-open', 'mdi:door-closed'],
+			garage_door: ['mdi:garage-open', 'mdi:garage'],
+			window: ['mdi:window-open', 'mdi:window-closed'],
+			motion: ['mdi:motion-sensor', 'mdi:motion-sensor-off'],
+			occupancy: ['mdi:home-account', 'mdi:home-outline'],
+			presence: ['mdi:home-account', 'mdi:home-outline'],
+			smoke: ['mdi:smoke-detector-alert', 'mdi:smoke-detector'],
+			lock: ['mdi:lock-open', 'mdi:lock'],
+			connectivity: ['mdi:wifi', 'mdi:wifi-off'],
+			power: ['mdi:power-plug', 'mdi:power-plug-off'],
+			light: ['mdi:brightness-5', 'mdi:brightness-auto'],
+			moisture: ['mdi:water', 'mdi:water-off'],
+			battery: ['mdi:battery', 'mdi:battery-outline'],
+			gas: ['mdi:molecule-co2', 'mdi:molecule-co2'],
+			sound: ['mdi:music-note', 'mdi:music-note-off'],
+			vibration: ['mdi:vibrate', 'mdi:vibrate-off'],
+			cold: ['mdi:snowflake', 'mdi:snowflake-off'],
+			heat: ['mdi:fire', 'mdi:fire-off'],
+			plug: ['mdi:power-plug', 'mdi:power-plug-off'],
+			problem: ['mdi:alert-circle', 'mdi:check-circle'],
+			running: ['mdi:play-circle', 'mdi:stop-circle'],
+			safety: ['mdi:shield-alert', 'mdi:shield-check'],
+			tamper: ['mdi:alert', 'mdi:check'],
+			update: ['mdi:package-up', 'mdi:package-check']
 		};
 		const entry = map[deviceClass];
 		return entry ? entry[on ? 0 : 1] : undefined;
@@ -73,14 +79,14 @@
 
 	function getHeuristicIcon(id: string | undefined, on: boolean): string {
 		if (!id) return on ? 'mdi:toggle-switch' : 'mdi:toggle-switch-off-outline';
-		if (id.includes('door'))     return on ? 'mdi:door-open'       : 'mdi:door-closed';
-		if (id.includes('window'))   return on ? 'mdi:window-open'     : 'mdi:window-closed';
+		if (id.includes('door')) return on ? 'mdi:door-open' : 'mdi:door-closed';
+		if (id.includes('window')) return on ? 'mdi:window-open' : 'mdi:window-closed';
 		if (id.includes('motion') || id.includes('pir'))
-			                         return on ? 'mdi:motion-sensor'   : 'mdi:motion-sensor-off';
+			return on ? 'mdi:motion-sensor' : 'mdi:motion-sensor-off';
 		if (id.includes('presence') || id.includes('occupancy'))
-			                         return on ? 'mdi:home-account'    : 'mdi:home-outline';
-		if (id.includes('smoke'))    return on ? 'mdi:smoke-detector-alert' : 'mdi:smoke-detector';
-		if (id.includes('lock'))     return on ? 'mdi:lock-open'       : 'mdi:lock';
+			return on ? 'mdi:home-account' : 'mdi:home-outline';
+		if (id.includes('smoke')) return on ? 'mdi:smoke-detector-alert' : 'mdi:smoke-detector';
+		if (id.includes('lock')) return on ? 'mdi:lock-open' : 'mdi:lock';
 		return on ? 'mdi:toggle-switch' : 'mdi:toggle-switch-off-outline';
 	}
 </script>

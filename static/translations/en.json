@@ -297,6 +297,7 @@
 	"profile_exists": "A profile with this name already exists",
 	"profile_invalid_name": "Name can only contain lowercase letters, numbers and hyphens",
 	"profile_name": "Profile name",
+	"new_profile": "New profile",
 	"profiles": "Profiles",
 	"quiet": "Quiet",
 	"raw": "Raw configuration editor",

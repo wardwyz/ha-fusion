@@ -7,7 +7,7 @@ const VALID_NAME = /^[a-z0-9-]+$/;
 const EMPTY_PROFILE = 'views: []\nsidebar: []\n';
 
 export const POST: RequestHandler = async ({ request }) => {
-	const { name } = await request.json();
+	const { name, content } = await request.json();
 
 	if (!name || !VALID_NAME.test(name) || RESERVED.includes(name)) {
 		error(400, 'profile_invalid_name');
@@ -23,6 +23,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		// ENOENT — file doesn't exist, which is what we want
 	}
 
-	await writeFile(filepath, EMPTY_PROFILE);
+	const fileContent = typeof content === 'string' && content.trim() ? content : EMPTY_PROFILE;
+	await writeFile(filepath, fileContent);
 	return json({ id: name });
 };

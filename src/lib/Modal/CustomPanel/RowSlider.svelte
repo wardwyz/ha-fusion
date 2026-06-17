@@ -11,8 +11,8 @@
 
 	// Bitmasks for media_player and cover (HA 2025.x enum values).
 	// Source: homeassistant/components/media_player/const.py, cover/__init__.py
-	const MEDIA_PLAYER_VOLUME_SET = 4;  // MediaPlayerEntityFeature.VOLUME_SET
-	const COVER_SET_POSITION = 4;       // CoverEntityFeature.SET_POSITION
+	const MEDIA_PLAYER_VOLUME_SET = 4; // MediaPlayerEntityFeature.VOLUME_SET
+	const COVER_SET_POSITION = 4; // CoverEntityFeature.SET_POSITION
 
 	$: entity = row?.entity_id ? $states[row.entity_id] : undefined;
 	$: domain = getDomain(row?.entity_id);
@@ -22,7 +22,14 @@
 
 	// Light: uses supported_color_modes (HA 2025.x API; magic-number brightness removed in 2025.1).
 	// Ref: developers.home-assistant.io/docs/core/entity/light/
-	type RenderMode = 'brightness' | 'volume' | 'cover' | 'input_number' | 'toggle' | 'readonly' | 'missing';
+	type RenderMode =
+		| 'brightness'
+		| 'volume'
+		| 'cover'
+		| 'input_number'
+		| 'toggle'
+		| 'readonly'
+		| 'missing';
 
 	$: renderMode = ((): RenderMode => {
 		if (!row?.entity_id) return 'missing';
@@ -109,9 +116,7 @@
 		if (configMode || !entity) return;
 		const service = getTogglableService(entity);
 		if (!service) return;
-		const [svcDomain, svcName] = service.includes('.')
-			? service.split('.')
-			: [domain!, service];
+		const [svcDomain, svcName] = service.includes('.') ? service.split('.') : [domain!, service];
 		callService($connection, svcDomain, svcName, { entity_id: row.entity_id });
 	}
 </script>
@@ -123,10 +128,8 @@
 		<div class="slider-control">
 			{#if renderMode === 'toggle'}
 				<Toggle bind:checked={toggleChecked} on:change={handleToggle} />
-
 			{:else if renderMode === 'readonly'}
 				<span class="state-badge">{entity?.state ?? '—'}</span>
-
 			{:else}
 				<div class="slider-wrap">
 					{#if renderMode === 'brightness'}

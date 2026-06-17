@@ -130,10 +130,18 @@
 		<h2>{$lang('default_view')}</h2>
 
 		<div class="button-container">
-			<button class:selected={!is_default} on:click={() => is_default && toggleDefault()} use:Ripple={$ripple}>
+			<button
+				class:selected={!is_default}
+				on:click={() => is_default && toggleDefault()}
+				use:Ripple={$ripple}
+			>
 				{$lang('no')}
 			</button>
-			<button class:selected={is_default} on:click={() => !is_default && toggleDefault()} use:Ripple={$ripple}>
+			<button
+				class:selected={is_default}
+				on:click={() => !is_default && toggleDefault()}
+				use:Ripple={$ripple}
+			>
 				{$lang('yes')}
 			</button>
 		</div>
@@ -170,5 +178,4 @@
 		padding-bottom: 3px;
 		white-space: nowrap;
 	}
-
 </style>

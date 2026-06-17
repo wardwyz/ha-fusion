@@ -17,13 +17,16 @@
 		clickOriginatedFromMenu,
 		connection,
 		youtubeAddon,
-		states
+		states,
+		history,
+		historyIndex
 	} from '$lib/Stores';
 	import { authentication } from '$lib/Socket';
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { modals, openModal } from 'svelte-modals';
 	import Theme from '$lib/Components/Theme.svelte';
+	import Loader from '$lib/Components/Loader.svelte';
 	import type { DoorbellItem } from '$lib/Types';
 
 	/**
@@ -103,17 +106,24 @@
 
 	$: if ($modals.length === 0) processDoorbellQueue();
 
-	$configuration = data?.configuration;
-	$dashboard = data?.dashboard;
-	$translation = data?.translations;
-	$selectedLanguage = data?.configuration?.locale || 'en';
-	$customJs = data?.configuration?.custom_js;
-	$customCss = data?.configuration?.custom_css;
-	$youtubeAddon = data?.configuration?.addons?.youtube;
-	$currentViewId = $dashboard?.views?.[0]?.id;
+	$: {
+		$configuration = data?.configuration;
+		$dashboard = data?.dashboard;
+		$translation = data?.translations;
+		$selectedLanguage = data?.configuration?.locale || 'en';
+		$customJs = data?.configuration?.custom_js;
+		$customCss = data?.configuration?.custom_css;
+		$youtubeAddon = data?.configuration?.addons?.youtube;
+		$currentViewId = data?.dashboard?.views?.[0]?.id;
+		// Reset undo history so the new profile starts clean
+		$history = [];
+		$historyIndex = 0;
+	}
 
-	const _motion = data?.configuration?.motion;
-	$motion = _motion === undefined || _motion === true ? $motion : 0;
+	$: {
+		const _motion = data?.configuration?.motion;
+		if (_motion !== undefined && _motion !== true) $motion = 0;
+	}
 
 	/**
 	 * Computes the current view.
@@ -128,16 +138,11 @@
 
 	/**
 	 * WebSocket, tries to reconnect if no previous connection has been made.
+	 * Variables declared here; connection is started in onMount (after reactive
+	 * blocks have set $configuration from data, so hassUrl is available).
 	 */
 	let isConnecting = false;
 	let retryInterval: ReturnType<typeof setInterval>;
-
-	if (browser) {
-		document.documentElement.lang = $selectedLanguage || 'en';
-
-		connect();
-		retryInterval = setInterval(connect, 3000);
-	}
 
 	async function connect() {
 		if (isConnecting) return;
@@ -156,11 +161,6 @@
 		}
 	}
 
-	/**
-	 * Reconnect if long-lived access token changes
-	 */
-	$: if ($configuration?.token) updateConnection();
-
 	function updateConnection() {
 		if (isConnecting || !browser) return;
 		clearInterval(retryInterval);
@@ -178,6 +178,15 @@
 		 */
 		const menuParam = new URLSearchParams(window.location.search).get('menu');
 		$disableMenuButton = menuParam === 'false';
+
+		/**
+		 * Start WebSocket connection here (not at top-level) so that the
+		 * reactive block has already assigned $configuration from data,
+		 * making hassUrl available when authentication() is called.
+		 */
+		document.documentElement.lang = $selectedLanguage || 'en';
+		connect();
+		retryInterval = setInterval(connect, 3000);
 
 		/**
 		 * Unregister service worker because it
@@ -268,6 +277,10 @@
 <!-- theme -->
 <Theme initial={data?.theme} />
 
+{#if !$states}
+	<Loader />
+{:else}
+
 <div
 	id="layout"
 	style:grid-template-columns="{$dashboard?.hide_sidebar || !$dashboard?.sidebar?.length
@@ -324,6 +337,8 @@
 		{/await}
 	{/if}
 </div>
+
+{/if}
 
 <style>
 	#layout {

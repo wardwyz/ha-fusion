@@ -258,7 +258,11 @@
 															transition:slide={{ duration: $motion, easing: expoOut }}
 														>
 															{#if subItem?.condition === 'state' && !subItem?.collapsed}
-																<StateCondition item={subItem} bind:items={item.conditions} {isItemTemplate} />
+																<StateCondition
+																	item={subItem}
+																	bind:items={item.conditions}
+																	{isItemTemplate}
+																/>
 															{:else if subItem?.condition === 'numeric_state' && !subItem?.collapsed}
 																<NumericCondition item={subItem} bind:items={item.conditions} />
 															{:else if subItem?.condition === 'screen' && !subItem?.collapsed}
