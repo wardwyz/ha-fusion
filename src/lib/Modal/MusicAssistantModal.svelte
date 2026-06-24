@@ -4,14 +4,7 @@
 	import Modal from '$lib/Modal/Index.svelte';
 	import Icon from '@iconify/svelte';
 	import Ripple from 'svelte-ripple';
-	import {
-		connectMA,
-		disconnectMA,
-		callMA,
-		maPlayers,
-		maQueues,
-		maQueueItems
-	} from '$lib/MusicAssistant';
+	import { callMA, maPlayers, maQueues, maQueueItems } from '$lib/MusicAssistant';
 	import type { MAPlayer, MAQueueItem, MAMediaItem } from '$lib/MusicAssistant';
 	import type { MusicAssistantItem } from '$lib/Types';
 
@@ -44,7 +37,6 @@
 	}
 
 	onMount(() => {
-		if (sel?.server_url && sel?.token) connectMA(sel.server_url, sel.token);
 		progressInterval = setInterval(() => {
 			if (isPlaying) displayElapsed += 1;
 		}, 1000);
@@ -53,7 +45,6 @@
 
 	onDestroy(() => {
 		clearInterval(progressInterval);
-		if (sel?.server_url) disconnectMA(sel.server_url);
 	});
 
 	// reset elapsed when track changes
@@ -70,8 +61,8 @@
 	// ── Player commands ──────────────────────────────────────────────────────
 
 	function cmd(command: string, data: Record<string, unknown> = {}) {
-		if (!sel?.server_url || !player) return;
-		callMA(sel.server_url, command, { player_id: player.player_id, ...data });
+		if (!player) return;
+		callMA(command, { player_id: player.player_id, ...data });
 	}
 
 	function seek(e: Event) {
@@ -88,15 +79,15 @@
 		const modes: Array<'off' | 'one' | 'all'> = ['off', 'one', 'all'];
 		const current = player?.repeat_mode ?? 'off';
 		const next = modes[(modes.indexOf(current) + 1) % modes.length];
-		if (!sel?.server_url || !queue) return;
-		callMA(sel.server_url, 'player_queues/repeat', { queue_id: queue.queue_id, repeat_mode: next });
+		if (!queue) return;
+		callMA('player_queues/repeat', { queue_id: queue.queue_id, repeat_mode: next });
 	}
 
 	// ── Queue ────────────────────────────────────────────────────────────────
 
 	async function loadQueueItems() {
-		if (!sel?.server_url || !queue) return;
-		const result = await callMA(sel.server_url, 'player_queues/items', {
+		if (!queue) return;
+		const result = await callMA('player_queues/items', {
 			queue_id: queue.queue_id,
 			limit: 100,
 			offset: 0
@@ -106,21 +97,21 @@
 	}
 
 	function clearQueue() {
-		if (!sel?.server_url || !queue) return;
-		callMA(sel.server_url, 'player_queues/clear', { queue_id: queue.queue_id });
+		if (!queue) return;
+		callMA('player_queues/clear', { queue_id: queue.queue_id });
 	}
 
 	function removeQueueItem(itemId: string) {
-		if (!sel?.server_url || !queue) return;
-		callMA(sel.server_url, 'player_queues/delete_item', {
+		if (!queue) return;
+		callMA('player_queues/delete_item', {
 			queue_id: queue.queue_id,
 			item_id: itemId
 		});
 	}
 
 	function playFromIndex(index: number) {
-		if (!sel?.server_url || !queue) return;
-		callMA(sel.server_url, 'player_queues/play_index', {
+		if (!queue) return;
+		callMA('player_queues/play_index', {
 			queue_id: queue.queue_id,
 			index
 		});
@@ -133,10 +124,9 @@
 	let browseLoading = false;
 
 	async function browseDir(path?: string) {
-		if (!sel?.server_url) return;
 		browseLoading = true;
 		try {
-			const result = await callMA(sel.server_url, 'music/browse', path ? { path } : {});
+			const result = await callMA('music/browse', path ? { path } : {});
 			browseItems = (result as MAMediaItem[]) ?? [];
 		} finally {
 			browseLoading = false;
@@ -177,10 +167,9 @@
 			return;
 		}
 		searchDebounce = setTimeout(async () => {
-			if (!sel?.server_url) return;
 			searchLoading = true;
 			try {
-				const result = await callMA(sel.server_url, 'music/search', {
+				const result = await callMA('music/search', {
 					search_query: searchQuery,
 					limit: 20
 				});
@@ -214,8 +203,8 @@
 	}
 
 	function playMedia(item: MAMediaItem, option: 'play' | 'add' | 'next') {
-		if (!sel?.server_url || !queue) return;
-		callMA(sel.server_url, 'player_queues/play_media', {
+		if (!queue) return;
+		callMA('player_queues/play_media', {
 			queue_id: queue.queue_id,
 			item: { uri: item.uri },
 			option
@@ -226,24 +215,22 @@
 	// ── Players tab ──────────────────────────────────────────────────────────
 
 	function setPlayerVolume(playerId: string, v: number) {
-		if (!sel?.server_url) return;
-		callMA(sel.server_url, 'players/cmd/volume_set', {
+		callMA('players/cmd/volume_set', {
 			player_id: playerId,
 			volume_level: v
 		});
 	}
 
 	function groupPlayer(targetId: string) {
-		if (!sel?.server_url || !player) return;
-		callMA(sel.server_url, 'players/cmd/group', {
+		if (!player) return;
+		callMA('players/cmd/group', {
 			player_id: player.player_id,
 			target_player: targetId
 		});
 	}
 
 	function ungroupPlayer(targetId: string) {
-		if (!sel?.server_url) return;
-		callMA(sel.server_url, 'players/cmd/ungroup', { player_id: targetId });
+		callMA('players/cmd/ungroup', { player_id: targetId });
 	}
 
 	function onPlayerVolumeChange(playerId: string, e: Event) {
@@ -347,7 +334,7 @@
 					<button
 						class="toggle"
 						class:active={player?.shuffle}
-						on:click={() => { if (sel?.server_url && queue) callMA(sel.server_url, 'player_queues/shuffle', { queue_id: queue.queue_id, shuffle_enabled: !player?.shuffle }); }}
+						on:click={() => { if (queue) callMA('player_queues/shuffle', { queue_id: queue.queue_id, shuffle_enabled: !player?.shuffle }); }}
 						use:Ripple={$ripple}
 					>
 						<Icon icon="solar:shuffle-bold" height="none" />

@@ -47,12 +47,26 @@
 
 			const addons = {
 				...(form.youtube && { youtube: form.youtube === 'true' }),
-				...(form.maptiler && { maptiler: { apikey: form.maptiler } })
+				...(form.maptiler && { maptiler: { apikey: form.maptiler } }),
+				...(form.ma_server_url && form.ma_token && {
+					music_assistant: {
+						server_url: form.ma_server_url as string,
+						token: form.ma_token as string
+					}
+				})
 			};
 
 			if (typeof form.maptiler === 'string') {
 				$configuration.addons = $configuration.addons || {};
 				$configuration.addons.maptiler = { apikey: form.maptiler };
+			}
+
+			if (typeof form.ma_server_url === 'string' && typeof form.ma_token === 'string') {
+				$configuration.addons = $configuration.addons || {};
+				$configuration.addons.music_assistant = {
+					server_url: form.ma_server_url,
+					token: form.ma_token
+				};
 			}
 
 			const token = form.token || undefined;

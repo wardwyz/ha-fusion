@@ -76,6 +76,7 @@ interface ConnectionEntry {
 }
 
 const connections = new Map<string, ConnectionEntry>();
+let activeUrl: string | null = null;
 
 function toWsUrl(url: string): string {
 	const u = new URL(url.endsWith('/') ? url.slice(0, -1) : url);
@@ -174,7 +175,10 @@ export function connectMA(url: string, token: string): void {
 
 	ws.onclose = () => {
 		connections.delete(url);
+		if (activeUrl === url) activeUrl = null;
 	};
+
+	activeUrl = url;
 }
 
 export function disconnectMA(url: string): void {
@@ -184,12 +188,14 @@ export function disconnectMA(url: string): void {
 	if (entry.refCount <= 0) {
 		entry.ws.close();
 		connections.delete(url);
+		if (activeUrl === url) activeUrl = null;
 	}
 }
 
-export function callMA(url: string, command: string, data: Record<string, unknown> = {}): Promise<unknown> {
-	const entry = connections.get(url);
-	if (!entry) return Promise.reject(new Error('Not connected to ' + url));
+export function callMA(command: string, data: Record<string, unknown> = {}): Promise<unknown> {
+	if (!activeUrl) return Promise.reject(new Error('MA not connected'));
+	const entry = connections.get(activeUrl);
+	if (!entry) return Promise.reject(new Error('MA not connected'));
 	return callOn(entry, command, data);
 }
 

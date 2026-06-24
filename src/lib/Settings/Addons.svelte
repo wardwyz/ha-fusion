@@ -53,6 +53,30 @@
 	</div>
 </div>
 
+<div class="item ma-item">
+	<h3>Music Assistant</h3>
+	<div class="ma-fields">
+		<input
+			class="input"
+			type="url"
+			name="ma_server_url"
+			placeholder="http://192.168.1.10:8095"
+			autocomplete="off"
+			value={data?.configuration?.addons?.music_assistant?.server_url || ''}
+		/>
+		<input
+			class="input"
+			type="password"
+			name="ma_token"
+			placeholder={$lang('api_token') || 'API Token'}
+			autocomplete="new-password"
+			value={data?.configuration?.addons?.music_assistant?.token || ''}
+			on:focus={handleFocus}
+			on:blur={handleFocus}
+		/>
+	</div>
+</div>
+
 <style>
 	.grid {
 		display: grid;
@@ -106,6 +130,20 @@
 		font-size: 1rem;
 		font-weight: 500;
 		pointer-events: none;
+	}
+
+	.ma-item {
+		grid-column: 1 / -1;
+	}
+
+	.ma-fields {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.ma-fields .input {
+		flex: 1;
+		min-width: 0;
 	}
 
 	p {

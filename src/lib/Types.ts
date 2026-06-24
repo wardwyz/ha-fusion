@@ -24,6 +24,10 @@ export interface Addons {
 	maptiler?: {
 		apikey: string;
 	};
+	music_assistant?: {
+		server_url: string;
+		token: string;
+	};
 }
 
 export interface Dashboard {
@@ -457,7 +461,5 @@ export interface MusicAssistantItem {
 	id: number;
 	name?: string;
 	icon?: string;
-	server_url?: string;
-	token?: string;
 	player_id?: string;
 }

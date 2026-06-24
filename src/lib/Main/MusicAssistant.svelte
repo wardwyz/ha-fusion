@@ -1,28 +1,18 @@
 <script lang="ts">
 	import { editMode, lang, ripple } from '$lib/Stores';
 	import { openModal } from 'svelte-modals';
-	import { onMount, onDestroy } from 'svelte';
 	import Icon from '@iconify/svelte';
 	import Ripple from 'svelte-ripple';
-	import { connectMA, disconnectMA, maPlayers } from '$lib/MusicAssistant';
+	import { maPlayers } from '$lib/MusicAssistant';
 	import type { MusicAssistantItem } from '$lib/Types';
 
 	export let sel: MusicAssistantItem;
 
-	$: serverUrl = sel?.server_url ?? '';
 	$: player = $maPlayers.find((p) => p.player_id === sel?.player_id);
 	$: currentItem = player?.current_item;
 	$: isPlaying = player?.state === 'playing';
 	$: displayName = sel?.name || 'Music Assistant';
 	$: displayIcon = sel?.icon || 'solar:music-note-2-bold-duotone';
-
-	onMount(() => {
-		if (serverUrl && sel?.token) connectMA(serverUrl, sel.token);
-	});
-
-	onDestroy(() => {
-		if (serverUrl) disconnectMA(serverUrl);
-	});
 
 	function handleClick() {
 		if ($editMode) {
@@ -34,12 +24,12 @@
 </script>
 
 <button on:click={handleClick} use:Ripple={$ripple}>
-	{#if !serverUrl}
+	{#if !sel?.player_id}
 		<div class="state-icon">
 			<Icon icon={displayIcon} height="none" />
 		</div>
 		<span class="label">{displayName}</span>
-		<span class="sublabel">{$lang('server_url') || 'Server URL'}</span>
+		<span class="sublabel">{$lang('select_player') || 'Select player'}</span>
 	{:else if !player}
 		<div class="state-icon">
 			<Icon icon={displayIcon} height="none" />

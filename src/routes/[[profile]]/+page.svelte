@@ -22,6 +22,7 @@
 		historyIndex
 	} from '$lib/Stores';
 	import { authentication } from '$lib/Socket';
+	import { connectMA, disconnectMA } from '$lib/MusicAssistant';
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { modals, openModal } from 'svelte-modals';
@@ -161,7 +162,11 @@
 		}
 	}
 
-	onDestroy(() => clearInterval(retryInterval));
+	onDestroy(() => {
+		clearInterval(retryInterval);
+		const maConfig = $configuration?.addons?.music_assistant;
+		if (maConfig?.server_url) disconnectMA(maConfig.server_url);
+	});
 
 	onMount(async () => {
 		/**
@@ -179,6 +184,11 @@
 		document.documentElement.lang = $selectedLanguage || 'en';
 		connect();
 		retryInterval = setInterval(connect, 3000);
+
+		const maConfig = data?.configuration?.addons?.music_assistant;
+		if (maConfig?.server_url && maConfig?.token) {
+			connectMA(maConfig.server_url, maConfig.token);
+		}
 
 		/**
 		 * Unregister service worker because it

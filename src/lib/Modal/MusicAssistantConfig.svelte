@@ -1,14 +1,11 @@
 <script lang="ts">
-	import { dashboard, lang, record, ripple } from '$lib/Stores';
-	import { closeModal } from 'svelte-modals';
+	import { dashboard, lang, record, ripple, configuration } from '$lib/Stores';
 	import { onDestroy } from 'svelte';
 	import Modal from '$lib/Modal/Index.svelte';
 	import ConfigButtons from '$lib/Modal/ConfigButtons.svelte';
-	import InputClear from '$lib/Components/InputClear.svelte';
 	import Icon from '@iconify/svelte';
 	import Ripple from 'svelte-ripple';
-	import { validateMA } from '$lib/MusicAssistant';
-	import type { MAPlayer } from '$lib/MusicAssistant';
+	import { maPlayers } from '$lib/MusicAssistant';
 	import type { MusicAssistantItem } from '$lib/Types';
 	import { updateObj } from '$lib/Utils';
 
@@ -20,37 +17,9 @@
 		$dashboard = $dashboard;
 	}
 
-	let serverUrl: string = sel?.server_url ?? '';
-	let token: string = sel?.token ?? '';
-	let playerId: string | undefined = sel?.player_id;
-
-	let connecting = false;
-	let connectionStatus: 'idle' | 'ok' | 'fail' = 'idle';
-	let connectionError = '';
-	let availablePlayers: MAPlayer[] = [];
-
-	async function handleConnect() {
-		const trimmedUrl = serverUrl.trim();
-		const trimmedToken = token.trim();
-		if (!trimmedUrl || !trimmedToken) return;
-		connecting = true;
-		connectionStatus = 'idle';
-		connectionError = '';
-		try {
-			availablePlayers = await validateMA(trimmedUrl, trimmedToken);
-			connectionStatus = 'ok';
-			set('server_url', trimmedUrl);
-			set('token', trimmedToken);
-		} catch (e: unknown) {
-			connectionStatus = 'fail';
-			connectionError = e instanceof Error ? e.message : String(e);
-		} finally {
-			connecting = false;
-		}
-	}
+	$: maConfigured = !!($configuration?.addons?.music_assistant?.server_url);
 
 	function selectPlayer(id: string) {
-		playerId = id;
 		set('player_id', id);
 	}
 
@@ -63,104 +32,32 @@
 
 		<!-- name -->
 		<h2>{$lang('name')}</h2>
-		<InputClear
-			condition={sel?.name}
-			on:clear={() => set('name')}
-			let:padding
-		>
-			<input
-				class="input"
-				type="text"
-				value={sel?.name ?? ''}
-				on:change={(e) => set('name', e)}
-				style:padding
-				autocomplete="off"
-				spellcheck="false"
-			/>
-		</InputClear>
+		<input
+			class="input"
+			type="text"
+			value={sel?.name ?? ''}
+			on:change={(e) => set('name', e)}
+			autocomplete="off"
+			spellcheck="false"
+		/>
 
-		<!-- API token -->
-		<h2>{$lang('api_token') || 'API Token'}</h2>
-		<InputClear
-			condition={token}
-			on:clear={() => {
-				token = '';
-				connectionStatus = 'idle';
-				availablePlayers = [];
-				set('token');
-			}}
-			let:padding
-		>
-			<input
-				class="input"
-				type="password"
-				placeholder="MA API token"
-				bind:value={token}
-				style:padding
-				autocomplete="off"
-				spellcheck="false"
-				on:keydown={(e) => e.key === 'Enter' && handleConnect()}
-			/>
-		</InputClear>
-
-		<!-- server URL -->
-		<h2>{$lang('server_url') || 'Server URL'}</h2>
-		<div class="url-row">
-			<InputClear
-				condition={serverUrl}
-				on:clear={() => {
-					serverUrl = '';
-					connectionStatus = 'idle';
-					availablePlayers = [];
-					set('server_url');
-				}}
-				let:padding
-			>
-				<input
-					class="input"
-					type="url"
-					placeholder="http://192.168.1.10:8095"
-					bind:value={serverUrl}
-					style:padding
-					autocomplete="off"
-					spellcheck="false"
-					on:keydown={(e) => e.key === 'Enter' && handleConnect()}
-				/>
-			</InputClear>
-			<button
-				class="action"
-				disabled={connecting || !serverUrl.trim() || !token.trim()}
-				on:click={handleConnect}
-				use:Ripple={$ripple}
-			>
-				{#if connecting}
-					<Icon icon="svg-spinners:ring-resize" height="none" />
-				{:else}
-					{$lang('connect') || 'Connect'}
-				{/if}
-			</button>
-		</div>
-
-		{#if connectionStatus === 'ok'}
-			<p class="conn-status ok">
-				<Icon icon="mdi:check-circle" height="none" />
-				{$lang('connected') || 'Connected'}
+		{#if !maConfigured}
+			<p class="notice">
+				<Icon icon="mdi:information-outline" height="none" />
+				{$lang('ma_configure_in_settings') || 'Configure Music Assistant in Settings → Addons'}
 			</p>
-		{:else if connectionStatus === 'fail'}
-			<p class="conn-status fail">
-				<Icon icon="mdi:alert-circle" height="none" />
-				{$lang('connection_failed') || 'Connection failed'} — {connectionError}
+		{:else if $maPlayers.length === 0}
+			<p class="notice loading">
+				<Icon icon="svg-spinners:ring-resize" height="none" />
+				{$lang('connecting') || 'Connecting…'}
 			</p>
-		{/if}
-
-		<!-- player selector -->
-		{#if availablePlayers.length > 0}
+		{:else}
 			<h2>{$lang('players') || 'Players'}</h2>
 			<div class="player-list">
-				{#each availablePlayers as p (p.player_id)}
+				{#each $maPlayers as p (p.player_id)}
 					<button
 						class="player-option"
-						class:selected={playerId === p.player_id}
+						class:selected={sel?.player_id === p.player_id}
 						on:click={() => selectPlayer(p.player_id)}
 						use:Ripple={$ripple}
 					>
@@ -168,7 +65,7 @@
 							<Icon icon="solar:music-note-2-bold-duotone" height="none" />
 						</figure>
 						<span class="player-name">{p.name}</span>
-						{#if playerId === p.player_id}
+						{#if sel?.player_id === p.player_id}
 							<figure class="check">
 								<Icon icon="mdi:check" height="none" />
 							</figure>
@@ -183,37 +80,19 @@
 {/if}
 
 <style>
-	.url-row {
-		display: flex;
-		gap: 0.5rem;
-		align-items: center;
-	}
-
-	.url-row :global(.input-clear-container) {
-		flex: 1;
-		min-width: 0;
-	}
-
-	.conn-status {
+	.notice {
 		display: flex;
 		align-items: center;
 		gap: 0.4rem;
 		font-size: 0.85rem;
+		opacity: 0.7;
 		margin: 0.5rem 0 0;
 		padding: 0;
 	}
 
-	.conn-status :global(svg) {
+	.notice :global(svg) {
 		width: 1.1rem;
 		flex-shrink: 0;
-	}
-
-	.ok {
-		color: #4caf50;
-	}
-
-	.fail {
-		color: #f44336;
 	}
 
 	.player-list {
