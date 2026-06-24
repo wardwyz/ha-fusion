@@ -352,7 +352,7 @@
 						<Icon icon="solar:shuffle-bold" height="none" />
 						{$lang('shuffle') || 'Shuffle'}
 					</button>
-					<button class="toggle" class:active={player?.repeat_mode !== 'off'} on:click={cycleRepeat} use:Ripple={$ripple}>
+					<button class="toggle" class:active={(player?.repeat_mode ?? 'off') !== 'off'} on:click={cycleRepeat} use:Ripple={$ripple}>
 						<Icon icon={player?.repeat_mode === 'one' ? 'solar:repeat-one-bold' : 'solar:repeat-bold'} height="none" />
 						{$lang('repeat') || 'Repeat'}{player?.repeat_mode !== 'off' ? ` (${player?.repeat_mode})` : ''}
 					</button>
@@ -386,7 +386,7 @@
 							<span class="q-title">{item.name}</span>
 							<span class="q-artist">{item.artists?.[0]?.name ?? ''}</span>
 						</div>
-						<span class="q-dur">{formatTime(item.duration)}</span>
+						<span class="q-dur">{formatTime(item.duration ?? 0)}</span>
 						<div class="q-actions">
 							<button class="icon-btn" title="Play" on:click={() => playFromIndex(i)} use:Ripple={$ripple}>
 								<Icon icon="solar:play-bold" height="none" />
