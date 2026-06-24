@@ -88,6 +88,7 @@ export interface ViewItem {
 	sections?: any[];
 	is_default?: boolean;
 	default_timeout?: number;
+	iframe_url?: string;
 }
 
 export interface EmptyItem {
