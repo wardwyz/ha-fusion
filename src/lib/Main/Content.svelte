@@ -8,6 +8,7 @@
 	import Empty from '$lib/Main/Empty.svelte';
 	import CustomPanel from '$lib/Main/CustomPanel.svelte';
 	import Doorbell from '$lib/Main/Doorbell.svelte';
+	import MusicAssistant from '$lib/Main/MusicAssistant.svelte';
 
 	export let item: any;
 	export let sectionName: string | undefined = undefined;
@@ -35,6 +36,8 @@
 	<CustomPanel sel={item} />
 {:else if item?.type === 'doorbell'}
 	<Doorbell sel={item} />
+{:else if item?.type === 'music_assistant'}
+	<MusicAssistant sel={item} />
 {:else}
 	<!-- if types are changed internally, don't break ui -->
 	<Configure sel={{ id: item?.id }} />
