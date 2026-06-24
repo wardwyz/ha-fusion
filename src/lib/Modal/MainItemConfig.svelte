@@ -99,6 +99,11 @@
 			id: 'doorbell',
 			type: $lang('doorbell') || 'Doorbell',
 			preview_icon: 'mdi:doorbell'
+		},
+		{
+			id: 'music_assistant',
+			type: $lang('music_assistant') || 'Music Assistant',
+			preview_icon: 'solar:music-note-2-bold-duotone'
 		}
 	];
 
@@ -148,6 +153,9 @@
 				break;
 			case 'doorbell':
 				openModal(() => import('$lib/Modal/DoorbellConfig.svelte'), { sel });
+				break;
+			case 'music_assistant':
+				openModal(() => import('$lib/Modal/MusicAssistantConfig.svelte'), { sel });
 				break;
 			default:
 				openModal(() => import('$lib/Modal/MainItemConfig.svelte'), { sel });
