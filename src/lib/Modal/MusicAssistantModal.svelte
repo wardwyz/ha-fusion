@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { lang, motion, ripple } from '$lib/Stores';
-	import { closeModal } from 'svelte-modals';
+	import { lang, ripple } from '$lib/Stores';
 	import { onMount, onDestroy } from 'svelte';
 	import Modal from '$lib/Modal/Index.svelte';
 	import Icon from '@iconify/svelte';
@@ -467,9 +466,11 @@
 								<span class="m-title">{item.name}</span>
 								<span class="m-type">{item.media_type}</span>
 							</div>
-							<button class="icon-btn" on:click={showActionsHandler(item)} use:Ripple={$ripple}>
-								<Icon icon="solar:menu-dots-bold" height="none" />
-							</button>
+							{#if item.is_playable}
+								<button class="icon-btn" on:click={showActionsHandler(item)} use:Ripple={$ripple}>
+									<Icon icon="solar:menu-dots-bold" height="none" />
+								</button>
+							{/if}
 						</div>
 					{:else}
 						{#if searchQuery}
