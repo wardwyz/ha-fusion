@@ -26,7 +26,6 @@
 
 	function handleClick() {
 		if ($editMode) {
-			// @ts-expect-error - MusicAssistantConfig.svelte is created in Task 4
 			openModal(() => import('$lib/Modal/MusicAssistantConfig.svelte'), { sel });
 		} else {
 			// @ts-expect-error - MusicAssistantModal.svelte is created in Task 4
