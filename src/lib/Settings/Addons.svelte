@@ -2,6 +2,8 @@
 	import { lang, youtubeAddon } from '$lib/Stores';
 	import { openModal } from 'svelte-modals';
 	import Toggle from '$lib/Components/Toggle.svelte';
+	import Icon from '@iconify/svelte';
+	import { loginMA } from '$lib/MusicAssistant';
 
 	export let data: any;
 
@@ -11,6 +13,39 @@
 	}
 
 	const href = 'https://github.com/amedello/ha-fusion/blob/main/static/documentation/Map.md';
+
+	// MA login state — initialised from saved config
+	const savedMA = data?.configuration?.addons?.music_assistant;
+	let serverUrl: string = savedMA?.server_url || '';
+	let loginUsername: string = savedMA?.username || '';
+	let loginPassword = '';
+	let maToken: string = savedMA?.token || '';
+	let maUsername: string = savedMA?.username || '';
+	let connecting = false;
+	let loginError = '';
+
+	$: isLoggedIn = !!maToken;
+
+	async function handleConnect() {
+		loginError = '';
+		connecting = true;
+		try {
+			const result = await loginMA(serverUrl, loginUsername, loginPassword);
+			maToken = result.token;
+			maUsername = result.username;
+			loginPassword = '';
+		} catch (e: unknown) {
+			loginError = (e instanceof Error ? e.message : String(e)) || 'Errore di connessione';
+		} finally {
+			connecting = false;
+		}
+	}
+
+	function handleDisconnect() {
+		maToken = '';
+		maUsername = '';
+		loginPassword = '';
+	}
 </script>
 
 <h2>{$lang('addons')}</h2>
@@ -55,26 +90,70 @@
 
 <div class="item ma-item">
 	<h3>Music Assistant</h3>
-	<div class="ma-fields">
-		<input
-			class="input"
-			type="url"
-			name="ma_server_url"
-			placeholder="http://192.168.1.10:8095"
-			autocomplete="off"
-			value={data?.configuration?.addons?.music_assistant?.server_url || ''}
-		/>
-		<input
-			class="input"
-			type="password"
-			name="ma_token"
-			placeholder={$lang('api_token') || 'API Token'}
-			autocomplete="new-password"
-			value={data?.configuration?.addons?.music_assistant?.token || ''}
-			on:focus={handleFocus}
-			on:blur={handleFocus}
-		/>
-	</div>
+
+	{#if isLoggedIn}
+		<div class="ma-connected">
+			<span class="ma-conn-label">
+				<figure class="ma-conn-icon">
+					<Icon icon="mdi:check-circle-outline" height="none" />
+				</figure>
+				{$lang('connected_as') || 'Connesso come'} <strong>{maUsername}</strong>
+				<span class="ma-conn-url">{serverUrl}</span>
+			</span>
+			<button type="button" class="btn-action" on:click={handleDisconnect}>
+				{$lang('disconnect') || 'Disconnetti'}
+			</button>
+		</div>
+	{:else}
+		<div class="ma-login">
+			<input
+				class="input"
+				type="url"
+				bind:value={serverUrl}
+				placeholder="http://192.168.1.10:8095"
+				autocomplete="off"
+			/>
+			<input
+				class="input"
+				type="text"
+				bind:value={loginUsername}
+				placeholder={$lang('username') || 'Username'}
+				autocomplete="username"
+			/>
+			<div class="ma-pw-row">
+				<input
+					class="input"
+					type="password"
+					bind:value={loginPassword}
+					placeholder={$lang('password') || 'Password'}
+					autocomplete="current-password"
+					on:keydown={(e) => e.key === 'Enter' && !connecting && handleConnect()}
+				/>
+				<button
+					type="button"
+					class="btn-action"
+					on:click={handleConnect}
+					disabled={connecting || !serverUrl || !loginUsername || !loginPassword}
+				>
+					{#if connecting}
+						<figure class="spin-icon">
+							<Icon icon="svg-spinners:ring-resize" height="none" />
+						</figure>
+					{:else}
+						{$lang('connect') || 'Connetti'}
+					{/if}
+				</button>
+			</div>
+			{#if loginError}
+				<p class="ma-error">{loginError}</p>
+			{/if}
+		</div>
+	{/if}
+
+	<!-- hidden inputs for form save -->
+	<input type="hidden" name="ma_server_url" value={serverUrl} />
+	<input type="hidden" name="ma_token" value={maToken} />
+	<input type="hidden" name="ma_username" value={maUsername} />
 </div>
 
 <style>
@@ -136,14 +215,83 @@
 		grid-column: 1 / -1;
 	}
 
-	.ma-fields {
+	.ma-login {
 		display: flex;
-		gap: 0.5rem;
+		flex-direction: column;
+		gap: 0.4rem;
 	}
 
-	.ma-fields .input {
+	.ma-pw-row {
+		display: flex;
+		gap: 0.4rem;
+	}
+
+	.ma-pw-row .input {
 		flex: 1;
 		min-width: 0;
+	}
+
+	.ma-connected {
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
+		flex-wrap: wrap;
+	}
+
+	.ma-conn-label {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		flex: 1;
+		min-width: 0;
+		font-size: 0.9rem;
+		flex-wrap: wrap;
+	}
+
+	.ma-conn-icon {
+		width: 1.1rem;
+		flex-shrink: 0;
+		margin: 0;
+		color: #00dd17;
+	}
+
+	.ma-conn-url {
+		opacity: 0.5;
+		font-size: 0.8rem;
+		word-break: break-all;
+	}
+
+	.ma-error {
+		color: #f92626;
+		font-size: 0.8rem;
+		margin: 0.2rem 0 0;
+		padding: 0;
+	}
+
+	.btn-action {
+		border-radius: 0.4em;
+		border: none;
+		color: inherit;
+		padding: 0.55em 0.9em;
+		cursor: pointer;
+		font-family: inherit;
+		font-size: inherit;
+		background-color: var(--theme-button-background-color-off);
+		white-space: nowrap;
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	.btn-action:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	.spin-icon {
+		width: 1.1rem;
+		margin: 0;
 	}
 
 	p {

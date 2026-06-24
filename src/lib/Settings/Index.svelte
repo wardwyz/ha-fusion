@@ -45,13 +45,18 @@
 			const data = new FormData(formElement);
 			const form = formDataToObject(data);
 
+			const maUrl = form.ma_server_url as string | undefined;
+			const maToken = form.ma_token as string | undefined;
+			const maUser = form.ma_username as string | undefined;
+
 			const addons = {
 				...(form.youtube && { youtube: form.youtube === 'true' }),
 				...(form.maptiler && { maptiler: { apikey: form.maptiler } }),
-				...(form.ma_server_url && form.ma_token && {
+				...(maUrl && maToken && {
 					music_assistant: {
-						server_url: form.ma_server_url as string,
-						token: form.ma_token as string
+						server_url: maUrl,
+						token: maToken,
+						...(maUser && { username: maUser })
 					}
 				})
 			};
@@ -61,12 +66,15 @@
 				$configuration.addons.maptiler = { apikey: form.maptiler };
 			}
 
-			if (typeof form.ma_server_url === 'string' && typeof form.ma_token === 'string') {
-				$configuration.addons = $configuration.addons || {};
+			$configuration.addons = $configuration.addons || {};
+			if (maUrl && maToken) {
 				$configuration.addons.music_assistant = {
-					server_url: form.ma_server_url,
-					token: form.ma_token
+					server_url: maUrl,
+					token: maToken,
+					...(maUser && { username: maUser })
 				};
+			} else {
+				delete $configuration.addons.music_assistant;
 			}
 
 			const token = form.token || undefined;

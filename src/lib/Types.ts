@@ -27,6 +27,7 @@ export interface Addons {
 	music_assistant?: {
 		server_url: string;
 		token: string;
+		username?: string;
 	};
 }
 

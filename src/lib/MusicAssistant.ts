@@ -199,6 +199,69 @@ export function callMA(command: string, data: Record<string, unknown> = {}): Pro
 	return callOn(entry, command, data);
 }
 
+export interface MALoginResult {
+	token: string;
+	username: string;
+}
+
+/**
+ * Authenticates with username/password and returns a token.
+ * auth/login is unauthenticated, so no prior token is needed.
+ */
+export async function loginMA(url: string, username: string, password: string): Promise<MALoginResult> {
+	const wsUrl = toWsUrl(url);
+	return new Promise((resolve, reject) => {
+		let settled = false;
+		const ws = new WebSocket(wsUrl);
+		const timer = setTimeout(() => {
+			if (settled) return;
+			settled = true;
+			ws.close();
+			reject(new Error('timeout'));
+		}, 5000);
+
+		ws.onopen = () => {
+			ws.send(JSON.stringify({
+				message_id: '1',
+				command: 'auth/login',
+				args: { username, password, device_name: 'ha-fusion' }
+			}));
+		};
+		ws.onmessage = ({ data }) => {
+			if (settled) return;
+			const msg = JSON.parse(data as string) as Record<string, unknown>;
+			if (msg.message_id === undefined) return; // ignore server_info greeting
+			if (Number(msg.message_id) !== 1) return;
+			settled = true;
+			clearTimeout(timer);
+			ws.close();
+			if (msg.error_code) {
+				reject(new Error((msg.details ?? String(msg.error_code)) as string));
+				return;
+			}
+			const result = msg.result as { success: boolean; access_token?: string; error?: string; user?: { username: string } };
+			if (!result?.success || !result.access_token) {
+				reject(new Error(result?.error || 'Login failed'));
+				return;
+			}
+			resolve({ token: result.access_token, username: result.user?.username ?? username });
+		};
+		ws.onerror = () => {
+			if (settled) return;
+			settled = true;
+			clearTimeout(timer);
+			ws.close();
+			reject(new Error('connection_refused'));
+		};
+		ws.onclose = (e) => {
+			if (settled) return;
+			settled = true;
+			clearTimeout(timer);
+			reject(new Error(e.reason || `closed (${e.code})`));
+		};
+	});
+}
+
 /**
  * Opens a one-shot WebSocket connection to validate the URL + token and fetch available players.
  * Does NOT affect the main connection pool.
