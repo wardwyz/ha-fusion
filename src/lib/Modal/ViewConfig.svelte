@@ -16,6 +16,7 @@
 	let icon: string | undefined = sel?.icon;
 	let is_default: boolean = !!sel?.is_default;
 	let default_timeout: number | undefined = sel?.default_timeout;
+	let iframe_url: string | undefined = sel?.iframe_url;
 
 	const nameConst = name;
 
@@ -159,6 +160,28 @@
 				on:change={setDefaultTimeout}
 			/>
 		{/if}
+
+		<h2>{$lang('iframe_url')}</h2>
+
+		<InputClear
+			condition={iframe_url}
+			on:clear={() => {
+				iframe_url = undefined;
+				set('iframe_url');
+			}}
+			let:padding
+		>
+			<input
+				class="input"
+				type="url"
+				placeholder="https://..."
+				bind:value={iframe_url}
+				on:change={(event) => set('iframe_url', event)}
+				style:padding
+				autocomplete="off"
+				spellcheck="false"
+			/>
+		</InputClear>
 
 		<ConfigButtons {sel} />
 	</Modal>
