@@ -59,7 +59,6 @@ export interface MAMediaItem {
 export const maPlayers = writable<MAPlayer[]>([]);
 export const maQueues = writable<Record<string, MAQueue>>({});
 export const maQueueItems = writable<Record<string, MAQueueItem[]>>({});
-export const maConnected = writable<boolean>(false);
 
 // ── Internal connection map ──────────────────────────────────────────────────
 
@@ -111,7 +110,6 @@ export function connectMA(url: string): void {
 	connections.set(url, entry);
 
 	ws.onopen = () => {
-		maConnected.set(true);
 		Promise.all([
 			callOn(entry, 'players/get_players'),
 			callOn(entry, 'player_queues/get_player_queues')
@@ -120,7 +118,7 @@ export function connectMA(url: string): void {
 			const qmap: Record<string, MAQueue> = {};
 			for (const q of ((queues as MAQueue[]) ?? [])) qmap[q.queue_id] = q;
 			maQueues.set(qmap);
-		});
+		}).catch(() => {}); // ignore initial fetch errors; stores are populated by live events
 	};
 
 	ws.onmessage = ({ data }) => {
@@ -166,7 +164,6 @@ export function connectMA(url: string): void {
 
 	ws.onclose = () => {
 		connections.delete(url);
-		maConnected.set(false);
 	};
 }
 
@@ -207,9 +204,10 @@ export async function validateMA(url: string): Promise<MAPlayer[]> {
 		};
 		ws.onmessage = ({ data }) => {
 			if (settled) return;
+			const msg = JSON.parse(data as string) as Record<string, unknown>;
+			if (msg.message_id !== 1) return; // ignore unsolicited greeting
 			settled = true;
 			clearTimeout(timer);
-			const msg = JSON.parse(data as string) as Record<string, unknown>;
 			ws.close();
 			if (msg.error_code) reject(new Error((msg.details ?? msg.error_code) as string));
 			else resolve((msg.result as MAPlayer[]) ?? []);
