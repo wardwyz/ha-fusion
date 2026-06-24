@@ -451,3 +451,12 @@ export interface DoorbellItem {
 	trigger_timeout?: number;
 	stream?: boolean;
 }
+
+export interface MusicAssistantItem {
+	type: 'music_assistant';
+	id: number;
+	name?: string;
+	icon?: string;
+	server_url?: string;
+	player_id?: string;
+}
