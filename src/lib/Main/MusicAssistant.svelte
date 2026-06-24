@@ -17,7 +17,7 @@
 	$: displayIcon = sel?.icon || 'solar:music-note-2-bold-duotone';
 
 	onMount(() => {
-		if (serverUrl) connectMA(serverUrl);
+		if (serverUrl && sel?.token) connectMA(serverUrl, sel.token);
 	});
 
 	onDestroy(() => {

@@ -44,7 +44,7 @@
 	}
 
 	onMount(() => {
-		if (sel?.server_url) connectMA(sel.server_url);
+		if (sel?.server_url && sel?.token) connectMA(sel.server_url, sel.token);
 		progressInterval = setInterval(() => {
 			if (isPlaying) displayElapsed += 1;
 		}, 1000);

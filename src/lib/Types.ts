@@ -458,5 +458,6 @@ export interface MusicAssistantItem {
 	name?: string;
 	icon?: string;
 	server_url?: string;
+	token?: string;
 	player_id?: string;
 }

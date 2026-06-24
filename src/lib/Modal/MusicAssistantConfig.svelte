@@ -21,6 +21,7 @@
 	}
 
 	let serverUrl: string = sel?.server_url ?? '';
+	let token: string = sel?.token ?? '';
 	let playerId: string | undefined = sel?.player_id;
 
 	let connecting = false;
@@ -29,15 +30,17 @@
 	let availablePlayers: MAPlayer[] = [];
 
 	async function handleConnect() {
-		const trimmed = serverUrl.trim();
-		if (!trimmed) return;
+		const trimmedUrl = serverUrl.trim();
+		const trimmedToken = token.trim();
+		if (!trimmedUrl || !trimmedToken) return;
 		connecting = true;
 		connectionStatus = 'idle';
 		connectionError = '';
 		try {
-			availablePlayers = await validateMA(trimmed);
+			availablePlayers = await validateMA(trimmedUrl, trimmedToken);
 			connectionStatus = 'ok';
-			set('server_url', trimmed);
+			set('server_url', trimmedUrl);
+			set('token', trimmedToken);
 		} catch (e: unknown) {
 			connectionStatus = 'fail';
 			connectionError = e instanceof Error ? e.message : String(e);
@@ -76,6 +79,30 @@
 			/>
 		</InputClear>
 
+		<!-- API token -->
+		<h2>{$lang('api_token') || 'API Token'}</h2>
+		<InputClear
+			condition={token}
+			on:clear={() => {
+				token = '';
+				connectionStatus = 'idle';
+				availablePlayers = [];
+				set('token');
+			}}
+			let:padding
+		>
+			<input
+				class="input"
+				type="password"
+				placeholder="MA API token"
+				bind:value={token}
+				style:padding
+				autocomplete="off"
+				spellcheck="false"
+				on:keydown={(e) => e.key === 'Enter' && handleConnect()}
+			/>
+		</InputClear>
+
 		<!-- server URL -->
 		<h2>{$lang('server_url') || 'Server URL'}</h2>
 		<div class="url-row">
@@ -102,7 +129,7 @@
 			</InputClear>
 			<button
 				class="action"
-				disabled={connecting || !serverUrl.trim()}
+				disabled={connecting || !serverUrl.trim() || !token.trim()}
 				on:click={handleConnect}
 				use:Ripple={$ripple}
 			>

@@ -72,6 +72,7 @@ interface ConnectionEntry {
 	refCount: number;
 	msgId: number;
 	pending: Map<number, PendingCall>;
+	token: string;
 }
 
 const connections = new Map<string, ConnectionEntry>();
@@ -100,7 +101,7 @@ function callOn(entry: ConnectionEntry, command: string, data: Record<string, un
 
 // ── Public API ───────────────────────────────────────────────────────────────
 
-export function connectMA(url: string): void {
+export function connectMA(url: string, token: string): void {
 	const existing = connections.get(url);
 	if (existing) {
 		existing.refCount++;
@@ -109,19 +110,24 @@ export function connectMA(url: string): void {
 
 	const wsUrl = toWsUrl(url);
 	const ws = new WebSocket(wsUrl);
-	const entry: ConnectionEntry = { ws, refCount: 1, msgId: 0, pending: new Map() };
+	const entry: ConnectionEntry = { ws, refCount: 1, msgId: 0, pending: new Map(), token };
 	connections.set(url, entry);
 
 	ws.onopen = () => {
-		Promise.all([
-			callOn(entry, 'players/all'),
-			callOn(entry, 'player_queues/all')
-		]).then(([players, queues]) => {
-			maPlayers.set((players as MAPlayer[]) ?? []);
-			const qmap: Record<string, MAQueue> = {};
-			for (const q of ((queues as MAQueue[]) ?? [])) qmap[q.queue_id] = q;
-			maQueues.set(qmap);
-		}).catch(() => {}); // ignore initial fetch errors; stores are populated by live events
+		callOn(entry, 'auth', { token: entry.token })
+			.then(() =>
+				Promise.all([
+					callOn(entry, 'players/all'),
+					callOn(entry, 'player_queues/all')
+				])
+			)
+			.then(([players, queues]) => {
+				maPlayers.set((players as MAPlayer[]) ?? []);
+				const qmap: Record<string, MAQueue> = {};
+				for (const q of ((queues as MAQueue[]) ?? [])) qmap[q.queue_id] = q;
+				maQueues.set(qmap);
+			})
+			.catch(() => {}); // ignore errors; stores are populated by live events
 	};
 
 	ws.onmessage = ({ data }) => {
@@ -188,13 +194,14 @@ export function callMA(url: string, command: string, data: Record<string, unknow
 }
 
 /**
- * Opens a one-shot WebSocket connection to validate the URL and fetch available players.
+ * Opens a one-shot WebSocket connection to validate the URL + token and fetch available players.
  * Does NOT affect the main connection pool.
  */
-export async function validateMA(url: string): Promise<MAPlayer[]> {
+export async function validateMA(url: string, token: string): Promise<MAPlayer[]> {
 	const wsUrl = toWsUrl(url);
 	return new Promise((resolve, reject) => {
 		let settled = false;
+		let authed = false;
 		const ws = new WebSocket(wsUrl);
 		const timer = setTimeout(() => {
 			if (settled) return;
@@ -204,17 +211,32 @@ export async function validateMA(url: string): Promise<MAPlayer[]> {
 		}, 5000);
 
 		ws.onopen = () => {
-			ws.send(JSON.stringify({ message_id: '1', command: 'players/all' }));
+			ws.send(JSON.stringify({ message_id: '1', command: 'auth', args: { token } }));
 		};
 		ws.onmessage = ({ data }) => {
 			if (settled) return;
 			const msg = JSON.parse(data as string) as Record<string, unknown>;
-			if (Number(msg.message_id) !== 1) return; // ignore unsolicited greeting
-			settled = true;
-			clearTimeout(timer);
-			ws.close();
-			if (msg.error_code) reject(new Error((msg.details ?? msg.error_code) as string));
-			else resolve((msg.result as MAPlayer[]) ?? []);
+			if (msg.message_id === undefined) return; // ignore server_info greeting
+
+			if (!authed && Number(msg.message_id) === 1) {
+				if (msg.error_code) {
+					settled = true;
+					clearTimeout(timer);
+					ws.close();
+					reject(new Error((msg.details ?? msg.error_code) as string));
+					return;
+				}
+				authed = true;
+				ws.send(JSON.stringify({ message_id: '2', command: 'players/all' }));
+				return;
+			}
+			if (authed && Number(msg.message_id) === 2) {
+				settled = true;
+				clearTimeout(timer);
+				ws.close();
+				if (msg.error_code) reject(new Error((msg.details ?? msg.error_code) as string));
+				else resolve((msg.result as MAPlayer[]) ?? []);
+			}
 		};
 		ws.onerror = () => {
 			if (settled) return;
