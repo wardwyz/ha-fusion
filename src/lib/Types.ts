@@ -43,6 +43,7 @@ export interface Views {
 	isDndShadowItem?: boolean;
 	is_default?: boolean;
 	default_timeout?: number;
+	iframe_url?: string;
 }
 
 export interface Section {

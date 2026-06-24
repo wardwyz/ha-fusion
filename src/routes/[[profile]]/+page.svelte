@@ -295,7 +295,11 @@
 	{/await}
 
 	<!-- main -->
-	{#if view?.sections}
+	{#if view?.iframe_url}
+		{#await import('$lib/Main/IframeView.svelte') then IframeView}
+			<svelte:component this={IframeView.default} url={view.iframe_url} />
+		{/await}
+	{:else if view?.sections}
 		{#await import('$lib/Main/Index.svelte') then Main}
 			<svelte:component this={Main.default} {view} {altKeyPressed} />
 		{/await}
