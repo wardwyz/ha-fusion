@@ -145,6 +145,18 @@
 	let isConnecting = false;
 	let retryInterval: ReturnType<typeof setInterval>;
 
+	// Track active MA url so we can disconnect/reconnect on config change
+	let _maUrl = '';
+	$: if (browser) {
+		const maConfig = $configuration?.addons?.music_assistant;
+		const newUrl = maConfig?.server_url && maConfig?.token ? maConfig.server_url : '';
+		if (newUrl !== _maUrl) {
+			if (_maUrl) disconnectMA(_maUrl);
+			if (newUrl) connectMA(maConfig!.server_url, maConfig!.token);
+			_maUrl = newUrl;
+		}
+	}
+
 	async function connect() {
 		if (isConnecting) return;
 		isConnecting = true;
@@ -164,8 +176,7 @@
 
 	onDestroy(() => {
 		clearInterval(retryInterval);
-		const maConfig = $configuration?.addons?.music_assistant;
-		if (maConfig?.server_url) disconnectMA(maConfig.server_url);
+		if (_maUrl) disconnectMA(_maUrl);
 	});
 
 	onMount(async () => {
@@ -184,11 +195,6 @@
 		document.documentElement.lang = $selectedLanguage || 'en';
 		connect();
 		retryInterval = setInterval(connect, 3000);
-
-		const maConfig = data?.configuration?.addons?.music_assistant;
-		if (maConfig?.server_url && maConfig?.token) {
-			connectMA(maConfig.server_url, maConfig.token);
-		}
 
 		/**
 		 * Unregister service worker because it
