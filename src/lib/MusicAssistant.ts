@@ -79,7 +79,9 @@ const connections = new Map<string, ConnectionEntry>();
 let activeUrl: string | null = null;
 
 function toWsUrl(url: string): string {
-	const u = new URL(url.endsWith('/') ? url.slice(0, -1) : url);
+	let s = url.trim().replace(/\/$/, '');
+	if (!/^https?:\/\//i.test(s) && !/^wss?:\/\//i.test(s)) s = 'http://' + s;
+	const u = new URL(s);
 	u.protocol = u.protocol === 'https:' ? 'wss:' : 'ws:';
 	u.pathname = '/ws';
 	return u.toString();
