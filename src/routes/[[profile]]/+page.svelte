@@ -161,14 +161,6 @@
 		}
 	}
 
-	function updateConnection() {
-		if (isConnecting || !browser) return;
-		clearInterval(retryInterval);
-
-		connect();
-		retryInterval = setInterval(connect, 3000);
-	}
-
 	onDestroy(() => clearInterval(retryInterval));
 
 	onMount(async () => {
@@ -280,68 +272,66 @@
 {#if !$states}
 	<Loader />
 {:else}
-
-<div
-	id="layout"
-	style:grid-template-columns="{$dashboard?.hide_sidebar || !$dashboard?.sidebar?.length
-		? '0'
-		: $dashboard?.sidebarWidth || 350}px auto"
-	style:grid-template-rows={$showDrawer ? 'auto auto 1fr' : '0fr auto 1fr'}
-	style:transition="grid-template-rows {$motion}ms ease, grid-template-columns {$motion}ms ease"
->
-	<!-- nav -->
-	{#await import('$lib/Main/Views.svelte') then Views}
-		<svelte:component this={Views.default} {view} />
-	{/await}
-
-	<!-- main -->
-	{#if view?.iframe_url}
-		{#await import('$lib/Main/IframeView.svelte') then IframeView}
-			<svelte:component this={IframeView.default} url={view.iframe_url} />
+	<div
+		id="layout"
+		style:grid-template-columns="{$dashboard?.hide_sidebar || !$dashboard?.sidebar?.length
+			? '0'
+			: $dashboard?.sidebarWidth || 350}px auto"
+		style:grid-template-rows={$showDrawer ? 'auto auto 1fr' : '0fr auto 1fr'}
+		style:transition="grid-template-rows {$motion}ms ease, grid-template-columns {$motion}ms ease"
+	>
+		<!-- nav -->
+		{#await import('$lib/Main/Views.svelte') then Views}
+			<svelte:component this={Views.default} {view} />
 		{/await}
-	{:else if view?.sections}
-		{#await import('$lib/Main/Index.svelte') then Main}
-			<svelte:component this={Main.default} {view} {altKeyPressed} />
-		{/await}
-	{:else if $connection}
-		{#await import('$lib/Main/Intro.svelte') then Intro}
-			<svelte:component this={Intro.default} {data} />
-		{/await}
-	{/if}
 
-	<!-- aside -->
-	{#await import('$lib/Sidebar/Index.svelte') then Sidebar}
-		<svelte:component this={Sidebar.default} {altKeyPressed} />
-	{/await}
+		<!-- main -->
+		{#if view?.iframe_url}
+			{#await import('$lib/Main/IframeView.svelte') then IframeView}
+				<svelte:component this={IframeView.default} url={view.iframe_url} />
+			{/await}
+		{:else if view?.sections}
+			{#await import('$lib/Main/Index.svelte') then Main}
+				<svelte:component this={Main.default} {view} {altKeyPressed} />
+			{/await}
+		{:else if $connection}
+			{#await import('$lib/Main/Intro.svelte') then Intro}
+				<svelte:component this={Intro.default} {data} />
+			{/await}
+		{/if}
 
-	<!-- menu -->
-	{#if !$disableMenuButton}
-		{#await import('$lib/Drawer/MenuButton.svelte') then MenuButton}
-			<svelte:component this={MenuButton.default} {handleClick} />
+		<!-- aside -->
+		{#await import('$lib/Sidebar/Index.svelte') then Sidebar}
+			<svelte:component this={Sidebar.default} {altKeyPressed} />
 		{/await}
-	{/if}
 
-	<!-- header -->
-	{#if $showDrawer}
-		{#await import('$lib/Drawer/Index.svelte') then Drawer}
-			<svelte:component this={Drawer.default} {view} {data} {toggleDrawer} />
-		{/await}
-	{/if}
+		<!-- menu -->
+		{#if !$disableMenuButton}
+			{#await import('$lib/Drawer/MenuButton.svelte') then MenuButton}
+				<svelte:component this={MenuButton.default} {handleClick} />
+			{/await}
+		{/if}
 
-	<!-- module -->
-	{#if $customJs}
-		{#await import('$lib/Components/CustomJs.svelte') then CustomJs}
-			<svelte:component this={CustomJs.default} />
-		{/await}
-	{/if}
+		<!-- header -->
+		{#if $showDrawer}
+			{#await import('$lib/Drawer/Index.svelte') then Drawer}
+				<svelte:component this={Drawer.default} {view} {data} {toggleDrawer} />
+			{/await}
+		{/if}
 
-	{#if $customCss}
-		{#await import('$lib/Components/CustomCss.svelte') then CustomCss}
-			<svelte:component this={CustomCss.default} />
-		{/await}
-	{/if}
-</div>
+		<!-- module -->
+		{#if $customJs}
+			{#await import('$lib/Components/CustomJs.svelte') then CustomJs}
+				<svelte:component this={CustomJs.default} />
+			{/await}
+		{/if}
 
+		{#if $customCss}
+			{#await import('$lib/Components/CustomCss.svelte') then CustomCss}
+				<svelte:component this={CustomCss.default} />
+			{/await}
+		{/if}
+	</div>
 {/if}
 
 <style>
