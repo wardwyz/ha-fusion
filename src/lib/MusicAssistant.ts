@@ -219,5 +219,11 @@ export async function validateMA(url: string): Promise<MAPlayer[]> {
 			ws.close();
 			reject(new Error('connection_refused'));
 		};
+		ws.onclose = (e) => {
+			if (settled) return;
+			settled = true;
+			clearTimeout(timer);
+			reject(new Error(e.reason || `closed (${e.code})`));
+		};
 	});
 }
