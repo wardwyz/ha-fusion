@@ -91,7 +91,10 @@ function callOn(entry: ConnectionEntry, command: string, data: Record<string, un
 		}
 		const id = ++entry.msgId;
 		entry.pending.set(id, { resolve, reject });
-		entry.ws.send(JSON.stringify({ message_id: id, command, ...data }));
+		const payload = Object.keys(data).length
+			? { message_id: String(id), command, args: data }
+			: { message_id: String(id), command };
+		entry.ws.send(JSON.stringify(payload));
 	});
 }
 
@@ -111,8 +114,8 @@ export function connectMA(url: string): void {
 
 	ws.onopen = () => {
 		Promise.all([
-			callOn(entry, 'players/get_players'),
-			callOn(entry, 'player_queues/get_player_queues')
+			callOn(entry, 'players/all'),
+			callOn(entry, 'player_queues/all')
 		]).then(([players, queues]) => {
 			maPlayers.set((players as MAPlayer[]) ?? []);
 			const qmap: Record<string, MAQueue> = {};
@@ -153,7 +156,7 @@ export function connectMA(url: string): void {
 		} else if (event === 'queue_items/updated') {
 			const queue_id = (evData as { queue_id?: string }).queue_id;
 			if (queue_id) {
-				callOn(entry, 'player_queues/queue_items', { queue_id, limit: 100, offset: 0 }).then(
+				callOn(entry, 'player_queues/items', { queue_id, limit: 100, offset: 0 }).then(
 					(result) => {
 						const items = (result as { items?: MAQueueItem[] })?.items ?? (result as MAQueueItem[]) ?? [];
 						maQueueItems.update((m) => ({ ...m, [queue_id]: items }));
@@ -201,7 +204,7 @@ export async function validateMA(url: string): Promise<MAPlayer[]> {
 		}, 5000);
 
 		ws.onopen = () => {
-			ws.send(JSON.stringify({ message_id: 1, command: 'players/get_players' }));
+			ws.send(JSON.stringify({ message_id: '1', command: 'players/all' }));
 		};
 		ws.onmessage = ({ data }) => {
 			if (settled) return;

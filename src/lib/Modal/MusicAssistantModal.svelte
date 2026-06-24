@@ -88,14 +88,15 @@
 		const modes: Array<'off' | 'one' | 'all'> = ['off', 'one', 'all'];
 		const current = player?.repeat_mode ?? 'off';
 		const next = modes[(modes.indexOf(current) + 1) % modes.length];
-		cmd('players/cmd/repeat_set', { repeat_mode: next });
+		if (!sel?.server_url || !queue) return;
+		callMA(sel.server_url, 'player_queues/repeat', { queue_id: queue.queue_id, repeat_mode: next });
 	}
 
 	// ── Queue ────────────────────────────────────────────────────────────────
 
 	async function loadQueueItems() {
 		if (!sel?.server_url || !queue) return;
-		const result = await callMA(sel.server_url, 'player_queues/queue_items', {
+		const result = await callMA(sel.server_url, 'player_queues/items', {
 			queue_id: queue.queue_id,
 			limit: 100,
 			offset: 0
@@ -234,15 +235,15 @@
 
 	function groupPlayer(targetId: string) {
 		if (!sel?.server_url || !player) return;
-		callMA(sel.server_url, 'players/group', {
+		callMA(sel.server_url, 'players/cmd/group', {
 			player_id: player.player_id,
-			target_player_id: targetId
+			target_player: targetId
 		});
 	}
 
 	function ungroupPlayer(targetId: string) {
 		if (!sel?.server_url) return;
-		callMA(sel.server_url, 'players/ungroup', { player_id: targetId });
+		callMA(sel.server_url, 'players/cmd/ungroup', { player_id: targetId });
 	}
 
 	function onPlayerVolumeChange(playerId: string, e: Event) {
@@ -346,7 +347,7 @@
 					<button
 						class="toggle"
 						class:active={player?.shuffle}
-						on:click={() => cmd('players/cmd/set_shuffle', { enabled: !player?.shuffle })}
+						on:click={() => { if (sel?.server_url && queue) callMA(sel.server_url, 'player_queues/shuffle', { queue_id: queue.queue_id, shuffle_enabled: !player?.shuffle }); }}
 						use:Ripple={$ripple}
 					>
 						<Icon icon="solar:shuffle-bold" height="none" />
