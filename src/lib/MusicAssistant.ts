@@ -59,6 +59,7 @@ export interface MAMediaItem {
 export const maPlayers = writable<MAPlayer[]>([]);
 export const maQueues = writable<Record<string, MAQueue>>({});
 export const maQueueItems = writable<Record<string, MAQueueItem[]>>({});
+export const maConnected = writable<boolean>(false);
 
 // ── Internal connection map ──────────────────────────────────────────────────
 
@@ -110,6 +111,7 @@ export function connectMA(url: string): void {
 	connections.set(url, entry);
 
 	ws.onopen = () => {
+		maConnected.set(true);
 		Promise.all([
 			callOn(entry, 'players/get_players'),
 			callOn(entry, 'player_queues/get_player_queues')
@@ -164,6 +166,7 @@ export function connectMA(url: string): void {
 
 	ws.onclose = () => {
 		connections.delete(url);
+		maConnected.set(false);
 	};
 }
 
@@ -190,8 +193,11 @@ export function callMA(url: string, command: string, data: Record<string, unknow
 export async function validateMA(url: string): Promise<MAPlayer[]> {
 	const wsUrl = toWsUrl(url);
 	return new Promise((resolve, reject) => {
+		let settled = false;
 		const ws = new WebSocket(wsUrl);
 		const timer = setTimeout(() => {
+			if (settled) return;
+			settled = true;
 			ws.close();
 			reject(new Error('timeout'));
 		}, 5000);
@@ -200,6 +206,8 @@ export async function validateMA(url: string): Promise<MAPlayer[]> {
 			ws.send(JSON.stringify({ message_id: 1, command: 'players/get_players' }));
 		};
 		ws.onmessage = ({ data }) => {
+			if (settled) return;
+			settled = true;
 			clearTimeout(timer);
 			const msg = JSON.parse(data as string) as Record<string, unknown>;
 			ws.close();
@@ -207,6 +215,8 @@ export async function validateMA(url: string): Promise<MAPlayer[]> {
 			else resolve((msg.result as MAPlayer[]) ?? []);
 		};
 		ws.onerror = () => {
+			if (settled) return;
+			settled = true;
 			clearTimeout(timer);
 			ws.close();
 			reject(new Error('connection_refused'));
