@@ -124,11 +124,12 @@ export function connectMA(url: string): void {
 	ws.onmessage = ({ data }) => {
 		const msg = JSON.parse(data as string) as Record<string, unknown>;
 
-		// command response
+		// command response (message_id may arrive as string or number)
 		if (msg.message_id !== undefined) {
-			const cb = entry.pending.get(msg.message_id as number);
+			const id = Number(msg.message_id);
+			const cb = entry.pending.get(id);
 			if (cb) {
-				entry.pending.delete(msg.message_id as number);
+				entry.pending.delete(id);
 				if (msg.error_code) cb.reject(new Error((msg.details ?? msg.error_code) as string));
 				else cb.resolve(msg.result);
 			}
@@ -205,7 +206,7 @@ export async function validateMA(url: string): Promise<MAPlayer[]> {
 		ws.onmessage = ({ data }) => {
 			if (settled) return;
 			const msg = JSON.parse(data as string) as Record<string, unknown>;
-			if (msg.message_id !== 1) return; // ignore unsolicited greeting
+			if (Number(msg.message_id) !== 1) return; // ignore unsolicited greeting
 			settled = true;
 			clearTimeout(timer);
 			ws.close();
