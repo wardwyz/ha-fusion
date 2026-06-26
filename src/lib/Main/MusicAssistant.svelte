@@ -3,14 +3,15 @@
 	import { openModal } from 'svelte-modals';
 	import Icon from '@iconify/svelte';
 	import Ripple from 'svelte-ripple';
-	import { maPlayers, imageUrl } from '$lib/MusicAssistant';
+	import { maPlayers, maQueues, imageUrl } from '$lib/MusicAssistant';
 	import type { MusicAssistantItem } from '$lib/Types';
 
 	export let sel: MusicAssistantItem;
 
 	$: player = $maPlayers.find((p) => p.player_id === sel?.player_id);
-	$: currentItem = player?.current_item;
-	$: isPlaying = player?.state === 'playing';
+	$: queue = player ? $maQueues[player.player_id] : undefined;
+	$: currentItem = queue?.current_item;
+	$: isPlaying = queue?.state === 'playing';
 	$: maServerUrl = $configuration?.addons?.music_assistant?.server_url ?? '';
 	$: displayName = sel?.name || 'Music Assistant';
 	$: displayIcon = sel?.icon || 'solar:music-note-2-bold-duotone';
@@ -56,7 +57,7 @@
 			<Icon icon={displayIcon} height="none" />
 		</div>
 		<span class="label">{displayName}</span>
-		<span class="sublabel">{player.state}</span>
+		<span class="sublabel">{player.playback_state}</span>
 	{/if}
 </button>
 

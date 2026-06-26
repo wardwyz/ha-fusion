@@ -5,29 +5,27 @@ import { writable } from 'svelte/store';
 export interface MAPlayer {
 	player_id: string;
 	name: string;
-	state: 'playing' | 'paused' | 'stopped' | 'idle';
+	playback_state: 'playing' | 'paused' | 'idle';
 	volume_level: number;
-	shuffle: boolean;
-	repeat_mode: 'off' | 'one' | 'all';
-	current_item?: MAQueueItem | null;
-	elapsed_time: number;
-	elapsed_time_last_updated?: string;
-	group_childs: string[];
-	can_group_with: string[];
 	powered: boolean;
 	available: boolean;
+	group_members: string[];
+	can_group_with: string[];
+	active_source?: string | null;
 }
 
 export interface MAQueue {
 	queue_id: string;
 	active: boolean;
+	available: boolean;
+	state: 'playing' | 'paused' | 'idle';
 	shuffle_enabled: boolean;
 	repeat_mode: 'off' | 'one' | 'all';
-	stream_title?: string;
-	current_index?: number;
+	current_index?: number | null;
 	current_item?: MAQueueItem | null;
 	elapsed_time: number;
-	elapsed_time_last_updated: string;
+	elapsed_time_last_updated: number;
+	items: number;
 }
 
 export interface MAQueueItem {

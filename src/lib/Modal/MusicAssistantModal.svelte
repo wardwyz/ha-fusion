@@ -25,8 +25,8 @@
 	$: player = $maPlayers.find((p) => p.player_id === sel?.player_id) as MAPlayer | undefined;
 	$: queue = player ? $maQueues[player.player_id] : undefined;
 	$: queueItems = queue ? ($maQueueItems[queue.queue_id] ?? []) : [];
-	$: currentItem = queue?.current_item ?? player?.current_item;
-	$: isPlaying = player?.state === 'playing';
+	$: currentItem = queue?.current_item;
+	$: isPlaying = queue?.state === 'playing';
 
 	// ── Progress bar ─────────────────────────────────────────────────────────
 
@@ -61,26 +61,32 @@
 
 	// ── Player commands ──────────────────────────────────────────────────────
 
-	function cmd(command: string, data: Record<string, unknown> = {}) {
+	function queueCmd(command: string, data: Record<string, unknown> = {}) {
+		const queueId = queue?.queue_id ?? player?.player_id;
+		if (!queueId) return;
+		callMA(command, { queue_id: queueId, ...data }).catch(console.error);
+	}
+
+	function playerCmd(command: string, data: Record<string, unknown> = {}) {
 		if (!player) return;
-		callMA(command, { player_id: player.player_id, ...data });
+		callMA(command, { player_id: player.player_id, ...data }).catch(console.error);
 	}
 
 	function seek(e: Event) {
-		const v = parseFloat((e.target as HTMLInputElement).value);
-		cmd('players/cmd/seek', { position: v });
+		const v = Math.floor(parseFloat((e.target as HTMLInputElement).value));
+		playerCmd('players/cmd/seek', { position: v });
 	}
 
 	function setVolume(e: Event) {
-		const v = parseFloat((e.target as HTMLInputElement).value);
-		cmd('players/cmd/volume_set', { volume_level: v });
+		const v = Math.floor(parseFloat((e.target as HTMLInputElement).value));
+		playerCmd('players/cmd/volume_set', { volume_level: v });
 	}
 
 	function cycleRepeat() {
 		const queueId = queue?.queue_id ?? player?.player_id;
 		if (!queueId) return;
 		const modes: Array<'off' | 'one' | 'all'> = ['off', 'one', 'all'];
-		const current = player?.repeat_mode ?? 'off';
+		const current = queue?.repeat_mode ?? 'off';
 		const next = modes[(modes.indexOf(current) + 1) % modes.length];
 		callMA('player_queues/repeat', { queue_id: queueId, repeat_mode: next }).catch(console.error);
 	}
@@ -289,7 +295,7 @@
 						<Icon icon="solar:music-note-2-bold-duotone" height="none" />
 					</div>
 					<div class="track-info">
-						<span class="track-title">{player?.state ?? '—'}</span>
+						<span class="track-title">{queue?.state ?? player?.playback_state ?? '—'}</span>
 					</div>
 				{/if}
 
@@ -311,16 +317,16 @@
 
 				<!-- controls -->
 				<div class="controls">
-					<button class="ctrl" on:click={() => cmd('players/cmd/previous')} use:Ripple={$ripple}>
+					<button class="ctrl" on:click={() => queueCmd('player_queues/previous')} use:Ripple={$ripple}>
 						<Icon icon="solar:skip-previous-bold" height="none" />
 					</button>
-					<button class="ctrl play" on:click={() => cmd(isPlaying ? 'players/cmd/pause' : 'players/cmd/play')} use:Ripple={$ripple}>
+					<button class="ctrl play" on:click={() => queueCmd(isPlaying ? 'player_queues/pause' : 'player_queues/play')} use:Ripple={$ripple}>
 						<Icon icon={isPlaying ? 'solar:pause-bold' : 'solar:play-bold'} height="none" />
 					</button>
-					<button class="ctrl" on:click={() => cmd('players/cmd/next')} use:Ripple={$ripple}>
+					<button class="ctrl" on:click={() => queueCmd('player_queues/next')} use:Ripple={$ripple}>
 						<Icon icon="solar:skip-next-bold" height="none" />
 					</button>
-					<button class="ctrl" on:click={() => cmd('players/cmd/stop')} use:Ripple={$ripple}>
+					<button class="ctrl" on:click={() => queueCmd('player_queues/stop')} use:Ripple={$ripple}>
 						<Icon icon="solar:stop-bold" height="none" />
 					</button>
 				</div>
@@ -343,16 +349,16 @@
 				<div class="toggles">
 					<button
 						class="toggle"
-						class:active={player?.shuffle}
-						on:click={() => { const qid = queue?.queue_id ?? player?.player_id; if (qid) callMA('player_queues/shuffle', { queue_id: qid, shuffle_enabled: !player?.shuffle }).catch(console.error); }}
+						class:active={queue?.shuffle_enabled}
+						on:click={() => { const qid = queue?.queue_id ?? player?.player_id; if (qid) callMA('player_queues/shuffle', { queue_id: qid, shuffle_enabled: !queue?.shuffle_enabled }).catch(console.error); }}
 						use:Ripple={$ripple}
 					>
 						<Icon icon="solar:shuffle-bold" height="none" />
 						{$lang('shuffle') || 'Shuffle'}
 					</button>
-					<button class="toggle" class:active={(player?.repeat_mode ?? 'off') !== 'off'} on:click={cycleRepeat} use:Ripple={$ripple}>
-						<Icon icon={player?.repeat_mode === 'one' ? 'solar:repeat-one-bold' : 'solar:repeat-bold'} height="none" />
-						{$lang('repeat') || 'Repeat'}{player?.repeat_mode !== 'off' ? ` (${player?.repeat_mode})` : ''}
+					<button class="toggle" class:active={(queue?.repeat_mode ?? 'off') !== 'off'} on:click={cycleRepeat} use:Ripple={$ripple}>
+						<Icon icon={queue?.repeat_mode === 'one' ? 'solar:repeat-one-bold' : 'solar:repeat-bold'} height="none" />
+						{$lang('repeat') || 'Repeat'}{queue?.repeat_mode && queue?.repeat_mode !== 'off' ? ` (${queue?.repeat_mode})` : ''}
 					</button>
 				</div>
 			</div>
@@ -495,7 +501,7 @@
 					<div class="player-row">
 						<div class="p-info">
 							<span class="p-name">{p.name}</span>
-							<span class="p-state">{p.state}</span>
+							<span class="p-state">{p.playback_state}</span>
 						</div>
 						<div class="p-volume">
 							<Icon icon="solar:volume-small-bold" height="none" />
@@ -508,7 +514,7 @@
 							/>
 						</div>
 						{#if p.player_id !== sel?.player_id && player?.can_group_with?.includes(p.player_id)}
-							{#if player?.group_childs?.includes(p.player_id)}
+							{#if player?.group_members?.includes(p.player_id)}
 								<button class="action-sm" on:click={() => ungroupPlayer(p.player_id)} use:Ripple={$ripple}>
 									{$lang('ungroup') || 'Ungroup'}
 								</button>
