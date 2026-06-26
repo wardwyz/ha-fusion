@@ -143,9 +143,6 @@ export function connectMA(url: string, token: string): void {
 			.then(([players, queues]) => {
 				const playerList = (players as MAPlayer[]) ?? [];
 				const queueList = (queues as MAQueue[]) ?? [];
-				console.log('[MA] connected — players:', playerList.length, 'queues:', queueList.length);
-				if (playerList.length) console.log('[MA] first player keys:', Object.keys(playerList[0]));
-				if (queueList.length) console.log('[MA] first queue keys:', Object.keys(queueList[0]));
 				maPlayers.set(playerList);
 				const qmap: Record<string, MAQueue> = {};
 				for (const q of queueList) qmap[q.queue_id] = q;
@@ -172,7 +169,6 @@ export function connectMA(url: string, token: string): void {
 		// live events
 		const event = msg.event as string | undefined;
 		const evData = msg.data as Record<string, unknown> | undefined;
-		if (event) console.log('[MA] event:', event, evData ? Object.keys(evData) : null);
 		if (!event || !evData) return;
 
 		if (event === 'player_updated') {
