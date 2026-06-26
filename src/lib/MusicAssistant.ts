@@ -41,17 +41,25 @@ export interface MAQueueItem {
 	album?: { item_id: string; name: string; uri: string } | null;
 }
 
+export interface MAMediaItemImage {
+	type: string;
+	path: string;
+	provider: string;
+	remotely_accessible: boolean;
+	proxy_id?: string | null;
+}
+
 export interface MAMediaItem {
 	item_id: string;
 	uri: string;
 	name: string;
 	media_type: string;
-	image?: string | null;
+	// BrowseFolder uses 'path' as browse key; Media items use 'uri'
+	path?: string;
+	image?: MAMediaItemImage | null;
 	artists?: { item_id: string; name: string; uri: string }[];
 	album?: { item_id: string; name: string; uri: string } | null;
 	is_playable?: boolean;
-	browse_path?: string;
-	folder_name?: string;
 }
 
 // ── Stores ───────────────────────────────────────────────────────────────────

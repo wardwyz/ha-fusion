@@ -5,7 +5,8 @@
 	import Icon from '@iconify/svelte';
 	import Ripple from 'svelte-ripple';
 	import { callMA, maPlayers, maQueues, maQueueItems } from '$lib/MusicAssistant';
-	import type { MAPlayer, MAQueueItem, MAMediaItem } from '$lib/MusicAssistant';
+	import type { MAPlayer, MAQueueItem, MAMediaItem, MAMediaItemImage } from '$lib/MusicAssistant';
+	import { configuration } from '$lib/Stores';
 	import type { MusicAssistantItem } from '$lib/Types';
 
 	export let isOpen: boolean;
@@ -123,6 +124,15 @@
 	let browsePath: string[] = []; // breadcrumb stack of paths
 	let browseLoading = false;
 
+	$: maServerUrl = $configuration?.addons?.music_assistant?.server_url?.replace(/\/$/, '') ?? '';
+
+	function imageUrl(img: MAMediaItemImage | null | undefined): string | null {
+		if (!img) return null;
+		if (img.remotely_accessible) return img.path;
+		if (img.proxy_id) return `${maServerUrl}/imageproxy/${img.proxy_id}`;
+		return null;
+	}
+
 	async function browseDir(path?: string) {
 		browseLoading = true;
 		try {
@@ -134,8 +144,9 @@
 	}
 
 	async function browseInto(item: MAMediaItem) {
-		// Folders may not have browse_path set — fall back to uri
-		const path = item.browse_path || (!item.is_playable ? item.uri : null);
+		// BrowseFolder items have 'path' (correct browse key); other non-playable
+		// items fall back to uri
+		const path = item.path || (!item.is_playable ? item.uri : null);
 		if (!path) return;
 		browsePath = [...browsePath, path];
 		await browseDir(path);
@@ -402,20 +413,28 @@
 			{:else}
 				<div class="media-list">
 					{#each browseItems as item (item.uri)}
-						<div class="media-item">
-							{#if item.image}
-								<img class="m-art" src={item.image} alt={item.name} />
+						{@const imgSrc = imageUrl(item.image)}
+						<div
+							class="media-item"
+							class:clickable={!item.is_playable}
+							on:click={() => browseInto(item)}
+							role="button"
+							tabindex="0"
+							on:keydown={(e) => e.key === 'Enter' && browseInto(item)}
+						>
+							{#if imgSrc}
+								<img class="m-art" src={imgSrc} alt={item.name} />
 							{:else}
 								<div class="m-art-placeholder">
-									<Icon icon="solar:music-note-2-bold-duotone" height="none" />
+									<Icon icon={item.media_type === 'folder' ? 'solar:folder-bold' : 'solar:music-note-2-bold-duotone'} height="none" />
 								</div>
 							{/if}
-							<div class="m-info" on:click={() => browseInto(item)} role="button" tabindex="0" on:keydown={(e) => e.key === 'Enter' && browseInto(item)}>
+							<div class="m-info">
 								<span class="m-title">{item.name}</span>
 								<span class="m-type">{item.media_type}</span>
 							</div>
 							{#if item.is_playable}
-								<button class="icon-btn" on:click={showActionsHandler(item)} use:Ripple={$ripple}>
+								<button class="icon-btn" on:click|stopPropagation={showActionsHandler(item)} use:Ripple={$ripple}>
 									<Icon icon="solar:menu-dots-bold" height="none" />
 								</button>
 							{/if}
@@ -442,9 +461,10 @@
 			{:else}
 				<div class="media-list">
 					{#each searchResults as item (item.uri)}
+						{@const imgSrc = imageUrl(item.image)}
 						<div class="media-item">
-							{#if item.image}
-								<img class="m-art" src={item.image} alt={item.name} />
+							{#if imgSrc}
+								<img class="m-art" src={imgSrc} alt={item.name} />
 							{:else}
 								<div class="m-art-placeholder">
 									<Icon icon="solar:music-note-2-bold-duotone" height="none" />
@@ -859,6 +879,11 @@
 		padding: 0.4rem 0.5rem;
 		border-radius: 0.4rem;
 		transition: background-color 120ms;
+		cursor: default;
+	}
+
+	.media-item.clickable {
+		cursor: pointer;
 	}
 
 	.media-item:hover {
@@ -892,7 +917,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.1rem;
-		cursor: pointer;
 	}
 
 	.m-title {
