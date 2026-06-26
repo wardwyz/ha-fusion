@@ -171,13 +171,13 @@ export function connectMA(url: string, token: string): void {
 		const evData = msg.data as Record<string, unknown> | undefined;
 		if (!event || !evData) return;
 
-		if (event === 'player_updated') {
+		if (event === 'player_added' || event === 'player_updated') {
 			const player = evData as unknown as MAPlayer;
 			maPlayers.update((list) => {
 				const idx = list.findIndex((p) => p.player_id === player.player_id);
 				return idx >= 0 ? list.map((p, i) => (i === idx ? player : p)) : [...list, player];
 			});
-		} else if (event === 'queue_updated') {
+		} else if (event === 'queue_added' || event === 'queue_updated') {
 			const queue = evData as unknown as MAQueue;
 			maQueues.update((map) => ({ ...map, [queue.queue_id]: queue }));
 		} else if (event === 'queue_items_updated') {
