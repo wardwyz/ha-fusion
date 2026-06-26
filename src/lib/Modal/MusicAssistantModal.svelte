@@ -134,11 +134,11 @@
 	}
 
 	async function browseInto(item: MAMediaItem) {
-		if (!item.browse_path && !item.is_playable) return;
-		if (item.browse_path) {
-			browsePath = [...browsePath, item.browse_path];
-			await browseDir(item.browse_path);
-		}
+		// Folders may not have browse_path set — fall back to uri
+		const path = item.browse_path || (!item.is_playable ? item.uri : null);
+		if (!path) return;
+		browsePath = [...browsePath, path];
+		await browseDir(path);
 	}
 
 	async function browseBack() {
