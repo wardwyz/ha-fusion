@@ -560,6 +560,7 @@
 	.tabs {
 		display: flex;
 		gap: 0.2rem;
+		margin-top: 1.3rem;
 		margin-bottom: 1rem;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 		padding-bottom: 0.2rem;
