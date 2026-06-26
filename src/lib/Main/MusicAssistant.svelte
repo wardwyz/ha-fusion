@@ -53,8 +53,8 @@
 	tabindex="0"
 	on:keydown
 >
-	<!-- icon / album art -->
-	<div class="left">
+	<!-- left: icon / album art -->
+	<div class="col-icon">
 		<div
 			class="icon"
 			style:background-image={artSrc ? `url(${artSrc})` : 'none'}
@@ -66,8 +66,8 @@
 		</div>
 	</div>
 
-	<!-- right: name + state + controls -->
-	<div class="right">
+	<!-- center: name + state -->
+	<div class="col-text">
 		<span class="name">{currentItem?.name ?? displayName}</span>
 		<span class="state">
 			{#if !sel?.player_id}
@@ -78,26 +78,27 @@
 				{currentItem?.artists?.[0]?.name ?? player.playback_state}
 			{/if}
 		</span>
-
-		{#if player}
-			<div
-				class="controls"
-				on:click|stopPropagation
-				on:keydown|stopPropagation
-				role="presentation"
-			>
-				<button class="ctrl" on:click={prevTrack}>
-					<Icon icon="solar:skip-previous-bold" height="none" />
-				</button>
-				<button class="ctrl main" on:click={playPause}>
-					<Icon icon={isPlaying ? 'solar:pause-bold' : 'solar:play-bold'} height="none" />
-				</button>
-				<button class="ctrl" on:click={nextTrack}>
-					<Icon icon="solar:skip-next-bold" height="none" />
-				</button>
-			</div>
-		{/if}
 	</div>
+
+	<!-- right: controls -->
+	{#if player}
+		<div
+			class="col-controls"
+			on:click|stopPropagation
+			on:keydown|stopPropagation
+			role="presentation"
+		>
+			<button class="ctrl" on:click={prevTrack}>
+				<Icon icon="solar:skip-previous-bold" height="none" />
+			</button>
+			<button class="ctrl main" on:click={playPause}>
+				<Icon icon={isPlaying ? 'solar:pause-bold' : 'solar:play-bold'} height="none" />
+			</button>
+			<button class="ctrl" on:click={nextTrack}>
+				<Icon icon="solar:skip-next-bold" height="none" />
+			</button>
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -107,7 +108,8 @@
 		width: 100%;
 		height: 100%;
 		display: grid;
-		grid-template-columns: min-content auto;
+		grid-template-columns: min-content 1fr min-content;
+		align-items: center;
 		border-radius: 0.65rem;
 		margin: 0;
 		--container-padding: 0.72rem;
@@ -118,7 +120,8 @@
 		color: inherit;
 	}
 
-	.left {
+	/* icon */
+	.col-icon {
 		display: flex;
 		align-items: center;
 		padding: var(--container-padding);
@@ -142,13 +145,13 @@
 		padding: 0;
 	}
 
-	.right {
+	/* text */
+	.col-text {
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
 		overflow: hidden;
-		padding-right: var(--container-padding);
-		gap: 0.05rem;
+		padding-block: var(--container-padding);
 	}
 
 	.name {
@@ -168,13 +171,15 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		color: var(--theme-button-state-color-off);
+		margin-top: 1px;
 	}
 
-	.controls {
+	/* controls */
+	.col-controls {
 		display: flex;
 		align-items: center;
-		gap: 0.1rem;
-		margin-top: 0.2rem;
+		gap: 0;
+		padding-right: 0.35rem;
 	}
 
 	.ctrl {
@@ -182,9 +187,9 @@
 		border: none;
 		color: inherit;
 		cursor: pointer;
-		padding: 0.15rem;
-		width: 1.5rem;
-		height: 1.5rem;
+		padding: 0.25rem;
+		width: 1.7rem;
+		height: 1.7rem;
 		opacity: 0.5;
 		display: flex;
 		align-items: center;
@@ -194,8 +199,8 @@
 	}
 
 	.ctrl.main {
-		width: 1.8rem;
-		height: 1.8rem;
+		width: 2rem;
+		height: 2rem;
 		opacity: 0.85;
 	}
 
