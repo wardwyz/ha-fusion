@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { editMode, lang, ripple, configuration } from '$lib/Stores';
+	import { editMode, itemHeight, lang, ripple, configuration } from '$lib/Stores';
 	import { openModal } from 'svelte-modals';
 	import Icon from '@iconify/svelte';
 	import Ripple from 'svelte-ripple';
@@ -46,68 +46,58 @@
 
 <div
 	class="container"
-	class:has-player={!!player}
+	style:min-height="{$itemHeight}px"
 	on:click={handleClick}
 	use:Ripple={$ripple}
 	role="button"
 	tabindex="0"
 	on:keydown
 >
-	{#if player}
-		<!-- controls -->
+	<!-- icon / album art -->
+	<div class="left">
 		<div
-			class="controls"
-			on:click|stopPropagation
-			on:keydown|stopPropagation
-			role="presentation"
+			class="icon"
+			style:background-image={artSrc ? `url(${artSrc})` : 'none'}
+			class:has-art={!!artSrc}
 		>
-			<button class="ctrl" on:click={prevTrack}>
-				<Icon icon="solar:skip-previous-bold" height="none" />
-			</button>
-			<button class="ctrl main" on:click={playPause}>
-				<Icon icon={isPlaying ? 'solar:pause-bold' : 'solar:play-bold'} height="none" />
-			</button>
-			<button class="ctrl" on:click={nextTrack}>
-				<Icon icon="solar:skip-next-bold" height="none" />
-			</button>
-		</div>
-
-		<!-- text -->
-		<div class="info">
-			<span class="name">{currentItem?.name ?? displayName}</span>
-			<span class="state"
-				>{currentItem?.artists?.[0]?.name ?? player.playback_state}</span
-			>
-		</div>
-
-		<!-- art / icon -->
-		<div class="art-wrap">
-			{#if artSrc}
-				<img class="art" src={artSrc} alt={currentItem?.name} />
-			{:else}
-				<div class="icon">
-					<Icon icon={displayIcon} height="none" width="100%" />
-				</div>
+			{#if !artSrc}
+				<Icon icon={displayIcon} height="none" width="100%" />
 			{/if}
 		</div>
-	{:else}
-		<!-- no player: simple layout like Button -->
-		<div class="left">
-			<div class="icon">
-				<Icon icon={displayIcon} height="none" width="100%" />
+	</div>
+
+	<!-- right: name + state + controls -->
+	<div class="right">
+		<span class="name">{currentItem?.name ?? displayName}</span>
+		<span class="state">
+			{#if !sel?.player_id}
+				{$lang('select_player') || 'Select player'}
+			{:else if !player}
+				{$lang('player_not_found') || 'Player not found'}
+			{:else}
+				{currentItem?.artists?.[0]?.name ?? player.playback_state}
+			{/if}
+		</span>
+
+		{#if player}
+			<div
+				class="controls"
+				on:click|stopPropagation
+				on:keydown|stopPropagation
+				role="presentation"
+			>
+				<button class="ctrl" on:click={prevTrack}>
+					<Icon icon="solar:skip-previous-bold" height="none" />
+				</button>
+				<button class="ctrl main" on:click={playPause}>
+					<Icon icon={isPlaying ? 'solar:pause-bold' : 'solar:play-bold'} height="none" />
+				</button>
+				<button class="ctrl" on:click={nextTrack}>
+					<Icon icon="solar:skip-next-bold" height="none" />
+				</button>
 			</div>
-		</div>
-		<div class="info solo">
-			<span class="name">{displayName}</span>
-			<span class="state">
-				{#if !sel?.player_id}
-					{$lang('select_player') || 'Select player'}
-				{:else}
-					{$lang('player_not_found') || 'Player not found'}
-				{/if}
-			</span>
-		</div>
-	{/if}
+		{/if}
+	</div>
 </div>
 
 <style>
@@ -116,11 +106,10 @@
 		font-family: inherit;
 		width: 100%;
 		height: 100%;
-		border-radius: 0.65rem;
-		margin: 0;
 		display: grid;
 		grid-template-columns: min-content auto;
-		grid-template-areas: 'left right';
+		border-radius: 0.65rem;
+		margin: 0;
 		--container-padding: 0.72rem;
 		transform: translateZ(0);
 		overflow: hidden;
@@ -129,63 +118,37 @@
 		color: inherit;
 	}
 
-	.container.has-player {
-		grid-template-columns: min-content 1fr min-content;
-		grid-template-areas: 'controls info art';
-	}
-
-	/* ── no-player layout ── */
 	.left {
 		display: flex;
 		align-items: center;
 		padding: var(--container-padding);
 	}
 
-	/* ── player layout ── */
-	.controls {
-		grid-area: controls;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 0.05rem;
-		padding: 0.4rem 0.5rem;
-	}
-
-	.ctrl {
-		background: none;
-		border: none;
-		color: inherit;
-		cursor: pointer;
-		padding: 0.1rem;
-		width: 1.3rem;
-		opacity: 0.55;
+	.icon {
+		height: 2.4rem;
+		width: 2.4rem;
+		color: rgb(200 200 200);
+		background-color: rgba(0, 0, 0, 0.25);
+		border-radius: 50%;
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		padding: 0.5rem;
+		flex-shrink: 0;
+		background-size: cover;
+		background-position: center;
 	}
 
-	.ctrl.main {
-		width: 1.5rem;
-		opacity: 0.9;
+	.icon.has-art {
+		padding: 0;
 	}
 
-	.ctrl:hover {
-		opacity: 1;
-	}
-
-	/* ── text (shared) ── */
-	.info {
-		grid-area: info;
+	.right {
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
 		overflow: hidden;
-		padding-block: var(--container-padding);
-	}
-
-	.info.solo {
-		padding-inline-end: var(--container-padding);
+		padding-right: var(--container-padding);
+		gap: 0.05rem;
 	}
 
 	.name {
@@ -205,38 +168,42 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		color: var(--theme-button-state-color-off);
-		margin-top: 1px;
 	}
 
-	/* ── art / icon (right column) ── */
-	.art-wrap {
-		grid-area: art;
+	.controls {
 		display: flex;
 		align-items: center;
-		padding: var(--container-padding);
+		gap: 0.1rem;
+		margin-top: 0.2rem;
 	}
 
-	.art {
-		width: 2.4rem;
-		height: 2.4rem;
-		object-fit: cover;
+	.ctrl {
+		background: none;
+		border: none;
+		color: inherit;
+		cursor: pointer;
+		padding: 0.15rem;
+		width: 1.5rem;
+		height: 1.5rem;
+		opacity: 0.5;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		border-radius: 50%;
 		flex-shrink: 0;
 	}
 
-	.icon {
-		height: 2.4rem;
-		width: 2.4rem;
-		color: rgb(200 200 200);
-		background-color: rgba(0, 0, 0, 0.25);
-		border-radius: 50%;
-		display: flex;
-		align-items: center;
-		padding: 0.5rem;
-		flex-shrink: 0;
+	.ctrl.main {
+		width: 1.8rem;
+		height: 1.8rem;
+		opacity: 0.85;
 	}
 
-	/* Phone / tablet */
+	.ctrl:hover {
+		opacity: 1;
+		background-color: rgba(255, 255, 255, 0.1);
+	}
+
 	@media all and (max-width: 768px) {
 		.container {
 			width: calc(50vw - 1.45rem);
