@@ -217,7 +217,7 @@
 		if (!queue) return;
 		callMA('player_queues/play_media', {
 			queue_id: queue.queue_id,
-			item: { uri: item.uri },
+			media: item.uri,
 			option
 		});
 		actionMenu = null;
