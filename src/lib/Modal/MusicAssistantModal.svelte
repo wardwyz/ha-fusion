@@ -77,11 +77,12 @@
 	}
 
 	function cycleRepeat() {
+		const queueId = queue?.queue_id ?? player?.player_id;
+		if (!queueId) return;
 		const modes: Array<'off' | 'one' | 'all'> = ['off', 'one', 'all'];
 		const current = player?.repeat_mode ?? 'off';
 		const next = modes[(modes.indexOf(current) + 1) % modes.length];
-		if (!queue) return;
-		callMA('player_queues/repeat', { queue_id: queue.queue_id, repeat_mode: next });
+		callMA('player_queues/repeat', { queue_id: queueId, repeat_mode: next }).catch(console.error);
 	}
 
 	// ── Queue ────────────────────────────────────────────────────────────────
@@ -98,24 +99,27 @@
 	}
 
 	function clearQueue() {
-		if (!queue) return;
-		callMA('player_queues/clear', { queue_id: queue.queue_id });
+		const queueId = queue?.queue_id ?? player?.player_id;
+		if (!queueId) return;
+		callMA('player_queues/clear', { queue_id: queueId }).catch(console.error);
 	}
 
 	function removeQueueItem(itemId: string) {
-		if (!queue) return;
+		const queueId = queue?.queue_id ?? player?.player_id;
+		if (!queueId) return;
 		callMA('player_queues/delete_item', {
-			queue_id: queue.queue_id,
+			queue_id: queueId,
 			item_id: itemId
-		});
+		}).catch(console.error);
 	}
 
 	function playFromIndex(index: number) {
-		if (!queue) return;
+		const queueId = queue?.queue_id ?? player?.player_id;
+		if (!queueId) return;
 		callMA('player_queues/play_index', {
-			queue_id: queue.queue_id,
+			queue_id: queueId,
 			index
-		});
+		}).catch(console.error);
 	}
 
 	// ── Browse ───────────────────────────────────────────────────────────────
@@ -214,12 +218,13 @@
 	}
 
 	function playMedia(item: MAMediaItem, option: 'play' | 'add' | 'next') {
-		if (!queue) return;
+		const queueId = queue?.queue_id ?? player?.player_id;
+		if (!queueId) return;
 		callMA('player_queues/play_media', {
-			queue_id: queue.queue_id,
+			queue_id: queueId,
 			media: item.uri,
 			option
-		});
+		}).catch(console.error);
 		actionMenu = null;
 	}
 
@@ -345,7 +350,7 @@
 					<button
 						class="toggle"
 						class:active={player?.shuffle}
-						on:click={() => { if (queue) callMA('player_queues/shuffle', { queue_id: queue.queue_id, shuffle_enabled: !player?.shuffle }); }}
+						on:click={() => { const qid = queue?.queue_id ?? player?.player_id; if (qid) callMA('player_queues/shuffle', { queue_id: qid, shuffle_enabled: !player?.shuffle }).catch(console.error); }}
 						use:Ripple={$ripple}
 					>
 						<Icon icon="solar:shuffle-bold" height="none" />
