@@ -141,12 +141,17 @@ export function connectMA(url: string, token: string): void {
 				])
 			)
 			.then(([players, queues]) => {
-				maPlayers.set((players as MAPlayer[]) ?? []);
+				const playerList = (players as MAPlayer[]) ?? [];
+				const queueList = (queues as MAQueue[]) ?? [];
+				console.log('[MA] connected — players:', playerList.length, 'queues:', queueList.length);
+				if (playerList.length) console.log('[MA] first player keys:', Object.keys(playerList[0]));
+				if (queueList.length) console.log('[MA] first queue keys:', Object.keys(queueList[0]));
+				maPlayers.set(playerList);
 				const qmap: Record<string, MAQueue> = {};
-				for (const q of ((queues as MAQueue[]) ?? [])) qmap[q.queue_id] = q;
+				for (const q of queueList) qmap[q.queue_id] = q;
 				maQueues.set(qmap);
 			})
-			.catch(() => {}); // ignore errors; stores are populated by live events
+			.catch((e) => console.error('[MA] init error', e));
 	};
 
 	ws.onmessage = ({ data }) => {

@@ -63,8 +63,9 @@
 
 	function queueCmd(command: string, data: Record<string, unknown> = {}) {
 		const queueId = queue?.queue_id ?? player?.player_id;
-		if (!queueId) return;
-		callMA(command, { queue_id: queueId, ...data }).catch(console.error);
+		console.log('[MA] queueCmd', command, { queueId, player: player?.player_id, queueState: queue?.state });
+		if (!queueId) { console.warn('[MA] queueCmd BLOCKED: no queueId'); return; }
+		callMA(command, { queue_id: queueId, ...data }).catch((e) => console.error('[MA] queueCmd error', e));
 	}
 
 	function playerCmd(command: string, data: Record<string, unknown> = {}) {
@@ -218,12 +219,13 @@
 
 	function playMedia(item: MAMediaItem, option: 'replace' | 'add' | 'next') {
 		const queueId = queue?.queue_id ?? player?.player_id;
-		if (!queueId) return;
+		console.log('[MA] playMedia', { queueId, uri: item.uri, option, player: player?.player_id });
+		if (!queueId) { console.warn('[MA] playMedia BLOCKED: no queueId'); return; }
 		callMA('player_queues/play_media', {
 			queue_id: queueId,
 			media: item.uri,
 			option
-		}).catch(console.error);
+		}).catch((e) => console.error('[MA] playMedia error', e));
 		actionMenu = null;
 	}
 
