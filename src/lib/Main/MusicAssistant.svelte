@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { editMode, lang, ripple } from '$lib/Stores';
+	import { editMode, lang, ripple, configuration } from '$lib/Stores';
 	import { openModal } from 'svelte-modals';
 	import Icon from '@iconify/svelte';
 	import Ripple from 'svelte-ripple';
-	import { maPlayers } from '$lib/MusicAssistant';
+	import { maPlayers, imageUrl } from '$lib/MusicAssistant';
 	import type { MusicAssistantItem } from '$lib/Types';
 
 	export let sel: MusicAssistantItem;
@@ -11,6 +11,7 @@
 	$: player = $maPlayers.find((p) => p.player_id === sel?.player_id);
 	$: currentItem = player?.current_item;
 	$: isPlaying = player?.state === 'playing';
+	$: maServerUrl = $configuration?.addons?.music_assistant?.server_url ?? '';
 	$: displayName = sel?.name || 'Music Assistant';
 	$: displayIcon = sel?.icon || 'solar:music-note-2-bold-duotone';
 
@@ -37,8 +38,9 @@
 		<span class="label">{displayName}</span>
 		<span class="sublabel">{$lang('player_not_found') || 'Player not found'}</span>
 	{:else if currentItem}
-		{#if currentItem.image}
-			<img class="album-art" src={currentItem.image} alt={currentItem.name} />
+		{@const artSrc = imageUrl(currentItem.image, maServerUrl)}
+		{#if artSrc}
+			<img class="album-art" src={artSrc} alt={currentItem.name} />
 		{:else}
 			<div class="state-icon">
 				<Icon icon="solar:music-note-2-bold-duotone" height="none" />

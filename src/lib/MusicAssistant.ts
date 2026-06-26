@@ -34,7 +34,7 @@ export interface MAQueueItem {
 	queue_item_id: string;
 	name: string;
 	duration: number;
-	image?: string | null;
+	image?: MAMediaItemImage | null;
 	uri: string;
 	media_type: string;
 	artists?: { item_id: string; name: string; uri: string }[];
@@ -60,6 +60,16 @@ export interface MAMediaItem {
 	artists?: { item_id: string; name: string; uri: string }[];
 	album?: { item_id: string; name: string; uri: string } | null;
 	is_playable?: boolean;
+}
+
+export function imageUrl(
+	img: MAMediaItemImage | null | undefined,
+	serverUrl: string
+): string | null {
+	if (!img) return null;
+	if (img.remotely_accessible) return img.path;
+	if (img.proxy_id) return `${serverUrl.replace(/\/$/, '')}/imageproxy/${img.proxy_id}`;
+	return null;
 }
 
 // ── Stores ───────────────────────────────────────────────────────────────────

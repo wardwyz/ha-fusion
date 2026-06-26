@@ -4,7 +4,7 @@
 	import Modal from '$lib/Modal/Index.svelte';
 	import Icon from '@iconify/svelte';
 	import Ripple from 'svelte-ripple';
-	import { callMA, maPlayers, maQueues, maQueueItems } from '$lib/MusicAssistant';
+	import { callMA, maPlayers, maQueues, maQueueItems, imageUrl } from '$lib/MusicAssistant';
 	import type { MAPlayer, MAQueueItem, MAMediaItem, MAMediaItemImage } from '$lib/MusicAssistant';
 	import { configuration } from '$lib/Stores';
 	import type { MusicAssistantItem } from '$lib/Types';
@@ -128,14 +128,7 @@
 	let browsePath: string[] = []; // breadcrumb stack of paths
 	let browseLoading = false;
 
-	$: maServerUrl = $configuration?.addons?.music_assistant?.server_url?.replace(/\/$/, '') ?? '';
-
-	function imageUrl(img: MAMediaItemImage | null | undefined): string | null {
-		if (!img) return null;
-		if (img.remotely_accessible) return img.path;
-		if (img.proxy_id) return `${maServerUrl}/imageproxy/${img.proxy_id}`;
-		return null;
-	}
+	$: maServerUrl = $configuration?.addons?.music_assistant?.server_url ?? '';
 
 	async function browseDir(path?: string) {
 		browseLoading = true;
@@ -217,7 +210,7 @@
 		};
 	}
 
-	function playMedia(item: MAMediaItem, option: 'play' | 'add' | 'next') {
+	function playMedia(item: MAMediaItem, option: 'replace' | 'add' | 'next') {
 		const queueId = queue?.queue_id ?? player?.player_id;
 		if (!queueId) return;
 		callMA('player_queues/play_media', {
@@ -278,8 +271,9 @@
 		{#if activeTab === 'now_playing'}
 			<div class="now-playing">
 				{#if currentItem}
-					{#if currentItem.image}
-						<img class="art" src={currentItem.image} alt={currentItem.name} />
+					{@const currentImgSrc = imageUrl(currentItem.image, maServerUrl)}
+					{#if currentImgSrc}
+						<img class="art" src={currentImgSrc} alt={currentItem.name} />
 					{:else}
 						<div class="art-placeholder">
 							<Icon icon="solar:music-note-2-bold-duotone" height="none" />
@@ -375,12 +369,13 @@
 			</div>
 			<div class="queue-list">
 				{#each queueItems as item, i (item.queue_item_id)}
+					{@const qImgSrc = imageUrl(item.image, maServerUrl)}
 					<div
 						class="queue-item"
 						class:current={item.queue_item_id === currentItem?.queue_item_id}
 					>
-						{#if item.image}
-							<img class="q-art" src={item.image} alt={item.name} />
+						{#if qImgSrc}
+							<img class="q-art" src={qImgSrc} alt={item.name} />
 						{:else}
 							<div class="q-art-placeholder">
 								<Icon icon="solar:music-note-2-bold-duotone" height="none" />
@@ -418,7 +413,7 @@
 			{:else}
 				<div class="media-list">
 					{#each browseItems as item (item.uri)}
-						{@const imgSrc = imageUrl(item.image)}
+						{@const imgSrc = imageUrl(item.image, maServerUrl)}
 						<div
 							class="media-item"
 							class:clickable={!item.is_playable}
@@ -466,7 +461,7 @@
 			{:else}
 				<div class="media-list">
 					{#each searchResults as item (item.uri)}
-						{@const imgSrc = imageUrl(item.image)}
+						{@const imgSrc = imageUrl(item.image, maServerUrl)}
 						<div class="media-item">
 							{#if imgSrc}
 								<img class="m-art" src={imgSrc} alt={item.name} />
@@ -539,7 +534,7 @@
 		style:top="{menu.y}px"
 		role="menu"
 	>
-		<button on:click={() => playMedia(menu.item, 'play')} use:Ripple={$ripple}>
+		<button on:click={() => playMedia(menu.item, 'replace')} use:Ripple={$ripple}>
 			<Icon icon="solar:play-bold" height="none" />
 			{$lang('play_now') || 'Play now'}
 		</button>
