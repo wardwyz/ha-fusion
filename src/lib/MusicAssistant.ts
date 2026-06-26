@@ -172,19 +172,20 @@ export function connectMA(url: string, token: string): void {
 		// live events
 		const event = msg.event as string | undefined;
 		const evData = msg.data as Record<string, unknown> | undefined;
+		if (event) console.log('[MA] event:', event, evData ? Object.keys(evData) : null);
 		if (!event || !evData) return;
 
-		if (event === 'players/updated') {
+		if (event === 'player_updated') {
 			const player = evData as unknown as MAPlayer;
 			maPlayers.update((list) => {
 				const idx = list.findIndex((p) => p.player_id === player.player_id);
 				return idx >= 0 ? list.map((p, i) => (i === idx ? player : p)) : [...list, player];
 			});
-		} else if (event === 'player_queues/updated') {
+		} else if (event === 'queue_updated') {
 			const queue = evData as unknown as MAQueue;
 			maQueues.update((map) => ({ ...map, [queue.queue_id]: queue }));
-		} else if (event === 'queue_items/updated') {
-			const queue_id = (evData as { queue_id?: string }).queue_id;
+		} else if (event === 'queue_items_updated') {
+			const queue_id = (evData as { queue_id?: string }).queue_id ?? (evData as unknown as MAQueue)?.queue_id;
 			if (queue_id) {
 				callOn(entry, 'player_queues/items', { queue_id, limit: 100, offset: 0 }).then(
 					(result) => {
