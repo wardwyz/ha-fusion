@@ -13,7 +13,7 @@
 	import { getAllEntityIds, toSpeechLang } from '$lib/Utils';
 	import { afterUpdate, onMount } from 'svelte';
 	import type { AiMessage } from '$lib/Types';
-	import { callMA, maPlayers, maQueues } from '$lib/MusicAssistant';
+	import { maPlayers, maQueues } from '$lib/MusicAssistant';
 
 	export let isOpen: boolean;
 	export let sel: any;
