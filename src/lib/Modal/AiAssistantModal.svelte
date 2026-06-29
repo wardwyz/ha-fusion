@@ -160,7 +160,9 @@ Available commands:
   player_queues/clear        args: { queue_id }
   player_queues/play_media   args: { queue_id, media: <uri>, option: "replace"|"add"|"next" }
   music/search_and_play      args: { queue_id, search_query, option: "replace"|"add"|"next" }
-                             (client macro: searches then plays first result)
+                             (client macro: searches tracks then plays first playable result)
+                             NOTE: for radio stations use the full station name (e.g. "Radio Deejay",
+                             "Radio Capital") — generic "radio" returns 0 results.
 [/MA_SYSTEM]`;
 	}
 
@@ -201,9 +203,13 @@ Available commands:
 			search_query: args.search_query as string,
 			limit: 5
 		});
-		const arr: Array<{ uri: string }> = Array.isArray(result)
-			? (result as Array<{ uri: string }>)
-			: (((result as Record<string, unknown>)?.tracks as Array<{ uri: string }>) ?? []);
+		const raw: Array<{ uri: string; is_playable?: boolean }> = Array.isArray(result)
+			? (result as Array<{ uri: string; is_playable?: boolean }>)
+			: (((result as Record<string, unknown>)?.tracks as Array<{
+					uri: string;
+					is_playable?: boolean;
+			  }>) ?? []);
+		const arr = raw.filter((item) => item.is_playable !== false);
 		if (!arr.length) return;
 		await callMA('player_queues/play_media', {
 			queue_id: args.queue_id as string,
