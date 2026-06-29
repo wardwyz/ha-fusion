@@ -182,7 +182,13 @@ Available commands:
 	}
 
 	function stripMACommands(text: string): string {
-		return text.replace(/\[MA_CMD\][\s\S]*?\[\/MA_CMD\]/g, '').trim();
+		return (
+			text
+				.replace(/```[a-z]*\s*\n?\[MA_CMD\][\s\S]*?\[\/MA_CMD\]\n?```\n?/g, '')
+				.replace(/`\[MA_CMD\][\s\S]*?\[\/MA_CMD\]`/g, '')
+				.replace(/\[MA_CMD\][\s\S]*?\[\/MA_CMD\]/g, '')
+				.trim()
+		);
 	}
 
 	async function handleSearchAndPlay(args: Record<string, unknown>): Promise<void> {
@@ -284,22 +290,24 @@ Available commands:
 			});
 
 			const rawText = response?.response?.speech?.plain?.speech ?? '…';
+			console.debug('[AI→MA] rawText:', rawText.slice(0, 300));
 			const maCommands = extractMACommands(rawText);
 			const displayText = stripMACommands(rawText);
+			console.debug('[AI→MA] displayText:', displayText, '| commands:', maCommands.length);
 
-			$aiConversation = {
-				messages: [
-					...$aiConversation.messages,
-					{
-						role: 'assistant',
-						content: displayText,
-						timestamp: Date.now()
-					}
-				],
-				conversationId: response?.conversation_id ?? $aiConversation.conversationId
-			};
-
-			speak(displayText);
+			const newConversationId = response?.conversation_id ?? $aiConversation.conversationId;
+			if (displayText) {
+				$aiConversation = {
+					messages: [
+						...$aiConversation.messages,
+						{ role: 'assistant', content: displayText, timestamp: Date.now() }
+					],
+					conversationId: newConversationId
+				};
+				speak(displayText);
+			} else {
+				$aiConversation = { ...$aiConversation, conversationId: newConversationId };
+			}
 
 			if (maCommands.length > 0) {
 				for (const { command, args } of maCommands) {
