@@ -252,7 +252,7 @@
 </script>
 
 {#if isOpen}
-	<Modal size="large">
+	<Modal size="large" fill={true}>
 		<h1 slot="title">{getName(sel, entity)}</h1>
 
 		<!-- container -->
@@ -395,10 +395,10 @@
 <style>
 	.container {
 		width: 100%;
-		height: 75vh;
+		flex: 1;
+		min-height: 0;
 		border-radius: 0.6rem;
 		font-family: inherit;
-		margin-top: 1rem;
 	}
 
 	.marker-container {

@@ -12,6 +12,7 @@
 
 	export let backdropImage = true;
 	export let size: string | undefined = undefined;
+	export let fill: boolean = false;
 
 	let backdrop: HTMLDivElement | null;
 	let contents: HTMLDivElement | null;
@@ -185,6 +186,7 @@
 			bind:this={contents}
 			class:large={size === 'large'}
 			class:warning={!backdropImage}
+			class:fill-contents={fill}
 		>
 			<div class="header">
 				<h1>
@@ -204,7 +206,7 @@
 				</button>
 			</div>
 
-			<div class="body">
+			<div class="body" class:fill>
 				<slot />
 			</div>
 
@@ -280,6 +282,17 @@
 		padding-bottom: 0.6rem;
 	}
 
+	.fill-contents {
+		height: 85vh;
+	}
+
+	.body.fill {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		padding-bottom: 0;
+	}
+
 	.body::-webkit-scrollbar {
 		width: 5px;
 	}
@@ -326,6 +339,10 @@
 			border-radius: 0.9rem;
 		}
 
+		.fill-contents {
+			height: 90vh;
+		}
+
 		.body {
 			padding-bottom: 0.45rem;
 		}
@@ -339,6 +356,10 @@
 			max-height: 88vh;
 			padding: 1.4rem 1.5rem 1.7rem;
 		}
+
+		.fill-contents {
+			height: 88vh;
+		}
 	}
 
 	/* Tablets portrait (768px – 1023px) */
@@ -346,12 +367,20 @@
 		.contents {
 			max-height: 82vh;
 		}
+
+		.fill-contents {
+			height: 82vh;
+		}
 	}
 
 	/* FHD monitors (1366px – 1919px) */
 	@media (min-width: 1366px) and (max-width: 1919px) {
 		.contents {
 			max-height: 80vh;
+		}
+
+		.fill-contents {
+			height: 80vh;
 		}
 	}
 
@@ -361,6 +390,10 @@
 			padding: 2rem 2.5rem 2.5rem;
 			max-height: 75vh;
 			border-radius: 1.5rem;
+		}
+
+		.fill-contents {
+			height: 75vh;
 		}
 
 		.body {

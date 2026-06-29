@@ -51,6 +51,7 @@ export interface MAMediaItem {
 	item_id: string;
 	uri: string;
 	name: string;
+	translation_key?: string | null;
 	media_type: string;
 	// BrowseFolder uses 'path' as browse key; Media items use 'uri'
 	path?: string;
@@ -103,7 +104,11 @@ function toWsUrl(url: string): string {
 	return u.toString();
 }
 
-function callOn(entry: ConnectionEntry, command: string, data: Record<string, unknown> = {}): Promise<unknown> {
+function callOn(
+	entry: ConnectionEntry,
+	command: string,
+	data: Record<string, unknown> = {}
+): Promise<unknown> {
 	return new Promise((resolve, reject) => {
 		if (entry.ws.readyState !== WebSocket.OPEN) {
 			reject(new Error('WebSocket not open'));
@@ -133,13 +138,8 @@ export function connectMA(url: string, token: string): void {
 	connections.set(url, entry);
 
 	ws.onopen = () => {
-		callOn(entry, 'auth', { token: entry.token })
-			.then(() =>
-				Promise.all([
-					callOn(entry, 'players/all'),
-					callOn(entry, 'player_queues/all')
-				])
-			)
+		callOn(entry, 'auth', { token: entry.token, locale: navigator.language || 'en' })
+			.then(() => Promise.all([callOn(entry, 'players/all'), callOn(entry, 'player_queues/all')]))
 			.then(([players, queues]) => {
 				const playerList = (players as MAPlayer[]) ?? [];
 				const queueList = (queues as MAQueue[]) ?? [];
@@ -181,14 +181,14 @@ export function connectMA(url: string, token: string): void {
 			const queue = evData as unknown as MAQueue;
 			maQueues.update((map) => ({ ...map, [queue.queue_id]: queue }));
 		} else if (event === 'queue_items_updated') {
-			const queue_id = (evData as { queue_id?: string }).queue_id ?? (evData as unknown as MAQueue)?.queue_id;
+			const queue_id =
+				(evData as { queue_id?: string }).queue_id ?? (evData as unknown as MAQueue)?.queue_id;
 			if (queue_id) {
-				callOn(entry, 'player_queues/items', { queue_id, limit: 100, offset: 0 }).then(
-					(result) => {
-						const items = (result as { items?: MAQueueItem[] })?.items ?? (result as MAQueueItem[]) ?? [];
-						maQueueItems.update((m) => ({ ...m, [queue_id]: items }));
-					}
-				);
+				callOn(entry, 'player_queues/items', { queue_id, limit: 100, offset: 0 }).then((result) => {
+					const items =
+						(result as { items?: MAQueueItem[] })?.items ?? (result as MAQueueItem[]) ?? [];
+					maQueueItems.update((m) => ({ ...m, [queue_id]: items }));
+				});
 			}
 		}
 	};
@@ -228,7 +228,11 @@ export interface MALoginResult {
  * Authenticates with username/password and returns a token.
  * auth/login is unauthenticated, so no prior token is needed.
  */
-export async function loginMA(url: string, username: string, password: string): Promise<MALoginResult> {
+export async function loginMA(
+	url: string,
+	username: string,
+	password: string
+): Promise<MALoginResult> {
 	const wsUrl = toWsUrl(url);
 	return new Promise((resolve, reject) => {
 		let settled = false;
@@ -241,11 +245,13 @@ export async function loginMA(url: string, username: string, password: string): 
 		}, 5000);
 
 		ws.onopen = () => {
-			ws.send(JSON.stringify({
-				message_id: '1',
-				command: 'auth/login',
-				args: { username, password, device_name: 'ha-fusion' }
-			}));
+			ws.send(
+				JSON.stringify({
+					message_id: '1',
+					command: 'auth/login',
+					args: { username, password, device_name: 'ha-fusion' }
+				})
+			);
 		};
 		ws.onmessage = ({ data }) => {
 			if (settled) return;
@@ -259,7 +265,12 @@ export async function loginMA(url: string, username: string, password: string): 
 				reject(new Error((msg.details ?? String(msg.error_code)) as string));
 				return;
 			}
-			const result = msg.result as { success: boolean; access_token?: string; error?: string; user?: { username: string } };
+			const result = msg.result as {
+				success: boolean;
+				access_token?: string;
+				error?: string;
+				user?: { username: string };
+			};
 			if (!result?.success || !result.access_token) {
 				reject(new Error(result?.error || 'Login failed'));
 				return;

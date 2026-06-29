@@ -333,7 +333,7 @@
 						$pasteContent = '__clear__';
 						await tick();
 						$pasteContent = `service: ${event?.detail}
-data: {}`;
+data:`;
 					}}
 				/>
 			{/if}

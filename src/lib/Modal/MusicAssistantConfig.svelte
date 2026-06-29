@@ -17,7 +17,7 @@
 		$dashboard = $dashboard;
 	}
 
-	$: maConfigured = !!($configuration?.addons?.music_assistant?.server_url);
+	$: maConfigured = !!$configuration?.addons?.music_assistant?.server_url;
 
 	function selectPlayer(id: string) {
 		set('player_id', id);

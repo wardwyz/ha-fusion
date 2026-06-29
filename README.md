@@ -66,22 +66,22 @@ docker run -d \
 
 ## Query strings
 
-| Parameter | Effect |
-|-----------|--------|
-| `?view=Name` | Load a specific view on startup |
+| Parameter     | Effect                                          |
+| ------------- | ----------------------------------------------- |
+| `?view=Name`  | Load a specific view on startup                 |
 | `?menu=false` | Hide the menu button (useful on kiosk displays) |
 
 ---
 
 ## Keyboard shortcuts
 
-| Key | Action |
-|-----|--------|
-| `f` | Filter |
-| `Esc` | Exit / close |
-| `Cmd/Ctrl + S` | Save |
-| `Cmd/Ctrl + Z` | Undo |
-| `Cmd/Ctrl + Shift + Z` | Redo |
+| Key                    | Action       |
+| ---------------------- | ------------ |
+| `f`                    | Filter       |
+| `Esc`                  | Exit / close |
+| `Cmd/Ctrl + S`         | Save         |
+| `Cmd/Ctrl + Z`         | Undo         |
+| `Cmd/Ctrl + Shift + Z` | Redo         |
 
 ---
 

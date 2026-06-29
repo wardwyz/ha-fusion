@@ -98,6 +98,8 @@
 	"configure_row": "Select a row to configure it.",
 	"confirm_log_out": "Are you sure you want to log out?",
 	"connected": "Connected",
+	"connected_as": "Connected as",
+	"disconnect": "Disconnect",
 	"connection_failed": "Connection failed",
 	"connection_lost": "Connection lost. Reconnecting…",
 	"connection_started": "Home Assistant has started!",

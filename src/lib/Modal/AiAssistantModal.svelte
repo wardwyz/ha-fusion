@@ -119,6 +119,8 @@ ${lines.join('\n')}${buildMAContext()}
 			})
 			.join('\n');
 
+		if (!playerLines) return '';
+
 		const playingQueue = Object.values($maQueues).find((q) => q.state === 'playing');
 		const playingPlayer = playingQueue
 			? $maPlayers.find((p) => p.player_id === playingQueue.queue_id)

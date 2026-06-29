@@ -122,7 +122,7 @@
 				// template is string, try to parse it
 				const _template = parser.load(template?.service?.output) as {
 					service: string;
-					data: Record<string, string | number | boolean>;
+					data: Record<string, unknown>;
 				};
 
 				if (_template?.service) {

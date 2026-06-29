@@ -230,7 +230,9 @@
 		opacity: 0.35;
 		font-size: 0.7rem;
 		margin-right: 0.2rem;
-		transition: background-color 120ms ease, opacity 120ms ease;
+		transition:
+			background-color 120ms ease,
+			opacity 120ms ease;
 	}
 
 	.remove-icon:hover {

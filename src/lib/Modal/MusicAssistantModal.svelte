@@ -4,6 +4,7 @@
 	import Modal from '$lib/Modal/Index.svelte';
 	import Icon from '@iconify/svelte';
 	import Ripple from 'svelte-ripple';
+	import { closeModal } from 'svelte-modals';
 	import { callMA, maPlayers, maQueues, maQueueItems, imageUrl } from '$lib/MusicAssistant';
 	import type { MAPlayer, MAQueueItem, MAMediaItem, MAMediaItemImage } from '$lib/MusicAssistant';
 	import { configuration } from '$lib/Stores';
@@ -295,7 +296,10 @@
 						<Icon icon="solar:music-note-2-bold-duotone" height="none" />
 					</div>
 					<div class="track-info">
-						<span class="track-title">{queue?.state ?? player?.playback_state ?? '—'}</span>
+						<span class="track-title"
+							>{$lang(queue?.state ?? player?.playback_state ?? '') ||
+								(queue?.state ?? player?.playback_state ?? '—')}</span
+						>
 					</div>
 				{/if}
 
@@ -317,10 +321,18 @@
 
 				<!-- controls -->
 				<div class="controls">
-					<button class="ctrl" on:click={() => queueCmd('player_queues/previous')} use:Ripple={$ripple}>
+					<button
+						class="ctrl"
+						on:click={() => queueCmd('player_queues/previous')}
+						use:Ripple={$ripple}
+					>
 						<Icon icon="solar:skip-previous-bold" height="none" />
 					</button>
-					<button class="ctrl play" on:click={() => queueCmd(isPlaying ? 'player_queues/pause' : 'player_queues/play')} use:Ripple={$ripple}>
+					<button
+						class="ctrl play"
+						on:click={() => queueCmd(isPlaying ? 'player_queues/pause' : 'player_queues/play')}
+						use:Ripple={$ripple}
+					>
 						<Icon icon={isPlaying ? 'solar:pause-bold' : 'solar:play-bold'} height="none" />
 					</button>
 					<button class="ctrl" on:click={() => queueCmd('player_queues/next')} use:Ripple={$ripple}>
@@ -350,20 +362,37 @@
 					<button
 						class="toggle"
 						class:active={queue?.shuffle_enabled}
-						on:click={() => { const qid = queue?.queue_id ?? player?.player_id; if (qid) callMA('player_queues/shuffle', { queue_id: qid, shuffle_enabled: !queue?.shuffle_enabled }).catch(console.error); }}
+						on:click={() => {
+							const qid = queue?.queue_id ?? player?.player_id;
+							if (qid)
+								callMA('player_queues/shuffle', {
+									queue_id: qid,
+									shuffle_enabled: !queue?.shuffle_enabled
+								}).catch(console.error);
+						}}
 						use:Ripple={$ripple}
 					>
 						<Icon icon="solar:shuffle-bold" height="none" />
 						{$lang('shuffle') || 'Shuffle'}
 					</button>
-					<button class="toggle" class:active={(queue?.repeat_mode ?? 'off') !== 'off'} on:click={cycleRepeat} use:Ripple={$ripple}>
-						<Icon icon={queue?.repeat_mode === 'one' ? 'solar:repeat-one-bold' : 'solar:repeat-bold'} height="none" />
-						{$lang('repeat') || 'Repeat'}{queue?.repeat_mode && queue?.repeat_mode !== 'off' ? ` (${queue?.repeat_mode})` : ''}
+					<button
+						class="toggle"
+						class:active={(queue?.repeat_mode ?? 'off') !== 'off'}
+						on:click={cycleRepeat}
+						use:Ripple={$ripple}
+					>
+						<Icon
+							icon={queue?.repeat_mode === 'one' ? 'solar:repeat-one-bold' : 'solar:repeat-bold'}
+							height="none"
+						/>
+						{$lang('repeat') || 'Repeat'}{queue?.repeat_mode && queue?.repeat_mode !== 'off'
+							? ` (${queue?.repeat_mode})`
+							: ''}
 					</button>
 				</div>
 			</div>
 
-		<!-- ── Queue ─────────────────────────────────────────────────────────── -->
+			<!-- ── Queue ─────────────────────────────────────────────────────────── -->
 		{:else if activeTab === 'queue'}
 			<div class="tab-header">
 				<span class="tab-count">{queueItems.length} {$lang('queue') || 'queue'}</span>
@@ -376,10 +405,7 @@
 			<div class="queue-list">
 				{#each queueItems as item, i (item.queue_item_id)}
 					{@const qImgSrc = imageUrl(item.image, maServerUrl)}
-					<div
-						class="queue-item"
-						class:current={item.queue_item_id === currentItem?.queue_item_id}
-					>
+					<div class="queue-item" class:current={item.queue_item_id === currentItem?.queue_item_id}>
 						{#if qImgSrc}
 							<img class="q-art" src={qImgSrc} alt={item.name} />
 						{:else}
@@ -393,10 +419,20 @@
 						</div>
 						<span class="q-dur">{formatTime(item.duration ?? 0)}</span>
 						<div class="q-actions">
-							<button class="icon-btn" title="Play" on:click={() => playFromIndex(i)} use:Ripple={$ripple}>
+							<button
+								class="icon-btn"
+								title="Play"
+								on:click={() => playFromIndex(i)}
+								use:Ripple={$ripple}
+							>
 								<Icon icon="solar:play-bold" height="none" />
 							</button>
-							<button class="icon-btn" title="Remove" on:click={() => removeQueueItem(item.queue_item_id)} use:Ripple={$ripple}>
+							<button
+								class="icon-btn"
+								title="Remove"
+								on:click={() => removeQueueItem(item.queue_item_id)}
+								use:Ripple={$ripple}
+							>
 								<Icon icon="mdi:close" height="none" />
 							</button>
 						</div>
@@ -406,12 +442,15 @@
 				{/each}
 			</div>
 
-		<!-- ── Browse ────────────────────────────────────────────────────────── -->
+			<!-- ── Browse ────────────────────────────────────────────────────────── -->
 		{:else if activeTab === 'browse'}
 			{#if browsePath.length > 0}
+				{@const _lastPath = browsePath[browsePath.length - 1]}
+				{@const _pathLabel =
+					(_lastPath.split('://')[1] ?? _lastPath).split('/').filter(Boolean).pop() ?? _lastPath}
 				<button class="back-btn" on:click={browseBack} use:Ripple={$ripple}>
 					<Icon icon="solar:arrow-left-bold" height="none" />
-					{browsePath[browsePath.length - 1]}
+					{_pathLabel.replace(/_/g, ' ')}
 				</button>
 			{/if}
 			{#if browseLoading}
@@ -432,15 +471,24 @@
 								<img class="m-art" src={imgSrc} alt={item.name} />
 							{:else}
 								<div class="m-art-placeholder">
-									<Icon icon={item.media_type === 'folder' ? 'solar:folder-bold' : 'solar:music-note-2-bold-duotone'} height="none" />
+									<Icon
+										icon={item.media_type === 'folder'
+											? 'solar:folder-bold'
+											: 'solar:music-note-2-bold-duotone'}
+										height="none"
+									/>
 								</div>
 							{/if}
 							<div class="m-info">
-								<span class="m-title">{item.name}</span>
+								<span class="m-title">{item.name || item.item_id.replace(/_/g, ' ')}</span>
 								<span class="m-type">{item.media_type}</span>
 							</div>
 							{#if item.is_playable}
-								<button class="icon-btn" on:click|stopPropagation={showActionsHandler(item)} use:Ripple={$ripple}>
+								<button
+									class="icon-btn"
+									on:click|stopPropagation={showActionsHandler(item)}
+									use:Ripple={$ripple}
+								>
 									<Icon icon="solar:menu-dots-bold" height="none" />
 								</button>
 							{/if}
@@ -451,7 +499,7 @@
 				</div>
 			{/if}
 
-		<!-- ── Search ─────────────────────────────────────────────────────────── -->
+			<!-- ── Search ─────────────────────────────────────────────────────────── -->
 		{:else if activeTab === 'search'}
 			<input
 				class="input search-input"
@@ -494,14 +542,14 @@
 				</div>
 			{/if}
 
-		<!-- ── Players ───────────────────────────────────────────────────────── -->
+			<!-- ── Players ───────────────────────────────────────────────────────── -->
 		{:else if activeTab === 'players'}
 			<div class="player-list-tab">
 				{#each $maPlayers as p (p.player_id)}
 					<div class="player-row">
 						<div class="p-info">
 							<span class="p-name">{p.name}</span>
-							<span class="p-state">{p.playback_state}</span>
+							<span class="p-state">{$lang(p.playback_state) || p.playback_state}</span>
 						</div>
 						<div class="p-volume">
 							<Icon icon="solar:volume-small-bold" height="none" />
@@ -515,11 +563,19 @@
 						</div>
 						{#if p.player_id !== sel?.player_id && player?.can_group_with?.includes(p.player_id)}
 							{#if player?.group_members?.includes(p.player_id)}
-								<button class="action-sm" on:click={() => ungroupPlayer(p.player_id)} use:Ripple={$ripple}>
+								<button
+									class="action-sm"
+									on:click={() => ungroupPlayer(p.player_id)}
+									use:Ripple={$ripple}
+								>
 									{$lang('ungroup') || 'Ungroup'}
 								</button>
 							{:else}
-								<button class="action-sm" on:click={() => groupPlayer(p.player_id)} use:Ripple={$ripple}>
+								<button
+									class="action-sm"
+									on:click={() => groupPlayer(p.player_id)}
+									use:Ripple={$ripple}
+								>
 									{$lang('group') || 'Group'}
 								</button>
 							{/if}
@@ -528,18 +584,19 @@
 				{/each}
 			</div>
 		{/if}
+
+		<div class="add-config-button">
+			<button class="done action" on:click={closeModal} use:Ripple={$ripple}>
+				{$lang('done')}
+			</button>
+		</div>
 	</Modal>
 {/if}
 
 <!-- Context menu for browse/search actions -->
 {#if actionMenu}
 	{@const menu = actionMenu}
-	<div
-		class="action-menu"
-		style:left="{menu.x}px"
-		style:top="{menu.y}px"
-		role="menu"
-	>
+	<div class="action-menu" style:left="{menu.x}px" style:top="{menu.y}px" role="menu">
 		<button on:click={() => playMedia(menu.item, 'replace')} use:Ripple={$ripple}>
 			<Icon icon="solar:play-bold" height="none" />
 			{$lang('play_now') || 'Play now'}
@@ -579,7 +636,9 @@
 		padding: 0.4rem 0.8rem;
 		cursor: pointer;
 		border-radius: 0.4rem;
-		transition: color 120ms, background-color 120ms;
+		transition:
+			color 120ms,
+			background-color 120ms;
 	}
 
 	.tab:hover {

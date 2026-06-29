@@ -86,74 +86,74 @@
 			</div>
 		</div>
 	</div>
-</div>
 
-<div class="item ma-item">
-	<h3>Music Assistant</h3>
+	<div class="item ma-item">
+		<h3>Music Assistant</h3>
 
-	{#if isLoggedIn}
-		<div class="ma-connected">
-			<span class="ma-conn-label">
-				<figure class="ma-conn-icon">
-					<Icon icon="mdi:check-circle-outline" height="none" />
-				</figure>
-				{$lang('connected_as') || 'Connesso come'} <strong>{maUsername}</strong>
-				<span class="ma-conn-url">{serverUrl}</span>
-			</span>
-			<button type="button" class="btn-action" on:click={handleDisconnect}>
-				{$lang('disconnect') || 'Disconnetti'}
-			</button>
-		</div>
-	{:else}
-		<div class="ma-login">
-			<input
-				class="input"
-				type="url"
-				bind:value={serverUrl}
-				placeholder="http://192.168.1.10:8095"
-				autocomplete="off"
-			/>
-			<input
-				class="input"
-				type="text"
-				bind:value={loginUsername}
-				placeholder={$lang('username') || 'Username'}
-				autocomplete="username"
-			/>
-			<div class="ma-pw-row">
-				<input
-					class="input"
-					type="password"
-					bind:value={loginPassword}
-					placeholder={$lang('password') || 'Password'}
-					autocomplete="current-password"
-					on:keydown={(e) => e.key === 'Enter' && !connecting && handleConnect()}
-				/>
-				<button
-					type="button"
-					class="btn-action"
-					on:click={handleConnect}
-					disabled={connecting || !serverUrl || !loginUsername || !loginPassword}
-				>
-					{#if connecting}
-						<figure class="spin-icon">
-							<Icon icon="svg-spinners:ring-resize" height="none" />
-						</figure>
-					{:else}
-						{$lang('connect') || 'Connetti'}
-					{/if}
+		{#if isLoggedIn}
+			<div class="ma-connected">
+				<span class="ma-conn-label">
+					<figure class="ma-conn-icon">
+						<Icon icon="mdi:check-circle-outline" height="none" />
+					</figure>
+					{$lang('connected_as')} <strong>{maUsername}</strong>
+					<span class="ma-conn-url">{serverUrl}</span>
+				</span>
+				<button type="button" class="btn-action" on:click={handleDisconnect}>
+					{$lang('disconnect')}
 				</button>
 			</div>
-			{#if loginError}
-				<p class="ma-error">{loginError}</p>
-			{/if}
-		</div>
-	{/if}
+		{:else}
+			<div class="ma-login">
+				<input
+					class="input"
+					type="url"
+					bind:value={serverUrl}
+					placeholder="http://192.168.1.10:8095"
+					autocomplete="off"
+				/>
+				<input
+					class="input"
+					type="text"
+					bind:value={loginUsername}
+					placeholder={$lang('username') || 'Username'}
+					autocomplete="username"
+				/>
+				<div class="ma-pw-row">
+					<input
+						class="input"
+						type="password"
+						bind:value={loginPassword}
+						placeholder={$lang('password') || 'Password'}
+						autocomplete="current-password"
+						on:keydown={(e) => e.key === 'Enter' && !connecting && handleConnect()}
+					/>
+					<button
+						type="button"
+						class="btn-action"
+						on:click={handleConnect}
+						disabled={connecting || !serverUrl || !loginUsername || !loginPassword}
+					>
+						{#if connecting}
+							<figure class="spin-icon">
+								<Icon icon="svg-spinners:ring-resize" height="none" />
+							</figure>
+						{:else}
+							{$lang('connect') || 'Connetti'}
+						{/if}
+					</button>
+				</div>
+				{#if loginError}
+					<p class="ma-error">{loginError}</p>
+				{/if}
+			</div>
+		{/if}
 
-	<!-- hidden inputs for form save -->
-	<input type="hidden" name="ma_server_url" value={serverUrl} />
-	<input type="hidden" name="ma_token" value={maToken} />
-	<input type="hidden" name="ma_username" value={maUsername} />
+		<!-- hidden inputs for form save -->
+		<input type="hidden" name="ma_server_url" value={serverUrl} />
+		<input type="hidden" name="ma_token" value={maToken} />
+		<input type="hidden" name="ma_username" value={maUsername} />
+	</div>
 </div>
 
 <style>

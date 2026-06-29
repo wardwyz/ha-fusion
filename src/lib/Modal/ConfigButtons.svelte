@@ -143,7 +143,6 @@
 		border-top: 1px solid rgba(255, 255, 255, 0.08);
 	}
 
-
 	.align-left {
 		display: flex;
 		gap: 0.8rem;

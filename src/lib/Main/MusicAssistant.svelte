@@ -75,7 +75,7 @@
 			{:else if !player}
 				{$lang('player_not_found') || 'Player not found'}
 			{:else}
-				{currentItem?.artists?.[0]?.name ?? player.playback_state}
+				{currentItem?.artists?.[0]?.name ?? ($lang(player.playback_state) || player.playback_state)}
 			{/if}
 		</span>
 	</div>

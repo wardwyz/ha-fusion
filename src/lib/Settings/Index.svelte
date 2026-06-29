@@ -52,13 +52,14 @@
 			const addons = {
 				...(form.youtube && { youtube: form.youtube === 'true' }),
 				...(form.maptiler && { maptiler: { apikey: form.maptiler } }),
-				...(maUrl && maToken && {
-					music_assistant: {
-						server_url: maUrl,
-						token: maToken,
-						...(maUser && { username: maUser })
-					}
-				})
+				...(maUrl &&
+					maToken && {
+						music_assistant: {
+							server_url: maUrl,
+							token: maToken,
+							...(maUser && { username: maUser })
+						}
+					})
 			};
 
 			if (typeof form.maptiler === 'string') {
