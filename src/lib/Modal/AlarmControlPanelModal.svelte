@@ -368,6 +368,24 @@
 		margin-bottom: 0.4rem;
 		overflow-y: auto;
 		flex: 1;
+		scrollbar-width: thin;
+	}
+
+	.mode-buttons::-webkit-scrollbar {
+		width: 5px;
+	}
+
+	.mode-buttons::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.mode-buttons::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.2);
+		border-radius: 3px;
+	}
+
+	.mode-buttons::-webkit-scrollbar-thumb:hover {
+		background: rgba(255, 255, 255, 0.35);
 	}
 
 	.mode-divider {

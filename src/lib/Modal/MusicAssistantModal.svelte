@@ -833,6 +833,24 @@
 		gap: 0.2rem;
 		overflow-y: auto;
 		max-height: 24rem;
+		scrollbar-width: thin;
+	}
+
+	.queue-list::-webkit-scrollbar {
+		width: 5px;
+	}
+
+	.queue-list::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.queue-list::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.2);
+		border-radius: 3px;
+	}
+
+	.queue-list::-webkit-scrollbar-thumb:hover {
+		background: rgba(255, 255, 255, 0.35);
 	}
 
 	.queue-item {
@@ -936,6 +954,24 @@
 		gap: 0.2rem;
 		overflow-y: auto;
 		max-height: 24rem;
+		scrollbar-width: thin;
+	}
+
+	.media-list::-webkit-scrollbar {
+		width: 5px;
+	}
+
+	.media-list::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.media-list::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.2);
+		border-radius: 3px;
+	}
+
+	.media-list::-webkit-scrollbar-thumb:hover {
+		background: rgba(255, 255, 255, 0.35);
 	}
 
 	.media-item {
