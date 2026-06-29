@@ -280,19 +280,46 @@ Available commands:
 				...(sel?.agent_id ? { agent_id: sel.agent_id } : {})
 			});
 
+			const rawText = response?.response?.speech?.plain?.speech ?? '…';
+			const maCommands = extractMACommands(rawText);
+			const displayText = stripMACommands(rawText);
+
 			$aiConversation = {
 				messages: [
 					...$aiConversation.messages,
 					{
 						role: 'assistant',
-						content: response?.response?.speech?.plain?.speech ?? '…',
+						content: displayText,
 						timestamp: Date.now()
 					}
 				],
 				conversationId: response?.conversation_id ?? $aiConversation.conversationId
 			};
 
-			speak(response?.response?.speech?.plain?.speech ?? '');
+			speak(displayText);
+
+			if (maCommands.length > 0) {
+				for (const { command, args } of maCommands) {
+					try {
+						if (command === 'music/search_and_play') {
+							await handleSearchAndPlay(args);
+						} else {
+							await callMA(command, args);
+						}
+					} catch (e) {
+						console.error('[AI→MA] command failed:', command, e);
+					}
+				}
+			} else {
+				const fallback = detectMAIntent(text.trim());
+				if (fallback) {
+					try {
+						await callMA(fallback.command, fallback.args);
+					} catch (e) {
+						console.error('[AI→MA] fallback failed:', fallback.command, e);
+					}
+				}
+			}
 		} catch (err) {
 			$aiConversation = {
 				...$aiConversation,
