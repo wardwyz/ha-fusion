@@ -187,6 +187,7 @@ Available commands:
 	}
 
 	async function handleSearchAndPlay(args: Record<string, unknown>): Promise<void> {
+		if (!args.search_query) return;
 		const result = await callMA('music/search', {
 			search_query: args.search_query as string,
 			limit: 5
@@ -228,7 +229,7 @@ Available commands:
 		if (volExact)
 			return {
 				command: 'players/cmd/volume_set',
-				args: { player_id: pid, volume_level: parseInt(volExact[1]) }
+				args: { player_id: pid, volume_level: parseInt(volExact[1], 10) }
 			};
 
 		if (/alza.*volume|volume.*su/.test(t))
