@@ -13,7 +13,7 @@
 	import { getAllEntityIds, toSpeechLang } from '$lib/Utils';
 	import { afterUpdate, onMount } from 'svelte';
 	import type { AiMessage } from '$lib/Types';
-	import { maPlayers, maQueues } from '$lib/MusicAssistant';
+	import { maPlayers, maQueues, callMA } from '$lib/MusicAssistant';
 
 	export let isOpen: boolean;
 	export let sel: any;
@@ -163,6 +163,96 @@ Available commands:
   music/search_and_play      args: { queue_id, search_query, option: "replace"|"add"|"next" }
                              (client macro: searches then plays first result)
 [/MA_SYSTEM]`;
+	}
+
+	function extractMACommands(
+		text: string
+	): Array<{ command: string; args: Record<string, unknown> }> {
+		const matches = [...text.matchAll(/\[MA_CMD\]([\s\S]*?)\[\/MA_CMD\]/g)];
+		return matches.flatMap((m) => {
+			try {
+				const parsed = JSON.parse(m[1].trim()) as {
+					command: string;
+					args?: Record<string, unknown>;
+				};
+				return [{ command: parsed.command, args: parsed.args ?? {} }];
+			} catch {
+				return [];
+			}
+		});
+	}
+
+	function stripMACommands(text: string): string {
+		return text.replace(/\[MA_CMD\][\s\S]*?\[\/MA_CMD\]/g, '').trim();
+	}
+
+	async function handleSearchAndPlay(args: Record<string, unknown>): Promise<void> {
+		const result = await callMA('music/search', {
+			search_query: args.search_query as string,
+			limit: 5
+		});
+		const arr: Array<{ uri: string }> = Array.isArray(result)
+			? (result as Array<{ uri: string }>)
+			: (((result as Record<string, unknown>)?.tracks as Array<{ uri: string }>) ?? []);
+		if (!arr.length) return;
+		await callMA('player_queues/play_media', {
+			queue_id: args.queue_id as string,
+			media: arr[0].uri,
+			option: (args.option as string) ?? 'replace'
+		});
+	}
+
+	function detectMAIntent(text: string): { command: string; args: Record<string, unknown> } | null {
+		const t = text.toLowerCase();
+
+		const target =
+			$maPlayers.find((p) => ($maQueues[p.player_id]?.state ?? p.playback_state) === 'playing') ??
+			$maPlayers.find((p) => p.available);
+		if (!target) return null;
+
+		const qid = target.player_id;
+		const pid = target.player_id;
+
+		if (/\b(pausa|pause)\b/.test(t))
+			return { command: 'player_queues/pause', args: { queue_id: qid } };
+		if (/\b(stop|ferma)\b/.test(t))
+			return { command: 'player_queues/stop', args: { queue_id: qid } };
+		if (/\b(play|riproduci|avvia)\b/.test(t))
+			return { command: 'player_queues/play', args: { queue_id: qid } };
+		if (/\b(prossim|next|avanti)\b/.test(t))
+			return { command: 'player_queues/next', args: { queue_id: qid } };
+		if (/\b(precedent|previous|indietro)\b/.test(t))
+			return { command: 'player_queues/previous', args: { queue_id: qid } };
+
+		const volExact = t.match(/volume\s+(\d+)/);
+		if (volExact)
+			return {
+				command: 'players/cmd/volume_set',
+				args: { player_id: pid, volume_level: parseInt(volExact[1]) }
+			};
+
+		if (/alza.*volume|volume.*su/.test(t))
+			return {
+				command: 'players/cmd/volume_set',
+				args: { player_id: pid, volume_level: Math.min(100, (target.volume_level ?? 50) + 10) }
+			};
+		if (/abbassa.*volume|volume.*gi/.test(t))
+			return {
+				command: 'players/cmd/volume_set',
+				args: { player_id: pid, volume_level: Math.max(0, (target.volume_level ?? 50) - 10) }
+			};
+
+		const shuffleMatch = t.match(/shuffle\s+(on|off)/);
+		if (shuffleMatch)
+			return {
+				command: 'player_queues/shuffle',
+				args: { queue_id: qid, shuffle_enabled: shuffleMatch[1] === 'on' }
+			};
+
+		if (/svuota.*coda|clear.*queue/.test(t))
+			return { command: 'player_queues/clear', args: { queue_id: qid } };
+
+		return null;
 	}
 
 	async function sendMessage(text: string) {
