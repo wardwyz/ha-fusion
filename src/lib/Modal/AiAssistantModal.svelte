@@ -13,6 +13,7 @@
 	import { getAllEntityIds, toSpeechLang } from '$lib/Utils';
 	import { afterUpdate, onMount } from 'svelte';
 	import type { AiMessage } from '$lib/Types';
+	import { callMA, maPlayers, maQueues } from '$lib/MusicAssistant';
 
 	export let isOpen: boolean;
 	export let sel: any;
@@ -103,8 +104,63 @@ You are an assistant for a specific smart home dashboard. You MUST follow these 
 5. Reply in the same language the user writes in.
 
 Configured dashboard entities:
-${lines.join('\n')}
+${lines.join('\n')}${buildMAContext()}
 [END SYSTEM]`;
+	}
+
+	function buildMAContext(): string {
+		if (!$maPlayers.length) return '';
+
+		const playerLines = $maPlayers
+			.filter((p) => p.available)
+			.map((p) => {
+				const state = $maQueues[p.player_id]?.state ?? p.playback_state;
+				return `- "${p.name}" (id: ${p.player_id}): ${state}, volume ${Math.round(p.volume_level)}%`;
+			})
+			.join('\n');
+
+		const playingQueue = Object.values($maQueues).find((q) => q.state === 'playing');
+		const playingPlayer = playingQueue
+			? $maPlayers.find((p) => p.player_id === playingQueue.queue_id)
+			: null;
+
+		let nowPlaying = '';
+		if (playingQueue?.current_item && playingPlayer) {
+			const item = playingQueue.current_item;
+			const artist = item.artists?.[0]?.name ?? '';
+			const album = item.album?.name ?? '';
+			nowPlaying = `\nCurrently playing on "${playingPlayer.name}": "${item.name}"${artist ? ` by ${artist}` : ''}${album ? ` — ${album}` : ''}\nShuffle: ${playingQueue.shuffle_enabled ? 'on' : 'off'} | Repeat: ${playingQueue.repeat_mode}`;
+		}
+
+		return `
+
+[MA_SYSTEM]
+Music Assistant is connected. You can control music players directly.
+
+Available players:
+${playerLines}
+${nowPlaying}
+Rules:
+1. When the user asks for music control, embed one or more command blocks:
+   [MA_CMD]{"command":"...","args":{...}}[/MA_CMD]
+2. If no player is specified, list the available players and ask the user to choose before executing.
+3. Prefer MA commands for players listed above. Use HA services only for players NOT in this list.
+4. The app executes [MA_CMD] blocks silently — do NOT mention them in your reply text.
+
+Available commands:
+  player_queues/play         args: { queue_id }
+  player_queues/pause        args: { queue_id }
+  player_queues/stop         args: { queue_id }
+  player_queues/next         args: { queue_id }
+  player_queues/previous     args: { queue_id }
+  players/cmd/volume_set     args: { player_id, volume_level: 0-100 }
+  player_queues/shuffle      args: { queue_id, shuffle_enabled: true|false }
+  player_queues/repeat       args: { queue_id, repeat_mode: "off"|"one"|"all" }
+  player_queues/clear        args: { queue_id }
+  player_queues/play_media   args: { queue_id, media: <uri>, option: "replace"|"add"|"next" }
+  music/search_and_play      args: { queue_id, search_query, option: "replace"|"add"|"next" }
+                             (client macro: searches then plays first result)
+[/MA_SYSTEM]`;
 	}
 
 	async function sendMessage(text: string) {
