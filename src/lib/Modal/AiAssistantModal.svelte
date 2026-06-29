@@ -140,8 +140,7 @@ ${lines.join('\n')}${buildMAContext()}
 Music Assistant is connected. You can control music players directly.
 
 Available players:
-${playerLines}
-${nowPlaying}
+${playerLines}${nowPlaying}
 Rules:
 1. When the user asks for music control, embed one or more command blocks:
    [MA_CMD]{"command":"...","args":{...}}[/MA_CMD]
@@ -187,6 +186,10 @@ Available commands:
 	}
 
 	async function handleSearchAndPlay(args: Record<string, unknown>): Promise<void> {
+		if (!args.queue_id) {
+			console.warn('[AI→MA] search_and_play: no queue_id provided');
+			return;
+		}
 		if (!args.search_query) return;
 		const result = await callMA('music/search', {
 			search_query: args.search_query as string,
