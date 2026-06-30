@@ -263,6 +263,11 @@
 			$focusSearch = false;
 			if (!$drawerSearch) handleClick();
 			$drawerSearch = undefined;
+		} else if (event.key === 'k' && (event.ctrlKey || event.metaKey)) {
+			const target = document.activeElement;
+			if (target?.closest?.('[class^="cm-"]')) return;
+			event.preventDefault();
+			openModal(() => import('$lib/Components/CommandPalette.svelte'));
 		}
 	}
 
