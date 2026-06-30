@@ -73,8 +73,7 @@
 		} else {
 			// LOST...
 			if (prev === 'CONNECTED') {
-				message = $lang('connection_lost');
-
+				// connection-lost banner now handled by ConnectionIndicator.svelte
 				// ERR_HASS_HOST_REQUIRED
 			} else if (!$configuration?.hassUrl) {
 				setTimeoutHandler('ERR_HASS_HOST_REQUIRED');

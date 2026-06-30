@@ -328,6 +328,11 @@
 			{/await}
 		{/if}
 
+		<!-- connection indicator -->
+		{#await import('$lib/Components/ConnectionIndicator.svelte') then ConnectionIndicator}
+			<svelte:component this={ConnectionIndicator.default} />
+		{/await}
+
 		<!-- header -->
 		{#if $showDrawer}
 			{#await import('$lib/Drawer/Index.svelte') then Drawer}
