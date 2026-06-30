@@ -109,6 +109,11 @@
 			id: 'iframe',
 			type: $lang('iframe'),
 			preview_icon: 'fontisto:world-o'
+		},
+		{
+			id: 'remote',
+			type: $lang('remote'),
+			preview_icon: 'mdi:remote'
 		}
 	];
 
@@ -164,6 +169,9 @@
 				break;
 			case 'iframe':
 				openModal(() => import('$lib/Modal/IframeGridConfig.svelte'), { sel });
+				break;
+			case 'remote':
+				openModal(() => import('$lib/Modal/RemoteConfig.svelte'), { sel });
 				break;
 			default:
 				openModal(() => import('$lib/Modal/MainItemConfig.svelte'), { sel });

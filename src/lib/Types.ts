@@ -476,3 +476,20 @@ export interface IframeGridItem {
 	icon?: string;
 	url?: string;
 }
+
+export interface RemoteButton {
+	id: number;
+	name?: string;
+	icon?: string;
+	entity_id?: string;
+	command?: string;
+	device?: string;
+}
+
+export interface RemoteItem {
+	type: 'remote';
+	id: number;
+	name?: string;
+	icon?: string;
+	buttons?: RemoteButton[];
+}
