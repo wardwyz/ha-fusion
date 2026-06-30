@@ -10,6 +10,7 @@
 	import Doorbell from '$lib/Main/Doorbell.svelte';
 	import MusicAssistant from '$lib/Main/MusicAssistant.svelte';
 	import Iframe from '$lib/Main/Iframe.svelte';
+	import Remote from '$lib/Main/Remote.svelte';
 
 	export let item: any;
 	export let sectionName: string | undefined = undefined;
@@ -41,6 +42,8 @@
 	<MusicAssistant sel={item} />
 {:else if item?.type === 'iframe'}
 	<Iframe sel={item} />
+{:else if item?.type === 'remote'}
+	<Remote sel={item} />
 {:else}
 	<!-- if types are changed internally, don't break ui -->
 	<Configure sel={{ id: item?.id }} />
