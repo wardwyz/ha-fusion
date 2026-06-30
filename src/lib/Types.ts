@@ -69,7 +69,7 @@ export interface Section {
 }
 
 export interface Condition {
-	condition?: 'state' | 'numeric_state' | 'screen' | 'or' | 'and';
+	condition?: 'state' | 'numeric_state' | 'screen' | 'time' | 'or' | 'and';
 	conditions?: Condition[];
 	id?: number;
 	entity?: string;
@@ -78,6 +78,8 @@ export interface Condition {
 	media_query?: string;
 	above?: number;
 	below?: number;
+	after?: string;
+	before?: string;
 	collapsed?: boolean;
 }
 

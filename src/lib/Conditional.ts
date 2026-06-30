@@ -109,6 +109,8 @@ export function validateConditionForItem(
 			return handleNumericState($states, condition);
 		case 'screen':
 			return handleScreenForItem($editMode, item, condition);
+		case 'time':
+			return handleTime(condition);
 		default:
 			return false;
 	}
@@ -205,6 +207,8 @@ export function validateCondition(
 			return handleNumericState($states, condition);
 		case 'screen':
 			return handleScreen($editMode, section, condition);
+		case 'time':
+			return handleTime(condition);
 		default:
 			return false;
 	}
@@ -245,6 +249,33 @@ export function handleNumericState($states: HassEntities, conditions: Condition)
 	} else {
 		return false;
 	}
+}
+
+/**
+ * Time
+ */
+function parseHHMM(value: string): number | null {
+	const match = value?.match(/^(\d{1,2}):(\d{2})$/);
+	if (!match) return null;
+	return Number(match[1]) * 60 + Number(match[2]);
+}
+
+export function handleTime(conditions: Condition): boolean {
+	const now = new Date();
+	const nowMinutes = now.getHours() * 60 + now.getMinutes();
+	const after = conditions?.after ? parseHHMM(conditions.after) : null;
+	const before = conditions?.before ? parseHHMM(conditions.before) : null;
+
+	if (after !== null && before !== null) {
+		return after <= before
+			? nowMinutes >= after && nowMinutes < before // normal window
+			: nowMinutes >= after || nowMinutes < before; // midnight-spanning window
+	} else if (after !== null) {
+		return nowMinutes >= after;
+	} else if (before !== null) {
+		return nowMinutes < before;
+	}
+	return false;
 }
 
 /**
