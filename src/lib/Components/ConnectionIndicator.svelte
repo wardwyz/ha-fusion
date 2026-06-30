@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { connected, motion, lang } from '$lib/Stores';
 	import { fade } from 'svelte/transition';
+	import { onDestroy } from 'svelte';
 
 	let hasConnectedOnce = false;
 	let showBanner = false;
@@ -16,6 +17,8 @@
 			showBanner = true;
 		}, 2000);
 	}
+
+	onDestroy(() => clearTimeout(delayTimeout));
 </script>
 
 {#if showBanner}
