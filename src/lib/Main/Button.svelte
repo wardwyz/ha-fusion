@@ -134,7 +134,7 @@
 
 		if (service && sel?.confirm) {
 			openModal(() => import('$lib/Modal/ConfirmAlert.svelte'), {
-				title: getName(sel, entity, sectionName),
+				title: getName(sel, entity, sectionName) || $lang('unknown'),
 				message: $lang('confirm_action'),
 				confirm: () => {
 					closeModal();
