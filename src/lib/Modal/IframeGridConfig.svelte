@@ -6,15 +6,14 @@
 	import InputClear from '$lib/Components/InputClear.svelte';
 	import Icon from '@iconify/svelte';
 	import Ripple from 'svelte-ripple';
-	import { getSelected } from '$lib/Utils';
+	import { updateObj } from '$lib/Utils';
 	import type { IframeGridItem } from '$lib/Types';
 
 	export let isOpen: boolean;
 	export let sel: IframeGridItem;
 
-	function set(key: 'name' | 'icon' | 'url', value: string | undefined) {
-		const found = getSelected(sel.id, $dashboard) as IframeGridItem | undefined;
-		if (found) found[key] = value || undefined;
+	function set(key: string, event?: any) {
+		sel = updateObj(sel, key, event) as IframeGridItem;
 		$dashboard = $dashboard;
 	}
 
@@ -31,12 +30,12 @@
 			type="text"
 			value={sel?.name ?? ''}
 			placeholder={$lang('name')}
-			on:input={(e) => set('name', e.currentTarget.value)}
+			on:input={(e) => set('name', e)}
 		/>
 
 		<h2>{$lang('icon')}</h2>
 		<div class="icon-gallery-container">
-			<InputClear condition={sel?.icon} on:clear={() => set('icon', undefined)} let:padding>
+			<InputClear condition={sel?.icon} on:clear={() => set('icon')} let:padding>
 				<input
 					class="input"
 					type="text"
@@ -44,7 +43,7 @@
 					value={sel?.icon ?? ''}
 					autocomplete="off"
 					spellcheck="false"
-					on:input={(e) => set('icon', e.currentTarget.value)}
+					on:input={(e) => set('icon', e)}
 					style:padding
 				/>
 			</InputClear>
@@ -66,7 +65,7 @@
 			placeholder={$lang('url')}
 			autocomplete="off"
 			spellcheck="false"
-			on:input={(e) => set('url', e.currentTarget.value)}
+			on:input={(e) => set('url', e)}
 		/>
 
 		<ConfigButtons {sel} />
