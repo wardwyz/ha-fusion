@@ -7,6 +7,7 @@
 	import StateCondition from '$lib/Modal/VisibilityConfig/StateCondition.svelte';
 	import NumericCondition from '$lib/Modal/VisibilityConfig/NumericCondition.svelte';
 	import ScreenCondition from '$lib/Modal/VisibilityConfig/ScreenCondition.svelte';
+	import TimeCondition from '$lib/Modal/VisibilityConfig/TimeCondition.svelte';
 	import { onDestroy } from 'svelte';
 	import type { Condition } from '$lib/Types';
 	import { slide } from 'svelte/transition';
@@ -223,6 +224,8 @@
 									<NumericCondition {item} bind:items />
 								{:else if item?.condition === 'screen' && !item?.collapsed}
 									<ScreenCondition {item} bind:items />
+								{:else if item?.condition === 'time' && !item?.collapsed}
+									<TimeCondition {item} bind:items />
 								{:else if item?.condition === 'and' || item?.condition === 'or'}
 									<!-- nested -->
 									<!-- code can be reduced with snippets -->
@@ -267,6 +270,8 @@
 																<NumericCondition item={subItem} bind:items={item.conditions} />
 															{:else if subItem?.condition === 'screen' && !subItem?.collapsed}
 																<ScreenCondition item={subItem} bind:items={item.conditions} />
+															{:else if subItem?.condition === 'time' && !subItem?.collapsed}
+																<TimeCondition item={subItem} bind:items={item.conditions} />
 															{/if}
 														</div>
 													{/if}

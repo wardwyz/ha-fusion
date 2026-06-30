@@ -10,6 +10,7 @@
 		{ id: 'state', icon: 'mdi:state-machine', label: $lang('state') },
 		{ id: 'numeric_state', icon: 'tabler:number-123', label: $lang('numeric_state') },
 		{ id: 'screen', icon: 'tabler:arrow-autofit-width', label: $lang('screen') },
+		{ id: 'time', icon: 'mdi:clock-outline', label: $lang('time') },
 		{ id: 'and', icon: 'tabler:logic-and', label: $lang('and') },
 		{ id: 'or', icon: 'tabler:logic-or', label: $lang('or') }
 	];
