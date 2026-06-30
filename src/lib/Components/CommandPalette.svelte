@@ -104,7 +104,7 @@
 	.results {
 		display: flex;
 		flex-direction: column;
-		gap: 0.2rem;
+		gap: 0.4rem;
 		max-height: 50vh;
 		overflow-y: auto;
 	}
@@ -113,8 +113,8 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: 0.1rem;
-		padding: 0.6rem 0.8rem;
+		gap: 0.15rem;
+		padding: 0.7rem 0.9rem;
 		border-radius: 0.5rem;
 		background: none;
 		border: none;
