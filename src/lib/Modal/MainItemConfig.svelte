@@ -104,6 +104,11 @@
 			id: 'music_assistant',
 			type: $lang('music_assistant') || 'Music Assistant',
 			preview_icon: 'solar:music-note-2-bold-duotone'
+		},
+		{
+			id: 'iframe',
+			type: $lang('iframe'),
+			preview_icon: 'fontisto:world-o'
 		}
 	];
 
@@ -156,6 +161,9 @@
 				break;
 			case 'music_assistant':
 				openModal(() => import('$lib/Modal/MusicAssistantConfig.svelte'), { sel });
+				break;
+			case 'iframe':
+				openModal(() => import('$lib/Modal/IframeGridConfig.svelte'), { sel });
 				break;
 			default:
 				openModal(() => import('$lib/Modal/MainItemConfig.svelte'), { sel });

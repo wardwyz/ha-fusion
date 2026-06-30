@@ -468,3 +468,11 @@ export interface MusicAssistantItem {
 	icon?: string;
 	player_id?: string;
 }
+
+export interface IframeGridItem {
+	type: 'iframe';
+	id: number;
+	name?: string;
+	icon?: string;
+	url?: string;
+}
