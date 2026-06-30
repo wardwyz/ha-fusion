@@ -6,7 +6,6 @@
 		editMode,
 		itemHeight,
 		lang,
-		motion,
 		onStates,
 		climateHvacActionToMode,
 		ripple,
@@ -42,12 +41,11 @@
 	let entity: HassEntity;
 	let contentWidth: number;
 	let container: HTMLDivElement;
-	let loading: boolean;
-	let resetLoading: ReturnType<typeof setTimeout> | null;
 	let stateOn: boolean;
+	let optimisticState: boolean | null = null;
+	let optimisticTimeout: ReturnType<typeof setTimeout> | null = null;
 
-	/** display loader if no state change has occurred within `$motion`ms */
-	let delayLoading: ReturnType<typeof setTimeout> | null;
+	$: displayStateOn = optimisticState ?? stateOn;
 
 	// Light drag slider
 	let isDragging = false;
@@ -65,22 +63,17 @@
 	 * When the `last_updated` property changes:
 	 *
 	 * - Updates `entity` with the new state from `$states`
-	 * - Resets the `loading` state to `false`
-	 * - Clears any pending loading or reset timeouts
+	 * - Clears optimistic state and resets the UI to real entity state
+	 * - Clears any pending optimistic revert timeout
 	 */
 	$: if (entity_id && $states?.[entity_id]?.last_updated !== entity?.last_updated) {
 		entity = $states?.[entity_id];
 
-		loading = false;
+		optimisticState = null;
 
-		if (delayLoading) {
-			clearTimeout(delayLoading);
-			delayLoading = null;
-		}
-
-		if (resetLoading) {
-			clearTimeout(resetLoading);
-			resetLoading = null;
+		if (optimisticTimeout) {
+			clearTimeout(optimisticTimeout);
+			optimisticTimeout = null;
 		}
 	}
 
@@ -165,15 +158,13 @@
 			entity_id
 		});
 
-		// loader
-		delayLoading = setTimeout(() => {
-			loading = true;
-		}, $motion);
-
-		// loader 20s fallback
-		resetLoading = setTimeout(() => {
-			loading = false;
-		}, 20_000);
+		// optimistic flip, reverted by the entity-update watcher above
+		// or after 5s if Home Assistant never confirms
+		optimisticState = !stateOn;
+		if (optimisticTimeout) clearTimeout(optimisticTimeout);
+		optimisticTimeout = setTimeout(() => {
+			optimisticState = null;
+		}, 5000);
 	}
 
 	/**
@@ -585,7 +576,7 @@
 <div
 	class="container"
 	bind:this={container}
-	data-state={stateOn}
+	data-state={displayStateOn}
 	tabindex="-1"
 	style={!$editMode && !displayOnly ? 'cursor: pointer;' : ''}
 	style:touch-action={isLight && !$editMode && !displayOnly && entity?.state === 'on'
@@ -601,7 +592,7 @@
 		...$ripple,
 		color:
 			!$editMode && !displayOnly
-				? stateOn
+				? displayStateOn
 					? 'rgba(0, 0, 0, 0.25)'
 					: 'rgba(255, 255, 255, 0.15)'
 				: 'rgba(0, 0, 0, 0)'
@@ -637,7 +628,7 @@
 	>
 		<div
 			class="icon"
-			data-state={stateOn}
+			data-state={displayStateOn}
 			style:--icon-color={iconColor}
 			style:background-color={sel?.template?.color && template?.color?.output
 				? template?.color?.output
@@ -649,9 +640,7 @@
 					: 'none'}
 			class:image
 		>
-			{#if loading}
-				<img src="loader.svg" alt="loading" style="margin:0 auto" />
-			{:else if image || (!icon && attributes?.entity_picture)}
+			{#if image || (!icon && attributes?.entity_picture)}
 				&nbsp;
 			{:else if icon}
 				{#await loadIcon(icon)}
@@ -686,7 +675,7 @@
 		tabindex="0"
 	>
 		<!-- NAME -->
-		<div class="name" data-state={stateOn}>
+		<div class="name" data-state={displayStateOn}>
 			{@html (sel?.template?.name && template?.name?.output) ||
 				getName(sel, entity, sectionName) ||
 				$lang('unknown')}
@@ -695,7 +684,7 @@
 		<!-- STATE -->
 
 		<!-- only bind clientWidth if marquee is set and use svelte-fast-dimension -->
-		<div class="state" data-state={stateOn}>
+		<div class="state" data-state={displayStateOn}>
 			{#if marquee}
 				<div style="width: min-content;" bind:clientWidth={contentWidth}>
 					{#if sel?.show_timer && getDomain(sel?.entity_id) === 'timer'}
