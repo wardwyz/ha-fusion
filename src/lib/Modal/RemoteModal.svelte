@@ -41,6 +41,7 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
 		gap: 0.6rem;
+		margin-top: 1.3rem;
 	}
 
 	.button {
