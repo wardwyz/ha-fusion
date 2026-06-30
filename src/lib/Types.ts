@@ -111,6 +111,7 @@ export interface ButtonItem {
 	marquee?: boolean;
 	more_info?: boolean;
 	display_only?: boolean;
+	show_timer?: boolean;
 	service?: string;
 	state: any;
 	visibility?: {

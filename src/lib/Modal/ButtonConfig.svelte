@@ -432,6 +432,28 @@
 			</div>
 		{/if}
 
+		{#if getDomain(entity_id) === 'timer'}
+			<h2>{$lang('show_timer')}</h2>
+
+			<div class="button-container">
+				<button
+					class:selected={!sel?.show_timer}
+					on:click={() => set('show_timer', false)}
+					use:Ripple={$ripple}
+				>
+					{$lang('no')}
+				</button>
+
+				<button
+					class:selected={sel?.show_timer}
+					on:click={() => set('show_timer', true)}
+					use:Ripple={$ripple}
+				>
+					{$lang('yes')}
+				</button>
+			</div>
+		{/if}
+
 		<h2>{$lang('visibility')}</h2>
 		<div style="display: flex; gap: 0.8rem;">
 			<VisibilityItemButton item={sel} />

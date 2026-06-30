@@ -522,6 +522,50 @@
 	}
 
 	onDestroy(() => unsubscribe?.());
+
+	// Timer countdown
+	let timerInterval: ReturnType<typeof setInterval>;
+	let timerDisplay: string;
+	let timerCurrentDate = new Date();
+	$: timerFinishesAt = attributes?.finishes_at;
+	$: timerEnd = new Date(timerFinishesAt);
+	$: if (sel?.show_timer && getDomain(sel?.entity_id) === 'timer' && timerFinishesAt)
+		initTimerInterval();
+
+	function initTimerInterval() {
+		clearInterval(timerInterval);
+		updateTimerDisplay();
+		timerInterval = setInterval(updateTimerDisplay, 1000);
+	}
+
+	function updateTimerDisplay() {
+		timerCurrentDate.setTime(Date.now());
+		const diff = timerEnd.getTime() - timerCurrentDate.getTime();
+		if (diff > 0) timerDisplay = formatTimer(...calculateTimerParts(diff));
+	}
+
+	function calculateTimerParts(ms: number): [number, number, number] {
+		const h = Math.floor(ms / (1000 * 60 * 60));
+		const m = Math.floor((ms / (1000 * 60)) % 60);
+		const s = Math.floor((ms / 1000) % 60);
+		return [h, m, s];
+	}
+
+	function formatTimer(h: number, m: number, s: number): string {
+		return h
+			? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+			: m
+				? `${m}:${String(s).padStart(2, '0')}`
+				: `0:${String(s).padStart(2, '0')}`;
+	}
+
+	function parseTimerRemaining(timeString: string): [number, number, number] {
+		const parts = timeString.split(':').map(Number);
+		while (parts.length < 3) parts.unshift(0);
+		return parts as [number, number, number];
+	}
+
+	onDestroy(() => clearInterval(timerInterval));
 </script>
 
 <div
@@ -640,7 +684,17 @@
 		<div class="state" data-state={stateOn}>
 			{#if marquee}
 				<div style="width: min-content;" bind:clientWidth={contentWidth}>
-					{#if sel?.state || (sel?.template?.state && template?.state?.output)}
+					{#if sel?.show_timer && getDomain(sel?.entity_id) === 'timer'}
+						{#if entity?.state === 'active'}
+							{timerDisplay || '--:--'}
+						{:else if entity?.state === 'paused' && attributes?.remaining}
+							{formatTimer(...parseTimerRemaining(attributes.remaining))}
+						{:else if entity?.state === 'idle' && attributes?.duration}
+							{formatTimer(...parseTimerRemaining(attributes.duration))}
+						{:else}
+							--:--
+						{/if}
+					{:else if sel?.state || (sel?.template?.state && template?.state?.output)}
 						{@html sel?.state || template?.state?.output}
 					{:else if sel?.template?.set_state && template?.set_state?.output}
 						{@html sel?.template?.set_state && $lang(template?.set_state?.output)}
@@ -650,7 +704,17 @@
 				</div>
 			{:else}
 				<div style="overflow: hidden; text-overflow: ellipsis;">
-					{#if sel?.state || (sel?.template?.state && template?.state?.output)}
+					{#if sel?.show_timer && getDomain(sel?.entity_id) === 'timer'}
+						{#if entity?.state === 'active'}
+							{timerDisplay || '--:--'}
+						{:else if entity?.state === 'paused' && attributes?.remaining}
+							{formatTimer(...parseTimerRemaining(attributes.remaining))}
+						{:else if entity?.state === 'idle' && attributes?.duration}
+							{formatTimer(...parseTimerRemaining(attributes.duration))}
+						{:else}
+							--:--
+						{/if}
+					{:else if sel?.state || (sel?.template?.state && template?.state?.output)}
 						{@html sel?.state || template?.state?.output}
 					{:else if sel?.template?.set_state && template?.set_state?.output}
 						{@html sel?.template?.set_state && $lang(template?.set_state?.output)}
