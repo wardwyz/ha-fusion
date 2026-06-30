@@ -97,6 +97,7 @@
 		color: white;
 		font-family: inherit;
 		font-size: 1rem;
+		margin-top: 1.3rem;
 		margin-bottom: 0.8rem;
 	}
 
