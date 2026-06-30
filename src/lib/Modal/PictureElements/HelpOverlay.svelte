@@ -143,6 +143,23 @@
 		box-sizing: border-box;
 	}
 
+	.container::-webkit-scrollbar {
+		width: 5px;
+	}
+
+	.container::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.container::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.2);
+		border-radius: 3px;
+	}
+
+	.container::-webkit-scrollbar-thumb:hover {
+		background: rgba(255, 255, 255, 0.35);
+	}
+
 	.section {
 		display: flex;
 		flex-direction: column;

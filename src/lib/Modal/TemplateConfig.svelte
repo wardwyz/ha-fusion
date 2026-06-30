@@ -161,4 +161,21 @@
 		border-radius: 0.6rem;
 		padding: 0rem 1rem;
 	}
+
+	.preview::-webkit-scrollbar {
+		width: 5px;
+	}
+
+	.preview::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.preview::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.2);
+		border-radius: 3px;
+	}
+
+	.preview::-webkit-scrollbar-thumb:hover {
+		background: rgba(255, 255, 255, 0.35);
+	}
 </style>

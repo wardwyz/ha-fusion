@@ -275,6 +275,23 @@
 		overflow-x: hidden;
 	}
 
+	.items::-webkit-scrollbar {
+		width: 5px;
+	}
+
+	.items::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.items::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.2);
+		border-radius: 3px;
+	}
+
+	.items::-webkit-scrollbar-thumb:hover {
+		background: rgba(255, 255, 255, 0.35);
+	}
+
 	.item {
 		display: flex;
 		gap: 0.15rem;

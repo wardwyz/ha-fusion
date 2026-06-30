@@ -172,6 +172,23 @@
 		overflow-y: auto;
 	}
 
+	.results::-webkit-scrollbar {
+		width: 5px;
+	}
+
+	.results::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.results::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.2);
+		border-radius: 3px;
+	}
+
+	.results::-webkit-scrollbar-thumb:hover {
+		background: rgba(255, 255, 255, 0.35);
+	}
+
 	.result {
 		display: flex;
 		flex-direction: column;
