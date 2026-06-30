@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { entityList, lang, ripple } from '$lib/Stores';
-	import { closeModal } from 'svelte-modals';
-	import { openEntityModal } from '$lib/Utils';
+	import { entityList, lang, ripple, dashboard, states, connection } from '$lib/Stores';
+	import { closeModal, openModal } from 'svelte-modals';
+	import { openEntityModal, getTogglableService, getName } from '$lib/Utils';
+	import { callService } from 'home-assistant-js-websocket';
 	import Modal from '$lib/Modal/Index.svelte';
 	import Ripple from 'svelte-ripple';
 	import { onMount } from 'svelte';
@@ -33,9 +34,71 @@
 		input?.focus();
 	});
 
+	/**
+	 * Searches every view's sections (including nested horizontal/vertical
+	 * stacks) for an existing `button`-type tile configured for `entity_id`,
+	 * so selecting an entity from the palette behaves exactly like clicking
+	 * its dashboard tile, if one already exists.
+	 */
+	function findExistingTile(entity_id: string): any {
+		for (const view of $dashboard?.views ?? []) {
+			const found = searchSections(view?.sections, entity_id);
+			if (found) return found;
+		}
+		return undefined;
+	}
+
+	function searchSections(sections: any[] | undefined, entity_id: string): any {
+		if (!sections?.length) return undefined;
+		for (const section of sections) {
+			if (
+				(section?.type === 'horizontal-stack' || section?.type === 'vertical-stack') &&
+				section?.sections
+			) {
+				const found = searchSections(section.sections, entity_id);
+				if (found) return found;
+			}
+			const item = section?.items?.find(
+				(i: any) => i.type === 'button' && i.entity_id === entity_id
+			);
+			if (item) return item;
+		}
+		return undefined;
+	}
+
 	async function selectResult(entity_id: string) {
+		const sel = findExistingTile(entity_id);
+
+		// replicate the tile's direct-toggle behavior (more_info: false)
+		if (sel?.more_info === false) {
+			const entity = $states?.[entity_id];
+			const service = entity && getTogglableService(entity);
+
+			if (service) {
+				const [domain, svc] = service.split('.');
+
+				if (sel?.confirm) {
+					closeModal();
+					openModal(() => import('$lib/Modal/ConfirmAlert.svelte'), {
+						title: getName(sel, entity, undefined) || $lang('unknown'),
+						message: $lang('confirm_action'),
+						confirm: () => {
+							closeModal();
+							callService($connection, domain, svc, { entity_id });
+						},
+						cancel: () => closeModal()
+					});
+					return;
+				}
+
+				closeModal();
+				callService($connection, domain, svc, { entity_id });
+				return;
+			}
+		}
+
 		closeModal();
-		await openEntityModal(entity_id);
+		await openEntityModal(entity_id, sel);
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
