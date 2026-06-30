@@ -22,7 +22,7 @@
 	import { callService, type HassEntity } from 'home-assistant-js-websocket';
 	import { marked } from 'marked';
 	import { onDestroy } from 'svelte';
-	import { openModal } from 'svelte-modals';
+	import { openModal, closeModal } from 'svelte-modals';
 	import Ripple from 'svelte-ripple';
 	import parser from 'js-yaml';
 	import '$lib/Main/Button.css';
@@ -139,27 +139,41 @@
 		// default
 		const service = getTogglableService(entity);
 
-		if (service) {
-			// use returned domain to handle specific cases such
-			// as 'remote', which uses 'homeassistant.toggle'
-			const [_domain, _service] = service.split('.');
-			callService($connection, _domain, _service, {
-				entity_id
+		if (service && sel?.confirm) {
+			openModal(() => import('$lib/Modal/ConfirmAlert.svelte'), {
+				title: getName(sel, entity, sectionName),
+				message: $lang('confirm_action'),
+				confirm: () => {
+					closeModal();
+					performToggle(service);
+				},
+				cancel: () => closeModal()
 			});
-
-			// loader
-			delayLoading = setTimeout(() => {
-				loading = true;
-			}, $motion);
-
-			// loader 20s fallback
-			resetLoading = setTimeout(() => {
-				loading = false;
-			}, 20_000);
+		} else if (service) {
+			performToggle(service);
 		} else {
 			// not in getTogglableService just open modal
 			handleClickEvent();
 		}
+	}
+
+	function performToggle(service: string) {
+		// use returned domain to handle specific cases such
+		// as 'remote', which uses 'homeassistant.toggle'
+		const [_domain, _service] = service.split('.');
+		callService($connection, _domain, _service, {
+			entity_id
+		});
+
+		// loader
+		delayLoading = setTimeout(() => {
+			loading = true;
+		}, $motion);
+
+		// loader 20s fallback
+		resetLoading = setTimeout(() => {
+			loading = false;
+		}, 20_000);
 	}
 
 	/**

@@ -96,6 +96,8 @@
 	"conditions": "Conditions",
 	"configure": "Configure",
 	"configure_row": "Select a row to configure it.",
+	"confirm": "Confirm",
+	"confirm_action": "Are you sure you want to do this?",
 	"confirm_log_out": "Are you sure you want to log out?",
 	"connected": "Connected",
 	"connected_as": "Connected as",

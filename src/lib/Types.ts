@@ -112,6 +112,7 @@ export interface ButtonItem {
 	more_info?: boolean;
 	display_only?: boolean;
 	show_timer?: boolean;
+	confirm?: boolean;
 	service?: string;
 	state: any;
 	visibility?: {

@@ -410,6 +410,26 @@
 			</button>
 		</div>
 
+		<h2>{$lang('confirm')}</h2>
+
+		<div class="button-container">
+			<button
+				class:selected={!sel?.confirm}
+				on:click={() => set('confirm', false)}
+				use:Ripple={$ripple}
+			>
+				{$lang('no')}
+			</button>
+
+			<button
+				class:selected={sel?.confirm === true}
+				on:click={() => set('confirm', true)}
+				use:Ripple={$ripple}
+			>
+				{$lang('yes')}
+			</button>
+		</div>
+
 		{#if getDomain(entity_id) === 'media_player'}
 			<h2>Marquee</h2>
 

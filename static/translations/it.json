@@ -96,6 +96,8 @@
 	"conditions": "Condizioni",
 	"configure": "Configura",
 	"configure_row": "Seleziona una riga per configurarla.",
+	"confirm": "Conferma",
+	"confirm_action": "Sei sicuro di voler eseguire questa azione?",
 	"confirm_log_out": "Sei sicuro di voler chiudere la sessione?",
 	"connect": "Connetti",
 	"connected": "Connesso",
