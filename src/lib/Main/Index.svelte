@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { editMode, motion, record, dragging, itemHeight, states, dashboard } from '$lib/Stores';
-	import { onMount, tick } from 'svelte';
+	import { onDestroy, onMount, tick } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { dndzone, TRIGGERS, SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
 	import Content from '$lib/Main/Content.svelte';
@@ -8,7 +8,15 @@
 	import HorizontalStackHeader from '$lib/Main/HorizontalStackHeader.svelte';
 	import VerticalStackHeader from '$lib/Main/VerticalStackHeader.svelte';
 	import Scenes from '$lib/Main/Scenes.svelte';
-	import { handleVisibility, handleItemVisibility, mediaQueries } from '$lib/Conditional';
+	import {
+		handleVisibility,
+		handleItemVisibility,
+		mediaQueries,
+		hasTimeCondition,
+		timeConditionTick,
+		startTimeConditionTick,
+		stopTimeConditionTick
+	} from '$lib/Conditional';
 	import { generateId } from '$lib/Utils';
 
 	export let view: any;
@@ -268,16 +276,30 @@
 	}
 
 	/**
+	 * Polling for time-based visibility conditions only runs while at
+	 * least one `time` condition exists in the current view.
+	 */
+	$: usesTimeCondition = hasTimeCondition(view?.sections);
+	$: if (usesTimeCondition) {
+		startTimeConditionTick();
+	} else {
+		stopTimeConditionTick();
+	}
+
+	onDestroy(() => stopTimeConditionTick());
+
+	/**
 	 * If $editMode is true, return the original view sections
 	 * Otherwise filter the sections based on current states and conditions.
 	 *
 	 * This statement reactively updates when any of the following change:
-	 * $editMode, mounted, $mediaQueries, view?.sections, $states
+	 * $editMode, mounted, $mediaQueries, $timeConditionTick, view?.sections, $states
 	 */
 	$: viewSections = $editMode
 		? view?.sections
 		: typeof mounted === 'boolean' &&
 			typeof $mediaQueries === 'object' &&
+			typeof $timeConditionTick === 'number' &&
 			handleVisibility($editMode, view?.sections, $states);
 </script>
 
@@ -322,7 +344,8 @@
 						{@const empty = $editMode && !stackSection?.items?.length}
 						{@const visibleItems = $editMode
 							? stackSection?.items
-							: handleItemVisibility($editMode, stackSection?.items, $states, stackSection)}
+							: typeof $timeConditionTick === 'number' &&
+								handleItemVisibility($editMode, stackSection?.items, $states, stackSection)}
 						<section
 							id={String(stackSection.id)}
 							data-is-dnd-shadow-item-hint={stackSection?.[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
@@ -391,7 +414,8 @@
 						{@const empty = $editMode && !stackSection?.items?.length}
 						{@const visibleItems = $editMode
 							? stackSection?.items
-							: handleItemVisibility($editMode, stackSection?.items, $states, stackSection)}
+							: typeof $timeConditionTick === 'number' &&
+								handleItemVisibility($editMode, stackSection?.items, $states, stackSection)}
 						<section
 							id={String(stackSection.id)}
 							data-is-dnd-shadow-item-hint={stackSection?.[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
@@ -437,7 +461,8 @@
 				{@const empty = $editMode && !section?.items?.length}
 				{@const visibleItems = $editMode
 					? section?.items
-					: handleItemVisibility($editMode, section?.items, $states, section)}
+					: typeof $timeConditionTick === 'number' &&
+						handleItemVisibility($editMode, section?.items, $states, section)}
 				<SectionHeader {view} {section} />
 				<div
 					class="scenes"
@@ -470,7 +495,8 @@
 				{@const empty = $editMode && !section?.items?.length}
 				{@const visibleItems = $editMode
 					? section?.items
-					: handleItemVisibility($editMode, section?.items, $states, section)}
+					: typeof $timeConditionTick === 'number' &&
+						handleItemVisibility($editMode, section?.items, $states, section)}
 
 				<SectionHeader {view} {section} />
 

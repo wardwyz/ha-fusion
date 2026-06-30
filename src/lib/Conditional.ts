@@ -366,3 +366,53 @@ export function handleScreen($editMode: boolean, section: Section, conditions: C
 
 	return mql?.matches;
 }
+
+/**
+ * Time condition polling
+ *
+ * Polling only runs while at least one `time` condition exists in the
+ * current view, started/stopped explicitly rather than via a Svelte
+ * `readable`'s auto-start-on-subscribe (referencing `$store` syntax
+ * anywhere in a component subscribes unconditionally at compile time).
+ */
+
+function conditionTreeHasTime(conditions?: Condition[]): boolean {
+	if (!conditions?.length) return false;
+	return conditions.some((c) => {
+		if (c.condition === 'time') return true;
+		if (c.condition === 'and' || c.condition === 'or') return conditionTreeHasTime(c.conditions);
+		return false;
+	});
+}
+
+export function hasTimeCondition(sections?: any[]): boolean {
+	if (!sections?.length) return false;
+	return sections.some((section: any) => {
+		if (conditionTreeHasTime(section?.visibility)) return true;
+		if (section?.item_visibility_template && conditionTreeHasTime(section.item_visibility_template))
+			return true;
+		if (
+			(section.type === 'horizontal-stack' || section.type === 'vertical-stack') &&
+			section.sections
+		) {
+			if (hasTimeCondition(section.sections)) return true;
+		}
+		if (section?.items?.some((item: any) => conditionTreeHasTime(item?.visibility))) return true;
+		return false;
+	});
+}
+
+let timeTickInterval: ReturnType<typeof setInterval> | null = null;
+export const timeConditionTick = writable(0);
+
+export function startTimeConditionTick() {
+	if (timeTickInterval) return;
+	timeTickInterval = setInterval(() => timeConditionTick.update((n) => n + 1), 30000);
+}
+
+export function stopTimeConditionTick() {
+	if (timeTickInterval) {
+		clearInterval(timeTickInterval);
+		timeTickInterval = null;
+	}
+}
