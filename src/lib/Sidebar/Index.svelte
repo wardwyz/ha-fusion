@@ -354,6 +354,9 @@
 								name={item?.name}
 								period={item?.period}
 								stroke={item?.stroke}
+								duration={item?.duration}
+								start_time_prop={item?.start_time}
+								end_time_prop={item?.end_time}
 							/>
 						</button>
 
