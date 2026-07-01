@@ -4,7 +4,7 @@
 	import Toggle from '$lib/Components/Toggle.svelte';
 	import ConfigButtons from '$lib/Modal/ConfigButtons.svelte';
 	import Modal from '$lib/Modal/Index.svelte';
-	import { getName, getSupport } from '$lib/Utils';
+	import { getName, getSupport, confirmableAction } from '$lib/Utils';
 	import Ripple from 'svelte-ripple';
 	import { onDestroy } from 'svelte';
 	import StateLogic from '$lib/Components/StateLogic.svelte';
@@ -47,7 +47,14 @@
 		if (needsCode) {
 			pendingAction = state === 'locked' ? 'unlock' : 'lock';
 		} else {
-			callService($connection, 'lock', state === 'locked' ? 'unlock' : 'lock', { entity_id });
+			const previous = !toggle;
+			confirmableAction(
+				sel?.confirm,
+				getName(sel, entity) || $lang('unknown'),
+				() =>
+					callService($connection, 'lock', state === 'locked' ? 'unlock' : 'lock', { entity_id }),
+				() => (toggle = previous)
+			);
 		}
 	}
 

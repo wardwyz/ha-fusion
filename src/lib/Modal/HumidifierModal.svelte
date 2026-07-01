@@ -3,7 +3,7 @@
 	import Modal from '$lib/Modal/Index.svelte';
 	import StateLogic from '$lib/Components/StateLogic.svelte';
 	import ConfigButtons from '$lib/Modal/ConfigButtons.svelte';
-	import { getName } from '$lib/Utils';
+	import { getName, confirmableAction } from '$lib/Utils';
 	import { callService } from 'home-assistant-js-websocket';
 	import RangeSlider from '$lib/Components/RangeSlider.svelte';
 	import Select from '$lib/Components/Select.svelte';
@@ -54,6 +54,16 @@
 		callService($connection, 'humidifier', service, data);
 	}
 
+	function handleToggleClick() {
+		const previous = !toggle;
+		confirmableAction(
+			sel?.confirm,
+			getName(sel, entity) || $lang('unknown'),
+			() => handleEvent('toggle'),
+			() => (toggle = previous)
+		);
+	}
+
 	/**
 	 * Formats percent to locale
 	 */
@@ -73,7 +83,7 @@
 		<!-- TOGGLE -->
 		<h2>{$lang('toggle')}</h2>
 
-		<Toggle bind:checked={toggle} on:change={() => handleEvent('toggle')} />
+		<Toggle bind:checked={toggle} on:change={handleToggleClick} />
 
 		<!-- STATE -->
 		<h2>{$lang('state')}</h2>

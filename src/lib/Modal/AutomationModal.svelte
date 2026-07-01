@@ -4,7 +4,7 @@
 	import Toggle from '$lib/Components/Toggle.svelte';
 	import ConfigButtons from '$lib/Modal/ConfigButtons.svelte';
 	import Modal from '$lib/Modal/Index.svelte';
-	import { getName } from '$lib/Utils';
+	import { getName, confirmableAction } from '$lib/Utils';
 	import Icon from '@iconify/svelte';
 	import { relativeTime } from '$lib/Utils';
 	import Ripple from 'svelte-ripple';
@@ -28,6 +28,16 @@
 		await callService($connection, 'automation', service, {
 			entity_id: entity?.entity_id
 		});
+	}
+
+	function handleToggleClick() {
+		const previous = !toggle;
+		confirmableAction(
+			sel?.confirm,
+			getName(sel, entity) || $lang('unknown'),
+			() => handle('toggle'),
+			() => (toggle = previous)
+		);
 	}
 
 	/**
@@ -82,7 +92,7 @@
 				<StateLogic entity_id={sel?.entity_id} selected={sel} />
 
 				<div class="toggle">
-					<Toggle bind:checked={toggle} on:change={() => handle('toggle')} />
+					<Toggle bind:checked={toggle} on:change={handleToggleClick} />
 				</div>
 			</div>
 

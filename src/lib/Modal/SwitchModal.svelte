@@ -4,7 +4,7 @@
 	import Toggle from '$lib/Components/Toggle.svelte';
 	import ConfigButtons from '$lib/Modal/ConfigButtons.svelte';
 	import Modal from '$lib/Modal/Index.svelte';
-	import { getName } from '$lib/Utils';
+	import { getName, confirmableAction } from '$lib/Utils';
 
 	export let isOpen: boolean;
 	export let sel: any;
@@ -13,12 +13,19 @@
 	$: toggle = entity?.state === 'on';
 
 	/**
-	 * Calls switch.toggle service
+	 * Calls switch.toggle service, gated by sel.confirm
 	 */
 	function handleClick() {
-		callService($connection, 'homeassistant', 'toggle', {
-			entity_id: entity?.entity_id
-		});
+		const previous = !toggle;
+		confirmableAction(
+			sel?.confirm,
+			getName(sel, entity) || $lang('unknown'),
+			() =>
+				callService($connection, 'homeassistant', 'toggle', {
+					entity_id: entity?.entity_id
+				}),
+			() => (toggle = previous)
+		);
 	}
 </script>
 

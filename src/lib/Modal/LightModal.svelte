@@ -5,7 +5,7 @@
 	import ColorPicker from '$lib/Components/ColorPicker.svelte';
 	import ConfigButtons from '$lib/Modal/ConfigButtons.svelte';
 	import Ripple from 'svelte-ripple';
-	import { getName } from '$lib/Utils';
+	import { getName, confirmableAction } from '$lib/Utils';
 	import { callService, type HassEntity } from 'home-assistant-js-websocket';
 	import Toggle from '$lib/Components/Toggle.svelte';
 	import { onMount } from 'svelte';
@@ -88,12 +88,16 @@
 	});
 
 	/**
-	 * Calls light.toggle service
+	 * Calls light.toggle service, gated by sel.confirm
 	 */
 	function handleClick() {
-		callService($connection, 'light', 'toggle', {
-			entity_id: entity?.entity_id
-		});
+		const previous = !toggle;
+		confirmableAction(
+			sel?.confirm,
+			getName(sel, entity) || $lang('unknown'),
+			() => callService($connection, 'light', 'toggle', { entity_id: entity?.entity_id }),
+			() => (toggle = previous)
+		);
 	}
 
 	/**

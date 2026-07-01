@@ -1,9 +1,16 @@
 import type { HassEntity } from 'home-assistant-js-websocket';
 import type { Dashboard, Section } from '$lib/Types';
 import { get } from 'svelte/store';
-import { openModal } from 'svelte-modals';
+import { openModal, closeModal } from 'svelte-modals';
 import { callService } from 'home-assistant-js-websocket';
-import { calendarFirstDay, calendarView, selectedLanguage, connection, states } from '$lib/Stores';
+import {
+	calendarFirstDay,
+	calendarView,
+	selectedLanguage,
+	connection,
+	states,
+	lang
+} from '$lib/Stores';
 
 /**
  * Converts a ha-fusion locale code (e.g. 'it') to a BCP 47 speech tag
@@ -281,6 +288,37 @@ export function getSupport(
 		if (typeof value === 'number') supports[key] = (supported_features & value) !== 0;
 		return supports;
 	}, {});
+}
+
+/**
+ * Runs `action` immediately, or — if `confirm` is true — shows the same
+ * ConfirmAlert dialog Button.svelte's own icon-click toggle uses, calling
+ * `action` only if the user confirms. `onCancel` lets callers revert any
+ * optimistic UI change a two-way-bound control (e.g. Toggle's `checked`)
+ * already made by the time the click handler runs.
+ */
+export function confirmableAction(
+	confirm: boolean | undefined,
+	title: string,
+	action: () => void,
+	onCancel?: () => void
+) {
+	if (confirm) {
+		openModal(() => import('$lib/Modal/ConfirmAlert.svelte'), {
+			title,
+			message: get(lang)('confirm_action'),
+			confirm: () => {
+				closeModal();
+				action();
+			},
+			cancel: () => {
+				closeModal();
+				onCancel?.();
+			}
+		});
+	} else {
+		action();
+	}
 }
 
 /**
