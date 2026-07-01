@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="it">
 	<head>
 		<meta charset="UTF-8" />
@@ -450,8 +450,8 @@
 			<div id="nav-header">
 				<div class="logo">⚡ Nova Domus</div>
 				<div class="version">
-					<span class="it">Versione 2026.6 · Manuale Completo</span>
-					<span class="en">Version 2026.6 · Complete Manual</span>
+					<span class="it">Versione 2026.7 · Manuale Completo</span>
+					<span class="en">Version 2026.7 · Complete Manual</span>
 				</div>
 				<button id="lang-btn" onclick="toggleLang()">
 					<span id="lang-flag">🇬🇧</span>
@@ -533,6 +533,13 @@
 						><a href="#item-music-assistant" class="en">Music Assistant</a>
 					</li>
 					<li class="sub">
+						<a href="#item-iframe" class="it">Iframe</a><a href="#item-iframe" class="en">Iframe</a>
+					</li>
+					<li class="sub">
+						<a href="#item-remote" class="it">Telecomando</a
+						><a href="#item-remote" class="en">Remote</a>
+					</li>
+					<li class="sub">
 						<a href="#item-other" class="it">Altri tipi</a
 						><a href="#item-other" class="en">Other types</a>
 					</li>
@@ -579,6 +586,10 @@
 					<li class="sub">
 						<a href="#shortcuts" class="it">Scorciatoie & URL</a
 						><a href="#shortcuts" class="en">Shortcuts & URL</a>
+					</li>
+					<li class="sub">
+						<a href="#profiles" class="it">Profili multi-device</a
+						><a href="#profiles" class="en">Multi-device profiles</a>
 					</li>
 					<li class="sub">
 						<a href="#addons" class="it">YouTube &amp; Music Assistant</a
@@ -1683,6 +1694,32 @@ docker-compose up -d nova-domus</code></pre>
 								</td>
 							</tr>
 							<tr>
+								<td>confirm</td>
+								<td>boolean</td>
+								<td><code>false</code></td>
+								<td class="it">
+									Se <code>true</code>, mostra una finestra di conferma prima di eseguire il toggle
+									o il servizio personalizzato
+								</td>
+								<td class="en">
+									If <code>true</code>, shows a confirmation dialog before executing the toggle or
+									custom service
+								</td>
+							</tr>
+							<tr>
+								<td>show_timer</td>
+								<td>boolean</td>
+								<td><code>false</code></td>
+								<td class="it">
+									Solo per entità <code>timer.*</code>: mostra il conto alla rovescia in tempo reale
+									al posto dello stato testuale
+								</td>
+								<td class="en">
+									Only for <code>timer.*</code> entities: shows a live countdown instead of the text
+									state
+								</td>
+							</tr>
+							<tr>
 								<td>visibility</td>
 								<td>array</td>
 								<td><code>—</code></td>
@@ -1692,6 +1729,48 @@ docker-compose up -d nova-domus</code></pre>
 						</tbody>
 					</table>
 				</div>
+
+				<h3>
+					<span class="it">Dialogo di conferma (<code>confirm</code>)</span
+					><span class="en">Confirmation dialog (<code>confirm</code>)</span>
+				</h3>
+				<p class="it">
+					Con <code>confirm: true</code>, prima di eseguire il toggle o il servizio personalizzato
+					appare una finestra di conferma. Utile per azioni critiche (spegnere l'impianto di
+					allarme, aprire il cancello, ecc.). La conferma si applica sia al click diretto sulla tile
+					sia all'interruttore Toggle nella finestra dettagli dell'entità.
+				</p>
+				<p class="en">
+					With <code>confirm: true</code>, a confirmation dialog appears before executing the toggle
+					or custom service. Useful for critical actions (disarming the alarm, opening the gate,
+					etc.). The gate applies to both the direct tile click and the Toggle switch inside the
+					entity detail modal.
+				</p>
+				<pre><code><span class="kw">-</span> <span class="key">type</span><span class="kw">:</span> <span class="val">button</span>
+  <span class="key">id</span><span class="kw">:</span> <span class="val">1234567890004</span>
+  <span class="key">entity_id</span><span class="kw">:</span> <span class="val">switch.cancello</span>
+  <span class="key">confirm</span><span class="kw">:</span> <span class="kw">true</span></code></pre>
+
+				<h3>
+					<span class="it">Conto alla rovescia timer (<code>show_timer</code>)</span
+					><span class="en">Timer countdown (<code>show_timer</code>)</span>
+				</h3>
+				<p class="it">
+					Con <code>show_timer: true</code> su una tile con entità <code>timer.*</code>, lo stato
+					testuale viene sostituito da un conto alla rovescia in tempo reale nel formato
+					<code>mm:ss</code> (o <code>h:mm:ss</code> per timer superiori all'ora). Il conto si
+					aggiorna ogni secondo e scompare automaticamente quando il timer è inattivo.
+				</p>
+				<p class="en">
+					With <code>show_timer: true</code> on a tile whose entity is a <code>timer.*</code>, the
+					text state is replaced by a live countdown in <code>mm:ss</code> format (or
+					<code>h:mm:ss</code> for timers over an hour). The countdown updates every second and
+					disappears automatically when the timer is idle.
+				</p>
+				<pre><code><span class="kw">-</span> <span class="key">type</span><span class="kw">:</span> <span class="val">button</span>
+  <span class="key">id</span><span class="kw">:</span> <span class="val">1234567890005</span>
+  <span class="key">entity_id</span><span class="kw">:</span> <span class="val">timer.cottura</span>
+  <span class="key">show_timer</span><span class="kw">:</span> <span class="kw">true</span></code></pre>
 
 				<h3>
 					<span class="it">Slider luminosità (trascinamento)</span
@@ -2803,6 +2882,265 @@ docker-compose up -d nova-domus</code></pre>
 				</div>
 			</section>
 
+			<!-- ══ IFRAME GRID TILE ═════════════════════════════════════ -->
+			<section id="item-iframe">
+				<h2>
+					<span class="it">Elemento: Iframe</span><span class="en">Item: Iframe</span>
+					<span class="badge badge-new">Nuovo</span>
+				</h2>
+				<p class="it">
+					Una tile launcher che apre una grande finestra modale con un <strong>iframe</strong>
+					incorporato. Ideale per pannelli web, webcam, Grafana, Home Assistant Lovelace, o
+					qualsiasi URL che supporta l'incorporamento. Al click sulla tile si apre la modale a
+					schermo intero con la pagina caricata.
+				</p>
+				<p class="en">
+					A launcher tile that opens a large modal window with an embedded <strong>iframe</strong>.
+					Ideal for web panels, webcams, Grafana, Home Assistant Lovelace, or any URL that supports
+					embedding. Clicking the tile opens the full-screen modal with the page loaded.
+				</p>
+				<div class="note">
+					<strong class="it">Nota X-Frame-Options</strong
+					><strong class="en">X-Frame-Options note</strong> —
+					<span class="it"
+						>Alcuni siti (Google, YouTube, ecc.) bloccano l'incorporamento tramite l'header
+						<code>X-Frame-Options: SAMEORIGIN</code>. Funziona meglio con pannelli locali HA o
+						servizi che permettono esplicitamente l'embedding.</span
+					><span class="en"
+						>Some sites (Google, YouTube, etc.) block embedding via the
+						<code>X-Frame-Options: SAMEORIGIN</code> header. Works best with local HA panels or
+						services that explicitly allow embedding.</span
+					>
+				</div>
+
+				<h3><span class="it">Esempio</span><span class="en">Example</span></h3>
+				<pre><code><span class="kw">-</span> <span class="key">type</span><span class="kw">:</span> <span class="val">iframe</span>
+  <span class="key">id</span><span class="kw">:</span> <span class="val">1234567890050</span>
+  <span class="key">name</span><span class="kw">:</span> <span class="str">"Grafana"</span>
+  <span class="key">icon</span><span class="kw">:</span> <span class="val">mdi:chart-line</span>
+  <span class="key">url</span><span class="kw">:</span> <span class="str">"http://192.168.1.10:3000/dashboard"</span></code></pre>
+
+				<h3><span class="it">Campi</span><span class="en">Fields</span></h3>
+				<div class="table-wrap">
+					<table>
+						<thead>
+							<tr>
+								<th><span class="it">Campo</span><span class="en">Field</span></th>
+								<th><span class="it">Tipo</span><span class="en">Type</span></th>
+								<th><span class="it">Descrizione</span><span class="en">Description</span></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>type</td>
+								<td>string</td>
+								<td><code>"iframe"</code></td>
+							</tr>
+							<tr>
+								<td>id</td>
+								<td>number</td>
+								<td class="it">Univoco obbligatorio <span class="badge badge-req">req</span></td>
+								<td class="en">Mandatory unique <span class="badge badge-req">req</span></td>
+							</tr>
+							<tr>
+								<td>url</td>
+								<td>string</td>
+								<td class="it">URL da incorporare <span class="badge badge-req">req</span></td>
+								<td class="en">URL to embed <span class="badge badge-req">req</span></td>
+							</tr>
+							<tr>
+								<td>name</td>
+								<td>string</td>
+								<td class="it">Nome sulla tile <span class="badge badge-opt">opt</span></td>
+								<td class="en">Tile name <span class="badge badge-opt">opt</span></td>
+							</tr>
+							<tr>
+								<td>icon</td>
+								<td>string</td>
+								<td class="it">Icona MDI/Iconify <span class="badge badge-opt">opt</span></td>
+								<td class="en">MDI/Iconify icon <span class="badge badge-opt">opt</span></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+			<!-- ══ REMOTE GRID TILE ══════════════════════════════════════ -->
+			<section id="item-remote">
+				<h2>
+					<span class="it">Elemento: Telecomando</span><span class="en">Item: Remote</span>
+					<span class="badge badge-new">Nuovo</span>
+				</h2>
+				<p class="it">
+					Una tile launcher per telecomandi IR/RF. Apre una modale con una griglia di pulsanti
+					configurabili, ognuno dei quali invia un comando al servizio
+					<code>remote.send_command</code> di Home Assistant. Ideale per TV, home cinema,
+					condizionatori e qualsiasi dispositivo gestito da un'entità <code>remote.*</code>.
+				</p>
+				<p class="en">
+					A launcher tile for IR/RF remotes. Opens a modal with a configurable button grid; each
+					button sends a command via Home Assistant's <code>remote.send_command</code> service.
+					Ideal for TVs, home cinema, air conditioners and any device managed by a
+					<code>remote.*</code> entity.
+				</p>
+
+				<h3><span class="it">Esempio</span><span class="en">Example</span></h3>
+				<pre><code><span class="kw">-</span> <span class="key">type</span><span class="kw">:</span> <span class="val">remote</span>
+  <span class="key">id</span><span class="kw">:</span> <span class="val">1234567890060</span>
+  <span class="key">name</span><span class="kw">:</span> <span class="str">"TV Soggiorno"</span>
+  <span class="key">icon</span><span class="kw">:</span> <span class="val">mdi:television-remote</span>
+  <span class="key">entity_id</span><span class="kw">:</span> <span class="val">remote.broadlink</span>
+  <span class="key">buttons</span><span class="kw">:</span>
+    <span class="kw">-</span> <span class="key">id</span><span class="kw">:</span> <span class="val">1234567890061</span>
+      <span class="key">name</span><span class="kw">:</span> <span class="str">"Accendi"</span>
+      <span class="key">icon</span><span class="kw">:</span> <span class="val">mdi:power</span>
+      <span class="key">command</span><span class="kw">:</span> <span class="str">"power_on"</span>
+    <span class="kw">-</span> <span class="key">id</span><span class="kw">:</span> <span class="val">1234567890062</span>
+      <span class="key">name</span><span class="kw">:</span> <span class="str">"Vol +"</span>
+      <span class="key">icon</span><span class="kw">:</span> <span class="val">mdi:volume-plus</span>
+      <span class="key">command</span><span class="kw">:</span> <span class="str">"volume_up"</span>
+      <span class="key">device</span><span class="kw">:</span> <span class="str">"Samsung TV"</span>   <span class="cm"># opzionale: nome dispositivo per entità multi-device</span></code></pre>
+
+				<h3><span class="it">Campi dell'elemento</span><span class="en">Item fields</span></h3>
+				<div class="table-wrap">
+					<table>
+						<thead>
+							<tr>
+								<th><span class="it">Campo</span><span class="en">Field</span></th>
+								<th><span class="it">Tipo</span><span class="en">Type</span></th>
+								<th><span class="it">Descrizione</span><span class="en">Description</span></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>type</td>
+								<td>string</td>
+								<td><code>"remote"</code></td>
+							</tr>
+							<tr>
+								<td>id</td>
+								<td>number</td>
+								<td class="it">Univoco obbligatorio <span class="badge badge-req">req</span></td>
+								<td class="en">Mandatory unique <span class="badge badge-req">req</span></td>
+							</tr>
+							<tr>
+								<td>entity_id</td>
+								<td>string</td>
+								<td class="it">
+									Entità <code>remote.*</code> da usare per i comandi
+									<span class="badge badge-opt">opt</span>
+								</td>
+								<td class="en">
+									<code>remote.*</code> entity for sending commands
+									<span class="badge badge-opt">opt</span>
+								</td>
+							</tr>
+							<tr>
+								<td>name</td>
+								<td>string</td>
+								<td class="it">Nome sulla tile <span class="badge badge-opt">opt</span></td>
+								<td class="en">Tile name <span class="badge badge-opt">opt</span></td>
+							</tr>
+							<tr>
+								<td>icon</td>
+								<td>string</td>
+								<td class="it">Icona sulla tile <span class="badge badge-opt">opt</span></td>
+								<td class="en">Tile icon <span class="badge badge-opt">opt</span></td>
+							</tr>
+							<tr>
+								<td>buttons</td>
+								<td>array</td>
+								<td class="it">
+									Lista di pulsanti del telecomando (vedi sotto)
+									<span class="badge badge-opt">opt</span>
+								</td>
+								<td class="en">
+									List of remote buttons (see below) <span class="badge badge-opt">opt</span>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+				<h3><span class="it">Campi di ogni pulsante</span><span class="en">Button fields</span></h3>
+				<div class="table-wrap">
+					<table>
+						<thead>
+							<tr>
+								<th><span class="it">Campo</span><span class="en">Field</span></th>
+								<th><span class="it">Tipo</span><span class="en">Type</span></th>
+								<th><span class="it">Descrizione</span><span class="en">Description</span></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>id</td>
+								<td>number</td>
+								<td class="it">Univoco obbligatorio <span class="badge badge-req">req</span></td>
+								<td class="en">Mandatory unique <span class="badge badge-req">req</span></td>
+							</tr>
+							<tr>
+								<td>command</td>
+								<td>string</td>
+								<td class="it">
+									Stringa comando inviata a <code>remote.send_command</code>
+									<span class="badge badge-req">req</span>
+								</td>
+								<td class="en">
+									Command string sent to <code>remote.send_command</code>
+									<span class="badge badge-req">req</span>
+								</td>
+							</tr>
+							<tr>
+								<td>name</td>
+								<td>string</td>
+								<td class="it">Etichetta sul pulsante <span class="badge badge-opt">opt</span></td>
+								<td class="en">Button label <span class="badge badge-opt">opt</span></td>
+							</tr>
+							<tr>
+								<td>icon</td>
+								<td>string</td>
+								<td class="it">Icona MDI/Iconify <span class="badge badge-opt">opt</span></td>
+								<td class="en">MDI/Iconify icon <span class="badge badge-opt">opt</span></td>
+							</tr>
+							<tr>
+								<td>entity_id</td>
+								<td>string</td>
+								<td class="it">
+									Sovrascrive l'entità remote dell'elemento per questo pulsante
+									<span class="badge badge-opt">opt</span>
+								</td>
+								<td class="en">
+									Overrides the item's remote entity for this button
+									<span class="badge badge-opt">opt</span>
+								</td>
+							</tr>
+							<tr>
+								<td>device</td>
+								<td>string</td>
+								<td class="it">
+									Nome dispositivo per entità multi-device (campo <code>device</code> di
+									<code>remote.send_command</code>) <span class="badge badge-opt">opt</span>
+								</td>
+								<td class="en">
+									Device name for multi-device entities (<code>device</code> field of
+									<code>remote.send_command</code>) <span class="badge badge-opt">opt</span>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<p class="it">
+					La configurazione dei pulsanti avviene tramite l'editor drag-and-drop nella finestra di
+					configurazione dell'elemento (modalità modifica). Non è necessario modificare il YAML
+					manualmente.
+				</p>
+				<p class="en">
+					Buttons are configured via the drag-and-drop editor in the item configuration modal (edit
+					mode). Manual YAML editing is not required.
+				</p>
+			</section>
+
 			<!-- ══ TEMPLATE ══════════════════════════════════════════════ -->
 			<section id="templates">
 				<h2><span class="it">Template Jinja2</span><span class="en">Jinja2 Templates</span></h2>
@@ -3072,6 +3410,23 @@ docker-compose up -d nova-domus</code></pre>
 				</h4>
 				<pre><code><span class="kw">-</span> <span class="key">condition</span><span class="kw">:</span> <span class="val">screen</span>
   <span class="key">media_query</span><span class="kw">:</span> <span class="str">"(min-width: 768px)"</span>  <span class="cm"># qualsiasi media query CSS</span></code></pre>
+
+				<h4><span class="it">Condizione: orario</span><span class="en">Condition: time</span></h4>
+				<p class="it">
+					Mostra l'elemento solo in una certa fascia oraria. I campi <code>after</code> e
+					<code>before</code> usano il formato <code>HH:MM</code> (24 ore). Entrambi sono opzionali:
+					omettere <code>after</code> significa "da mezzanotte", omettere <code>before</code>
+					significa "fino a mezzanotte".
+				</p>
+				<p class="en">
+					Show the item only within a given time window. <code>after</code> and
+					<code>before</code> use <code>HH:MM</code> format (24-hour). Both are optional: omitting
+					<code>after</code> means "from midnight"; omitting <code>before</code> means "until
+					midnight".
+				</p>
+				<pre><code><span class="kw">-</span> <span class="key">condition</span><span class="kw">:</span> <span class="val">time</span>
+  <span class="key">after</span><span class="kw">:</span>  <span class="str">"08:00"</span>   <span class="cm"># mostra dopo le 08:00</span>
+  <span class="key">before</span><span class="kw">:</span> <span class="str">"22:00"</span>   <span class="cm"># mostra prima delle 22:00</span></code></pre>
 
 				<h4>
 					<span class="it">Condizioni nidificate: AND e OR</span
@@ -3848,6 +4203,17 @@ docker-compose up -d nova-domus</code></pre>
 								<td class="it">Ripristina modifica annullata</td>
 								<td class="en">Redo undone change</td>
 							</tr>
+							<tr>
+								<td><kbd>Cmd/Ctrl</kbd>+<kbd>K</kbd></td>
+								<td class="it">
+									Apre la <strong>Command Palette</strong> — ricerca rapida entità, apre la finestra
+									dettagli o esegue il toggle
+								</td>
+								<td class="en">
+									Opens the <strong>Command Palette</strong> — quickly search entities, open detail
+									modals or toggle
+								</td>
+							</tr>
 						</tbody>
 					</table>
 				</div>
@@ -3894,6 +4260,86 @@ docker-compose up -d nova-domus</code></pre>
 				<p class="it">Esempio di URL completo per tablet a parete:</p>
 				<p class="en">Example full URL for a wall tablet:</p>
 				<pre><code>http://192.168.1.10:5050/?view=Soggiorno&menu=false</code></pre>
+			</section>
+
+			<!-- ══ PROFILI MULTI-DEVICE ═════════════════════════════════ -->
+			<section id="profiles">
+				<h2>
+					<span class="it">Profili Multi-Device</span><span class="en">Multi-Device Profiles</span>
+					<span class="badge badge-new">Nuovo</span>
+				</h2>
+				<p class="it">
+					I profili consentono di avere
+					<strong>dashboard separate per device diversi</strong> (tablet, telefono, pannello a muro,
+					ecc.) mantenendo un'unica installazione. Ogni profilo ha il proprio file
+					<code>dashboard.yaml</code> e viene selezionato tramite il percorso URL o il Drawer.
+				</p>
+				<p class="en">
+					Profiles allow <strong>separate dashboards for different devices</strong> (tablet, phone,
+					wall panel, etc.) while keeping a single installation. Each profile has its own
+					<code>dashboard.yaml</code> and is selected via the URL path or the Drawer.
+				</p>
+
+				<h3><span class="it">Configurazione</span><span class="en">Configuration</span></h3>
+				<p class="it">
+					Definisci i profili in <code>configuration.yaml</code>. Ogni profilo ha un
+					<code>id</code> (usato nell'URL, solo lettere/numeri/trattini) e un'etichetta leggibile.
+				</p>
+				<p class="en">
+					Define profiles in <code>configuration.yaml</code>. Each profile has an <code>id</code>
+					(used in the URL, letters/numbers/hyphens only) and a human-readable label.
+				</p>
+				<pre><code><span class="cm"># configuration.yaml</span>
+<span class="key">profiles</span><span class="kw">:</span>
+  <span class="kw">-</span> <span class="key">id</span><span class="kw">:</span> <span class="val">tablet</span>
+    <span class="key">label</span><span class="kw">:</span> <span class="str">"Tablet Cucina"</span>
+  <span class="kw">-</span> <span class="key">id</span><span class="kw">:</span> <span class="val">telefono</span>
+    <span class="key">label</span><span class="kw">:</span> <span class="str">"Telefono"</span></code></pre>
+
+				<p class="it">
+					Nova Domus creerà automaticamente i file
+					<code>data/dashboard-tablet.yaml</code> e <code>data/dashboard-telefono.yaml</code> al
+					primo accesso. Il profilo di default (senza suffisso) usa
+					<code>data/dashboard.yaml</code>.
+				</p>
+				<p class="en">
+					Nova Domus will automatically create <code>data/dashboard-tablet.yaml</code> and
+					<code>data/dashboard-telefono.yaml</code> on first access. The default profile (no suffix)
+					uses <code>data/dashboard.yaml</code>.
+				</p>
+
+				<h3><span class="it">Accesso via URL</span><span class="en">URL access</span></h3>
+				<pre><code><span class="cm"># Profilo di default</span>
+http://192.168.1.10:5050/
+
+<span class="cm"># Profilo "tablet"</span>
+http://192.168.1.10:5050/tablet
+
+<span class="cm"># Profilo "telefono"</span>
+http://192.168.1.10:5050/telefono</code></pre>
+
+				<p class="it">
+					Nova Domus ricorda l'ultimo profilo usato tramite un cookie: riaprendo l'app sullo stesso
+					dispositivo si torna automaticamente all'ultimo profilo selezionato.
+				</p>
+				<p class="en">
+					Nova Domus remembers the last used profile via a cookie: reopening the app on the same
+					device automatically returns to the last selected profile.
+				</p>
+
+				<h3>
+					<span class="it">Cambio profilo dall'interfaccia</span
+					><span class="en">Switching profiles from the UI</span>
+				</h3>
+				<p class="it">
+					Apri il Drawer (☰) → sezione <strong>Profili</strong>. Puoi selezionare un profilo
+					esistente o crearne uno nuovo direttamente dall'interfaccia senza modificare il YAML
+					manualmente.
+				</p>
+				<p class="en">
+					Open the Drawer (☰) → <strong>Profiles</strong> section. You can select an existing
+					profile or create a new one directly from the UI without editing YAML manually.
+				</p>
 			</section>
 
 			<!-- ══ ADD-ON YOUTUBE & MUSIC ASSISTANT ══════════════════════ -->
@@ -4352,6 +4798,18 @@ docker logs nova-domus --tail 100 -f  <span class="cm"># segui in tempo reale</s
 								<td class="en">Jinja2 YAML for service</td>
 							</tr>
 							<tr>
+								<td>confirm</td>
+								<td>boolean</td>
+								<td class="it">Dialogo di conferma prima del toggle/servizio</td>
+								<td class="en">Confirmation dialog before toggle/service</td>
+							</tr>
+							<tr>
+								<td>show_timer</td>
+								<td>boolean</td>
+								<td class="it">Conto alla rovescia live (solo <code>timer.*</code>)</td>
+								<td class="en">Live countdown (only for <code>timer.*</code>)</td>
+							</tr>
+							<tr>
 								<td>visibility</td>
 								<td>CondGroup[]</td>
 								<td class="it">Condizioni visibilità item</td>
@@ -4649,6 +5107,141 @@ docker logs nova-domus --tail 100 -f  <span class="cm"># segui in tempo reale</s
 									MDI/Iconify icon when there is no album art
 									<span class="badge badge-opt">opt</span>
 								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!-- Iframe and Remote ref tables added inline in ref-items section -->
+
+				<h3>Iframe <span class="badge badge-new">Nuovo</span></h3>
+				<div class="table-wrap">
+					<table>
+						<thead>
+							<tr>
+								<th><span class="it">Campo</span><span class="en">Field</span></th>
+								<th><span class="it">Tipo</span><span class="en">Type</span></th>
+								<th><span class="it">Descrizione</span><span class="en">Description</span></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>type</td>
+								<td>string</td>
+								<td><code>"iframe"</code></td>
+							</tr>
+							<tr>
+								<td>id</td>
+								<td>number</td>
+								<td class="it">Univoco <span class="badge badge-req">req</span></td>
+								<td class="en">Unique <span class="badge badge-req">req</span></td>
+							</tr>
+							<tr>
+								<td>url</td>
+								<td>string</td>
+								<td class="it">URL da incorporare <span class="badge badge-req">req</span></td>
+								<td class="en">URL to embed <span class="badge badge-req">req</span></td>
+							</tr>
+							<tr>
+								<td>name</td>
+								<td>string</td>
+								<td class="it">Nome sulla tile <span class="badge badge-opt">opt</span></td>
+								<td class="en">Tile name <span class="badge badge-opt">opt</span></td>
+							</tr>
+							<tr>
+								<td>icon</td>
+								<td>string</td>
+								<td class="it">Icona MDI/Iconify <span class="badge badge-opt">opt</span></td>
+								<td class="en">MDI/Iconify icon <span class="badge badge-opt">opt</span></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+				<h3>Remote <span class="badge badge-new">Nuovo</span></h3>
+				<div class="table-wrap">
+					<table>
+						<thead>
+							<tr>
+								<th><span class="it">Campo</span><span class="en">Field</span></th>
+								<th><span class="it">Tipo</span><span class="en">Type</span></th>
+								<th><span class="it">Descrizione</span><span class="en">Description</span></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>type</td>
+								<td>string</td>
+								<td><code>"remote"</code></td>
+							</tr>
+							<tr>
+								<td>id</td>
+								<td>number</td>
+								<td class="it">Univoco <span class="badge badge-req">req</span></td>
+								<td class="en">Unique <span class="badge badge-req">req</span></td>
+							</tr>
+							<tr>
+								<td>entity_id</td>
+								<td>string</td>
+								<td class="it">
+									Entità <code>remote.*</code> <span class="badge badge-opt">opt</span>
+								</td>
+								<td class="en">
+									<code>remote.*</code> entity <span class="badge badge-opt">opt</span>
+								</td>
+							</tr>
+							<tr>
+								<td>name</td>
+								<td>string</td>
+								<td class="it">Nome sulla tile <span class="badge badge-opt">opt</span></td>
+								<td class="en">Tile name <span class="badge badge-opt">opt</span></td>
+							</tr>
+							<tr>
+								<td>icon</td>
+								<td>string</td>
+								<td class="it">Icona sulla tile <span class="badge badge-opt">opt</span></td>
+								<td class="en">Tile icon <span class="badge badge-opt">opt</span></td>
+							</tr>
+							<tr>
+								<td>buttons[].id</td>
+								<td>number</td>
+								<td class="it">ID pulsante univoco <span class="badge badge-req">req</span></td>
+								<td class="en">Unique button ID <span class="badge badge-req">req</span></td>
+							</tr>
+							<tr>
+								<td>buttons[].command</td>
+								<td>string</td>
+								<td class="it">Stringa comando HA <span class="badge badge-req">req</span></td>
+								<td class="en">HA command string <span class="badge badge-req">req</span></td>
+							</tr>
+							<tr>
+								<td>buttons[].name</td>
+								<td>string</td>
+								<td class="it">Etichetta pulsante <span class="badge badge-opt">opt</span></td>
+								<td class="en">Button label <span class="badge badge-opt">opt</span></td>
+							</tr>
+							<tr>
+								<td>buttons[].icon</td>
+								<td>string</td>
+								<td class="it">Icona pulsante <span class="badge badge-opt">opt</span></td>
+								<td class="en">Button icon <span class="badge badge-opt">opt</span></td>
+							</tr>
+							<tr>
+								<td>buttons[].entity_id</td>
+								<td>string</td>
+								<td class="it">
+									Override entità per il pulsante <span class="badge badge-opt">opt</span>
+								</td>
+								<td class="en">
+									Per-button entity override <span class="badge badge-opt">opt</span>
+								</td>
+							</tr>
+							<tr>
+								<td>buttons[].device</td>
+								<td>string</td>
+								<td class="it">
+									Nome dispositivo multi-device <span class="badge badge-opt">opt</span>
+								</td>
+								<td class="en">Multi-device name <span class="badge badge-opt">opt</span></td>
 							</tr>
 						</tbody>
 					</table>
