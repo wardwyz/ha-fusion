@@ -193,6 +193,12 @@ export interface PowerSummaryGroup {
 	domains?: string[];
 	exclude?: string[];
 	on_states?: string[];
+	entities?: PowerSummaryEntity[];
+}
+
+export interface PowerSummaryEntity {
+	entity_id: string;
+	on_state?: string;
 }
 
 export interface PowerSummaryItem {
