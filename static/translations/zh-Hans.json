@@ -317,6 +317,7 @@
 	"precision": "显示精度",
 	"press": "按下",
 	"preview": "预览",
+	"priority_over_domains": "覆盖按域筛选",
 	"profile_exists": "已存在同名配置文件",
 	"profile_invalid_name": "名称只能包含字母和数字（最多 20 个字符）",
 	"profile_name": "配置文件名称",

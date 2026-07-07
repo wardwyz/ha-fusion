@@ -11,7 +11,7 @@
 	import Ripple from 'svelte-ripple';
 	import Icon from '@iconify/svelte';
 	import { updateObj, generateId } from '$lib/Utils';
-	import type { PowerSummaryItem, PowerSummaryGroup } from '$lib/Types';
+	import type { PowerSummaryItem, PowerSummaryGroup, PowerSummaryEntity } from '$lib/Types';
 
 	export let isOpen: boolean;
 	export let sel: PowerSummaryItem;
@@ -105,6 +105,56 @@
 			'exclude',
 			(group.exclude ?? []).filter((id) => id !== entityId)
 		);
+	}
+
+	function getAllEntityOptions() {
+		return Object.entries($states)
+			.sort(([, a], [, b]) => {
+				const na = a?.attributes?.friendly_name ?? a?.entity_id ?? '';
+				const nb = b?.attributes?.friendly_name ?? b?.entity_id ?? '';
+				return na.localeCompare(nb);
+			})
+			.map(([id, entity]) => ({
+				id,
+				label: entity?.attributes?.friendly_name ?? id,
+				hint: id
+			}));
+	}
+
+	function getEntityOptionsForGroup(index: number) {
+		const group = sel.groups?.[index];
+		if (!group) return [];
+		const existing = new Set(group.entities?.map((e) => e.entity_id) ?? []);
+		return getAllEntityOptions().filter((opt) => !existing.has(opt.id));
+	}
+
+	function addEntity(index: number, entityId: string) {
+		if (!sel.groups || !entityId) return;
+		const group = sel.groups[index];
+		const current = group.entities ?? [];
+		if (!current.some((e) => e.entity_id === entityId)) {
+			const newEntities: PowerSummaryEntity[] = [...current, { entity_id: entityId, on_state: 'on' }];
+			setGroup(index, 'entities', newEntities);
+		}
+	}
+
+	function removeEntity(index: number, entityId: string) {
+		if (!sel.groups) return;
+		const group = sel.groups[index];
+		setGroup(
+			index,
+			'entities',
+			(group.entities ?? []).filter((e) => e.entity_id !== entityId)
+		);
+	}
+
+	function setEntityOnState(index: number, entityId: string, onState: string) {
+		if (!sel.groups) return;
+		const group = sel.groups[index];
+		const updated = (group.entities ?? []).map((e) =>
+			e.entity_id === entityId ? { ...e, on_state: onState || 'on' } : e
+		);
+		setGroup(index, 'entities', updated);
 	}
 
 	function getExcludeOptions(group: PowerSummaryGroup) {
@@ -276,6 +326,51 @@
 									{/if}
 								{:else}
 									<p class="hint">{$lang('select_domains_first')}</p>
+								{/if}
+
+								<h2>{$lang('entities')}</h2>
+								<Select
+									options={getEntityOptionsForGroup(i)}
+									placeholder="{$lang('add')} {$lang('entity')}"
+									value={undefined}
+									on:change={(e) => addEntity(i, e.detail)}
+								/>
+								{#if (group.entities ?? []).length > 0}
+									<div class="entity-tags">
+										{#each group.entities ?? [] as entry}
+											<div class="entity-tag">
+												<div class="entity-tag-body">
+													<span class="entity-name">
+														{$states[entry.entity_id]?.attributes?.friendly_name ?? entry.entity_id}
+													</span>
+													<InputClear
+														condition={entry.on_state}
+														on:clear={() => setEntityOnState(i, entry.entity_id, 'on')}
+														let:padding
+													>
+														<input
+															class="on-state-input"
+															type="text"
+															value={entry.on_state ?? 'on'}
+															placeholder="on"
+															on:change={(e) => setEntityOnState(i, entry.entity_id, e.currentTarget.value)}
+															style:padding
+															autocomplete="off"
+															spellcheck="false"
+														/>
+													</InputClear>
+												</div>
+												<button
+													class="entity-remove"
+													on:click={() => removeEntity(i, entry.entity_id)}
+													aria-label="Remove entity"
+												>
+													<Icon icon="mdi:close" height="0.8em" width="0.8em" />
+												</button>
+											</div>
+										{/each}
+									</div>
+									<p class="hint">{$lang('entities')}: {$lang('priority_over_domains')}</p>
 								{/if}
 							</div>
 						{/if}
@@ -468,5 +563,67 @@
 
 	.icon-gallery-container :global(.clear) {
 		flex: 1;
+	}
+
+	.entity-tags {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		margin-top: 0.4rem;
+	}
+
+	.entity-tag {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		background: rgba(255, 255, 255, 0.08);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 0.5rem;
+		padding: 0.25rem 0.5rem;
+		font-size: 0.8rem;
+	}
+
+	.entity-tag-body {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		min-width: 0;
+	}
+
+	.entity-name {
+		flex-shrink: 0;
+		max-width: 60%;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.on-state-input {
+		flex: 1;
+		min-width: 40px;
+		background: rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.15);
+		border-radius: 0.35rem;
+		padding: 0.15rem 0.4rem;
+		color: inherit;
+		font-family: inherit;
+		font-size: 0.78rem;
+	}
+
+	.entity-remove {
+		background: none;
+		border: none;
+		color: inherit;
+		cursor: pointer;
+		padding: 0.1rem;
+		opacity: 0.5;
+		display: flex;
+		align-items: center;
+		flex-shrink: 0;
+	}
+
+	.entity-remove:hover {
+		opacity: 1;
 	}
 </style>

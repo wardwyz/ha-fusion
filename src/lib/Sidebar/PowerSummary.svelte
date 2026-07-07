@@ -2,7 +2,7 @@
 	import { states, editMode, motion, lang } from '$lib/Stores';
 	import { getName } from '$lib/Utils';
 	import Icon from '@iconify/svelte';
-	import type { PowerSummaryItem, PowerSummaryGroup } from '$lib/Types';
+	import type { PowerSummaryItem, PowerSummaryGroup, PowerSummaryEntity } from '$lib/Types';
 
 	export let sel: PowerSummaryItem | undefined = undefined;
 	export let demo = false;
@@ -34,16 +34,32 @@
 		currentStates: typeof $states
 	): GroupResult[] {
 		return groups.map((group) => {
-			const domains = group.domains ?? [];
-			const excluded = new Set(group.exclude ?? []);
-			const onStates = new Set(group.on_states ?? ['on']);
+			let active: any[];
 
-			const active = Object.entries(currentStates ?? {})
-				.filter(([id, entity]) => {
-					const domain = id.split('.')[0];
-					return domains.includes(domain) && !excluded.has(id) && onStates.has(entity.state);
-				})
-				.map(([, entity]) => entity);
+			// Entity-based matching: if entities is specified, use it directly
+			if (group.entities && group.entities.length > 0) {
+				const entityIds = new Set(group.entities.map((e: PowerSummaryEntity) => e.entity_id));
+				active = Object.entries(currentStates ?? {})
+					.filter(([id, entity]) => {
+						if (!entityIds.has(id)) return false;
+						const entry = group.entities!.find((e: PowerSummaryEntity) => e.entity_id === id);
+						const onState = entry?.on_state ?? 'on';
+						return entity.state === onState;
+					})
+					.map(([, entity]) => entity);
+			} else {
+				// Legacy domain-based matching
+				const domains = group.domains ?? [];
+				const excluded = new Set(group.exclude ?? []);
+				const onStates = new Set(group.on_states ?? ['on']);
+
+				active = Object.entries(currentStates ?? {})
+					.filter(([id, entity]) => {
+						const domain = id.split('.')[0];
+						return domains.includes(domain) && !excluded.has(id) && onStates.has(entity.state);
+					})
+					.map(([, entity]) => entity);
+			}
 
 			const count = active.length;
 			let displayText = '';
