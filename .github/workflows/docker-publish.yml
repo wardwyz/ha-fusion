@@ -13,9 +13,11 @@ jobs:
   build-and-push-image:
     name: Push Docker image to GitHub Packages
     runs-on: ubuntu-latest
+
     permissions:
       packages: write
-      contents: read
+      contents: write
+
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -38,12 +40,47 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=ref,event=branch
+            type=ref,event=tag
+            type=semver,pattern={{version}}
 
+      # 推送多架构镜像到 GHCR
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags:  ${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64,linux/arm/v7
+
+      # 构建 AMD64 镜像（用于导出 tar）
+      - name: Build AMD64 image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: ha-fusion:latest
+
+      # 导出 Docker 镜像
+      - name: Export Docker image
+        run: |
+          docker save ha-fusion:latest | gzip > ha-fusion-amd64.tar.gz
+
+      # 上传到 Release（发布 Release 时）
+      - name: Upload Release Asset
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ha-fusion-amd64.tar.gz
+
+      # 上传到 Actions Artifact（手动运行时可下载）
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ha-fusion-amd64
+          path: ha-fusion-amd64.tar.gz
