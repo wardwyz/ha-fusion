@@ -3,12 +3,12 @@ services:
     container_name: nova-domus
     build: .
     volumes:
-      - ~/Developer/ha-fusion/data:/app/data
+      - /Users/ward/Documents/fusion/data:/app/data
     network_mode: bridge
     ports:
       - 5050:5050
     environment:
-      TZ: Europe/Stockholm
+      TZ: Asia/Shanghai
       HASS_URL: http://192.168.1.241:8123
     restart: always
-# cd ~/Developer/ha-fusion && docker-compose -f compose-dev.yml up -d --build ha-fusion
+# cd /Users/ward/Documents/fusion && docker compose -f compose-dev.yml up -d --build
