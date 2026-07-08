@@ -79,12 +79,14 @@
 <div
 	class="container"
 	style:min-height="{$itemHeight * 4}px"
+	data-mp-debug="rendered"
 	on:click={handleClick}
 	use:Ripple={$ripple}
 	role="button"
 	tabindex="0"
 	on:keydown
 >
+	<!-- DEBUG: mp component rendered, loading={loading}, items={items.length}, error={error} -->
 	{#if loading}
 		<div class="state-wrap">
 			<Icon icon="svg-spinners:ring-resize" height="none" />
