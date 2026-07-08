@@ -210,6 +210,16 @@
 					on:focus={handleFocus}
 					on:blur={handleFocus}
 				/>
+				<input
+					class="input"
+					type="password"
+					name="mp_tmdb_apikey"
+					placeholder="TMDB API Key"
+					autocomplete="new-password"
+					value={data?.configuration?.addons?.movie_pilot?.tmdb_apikey || ''}
+					on:focus={handleFocus}
+					on:blur={handleFocus}
+				/>
 				<button
 					type="button"
 					class="btn-action"

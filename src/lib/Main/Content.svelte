@@ -45,6 +45,8 @@
 	<Iframe sel={item} />
 {:else if item?.type === 'remote'}
 	<Remote sel={item} />
+{:else if item?.type === 'movie_pilot'}
+	<MoviePilot sel={item} />
 {:else}
 	<!-- if types are changed internally, don't break ui -->
 	<Configure sel={{ id: item?.id }} />

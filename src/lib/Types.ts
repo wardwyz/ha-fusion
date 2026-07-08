@@ -32,6 +32,7 @@ export interface Addons {
 	movie_pilot?: {
 		server_url: string;
 		token: string;
+		tmdb_apikey?: string;
 	};
 };
 

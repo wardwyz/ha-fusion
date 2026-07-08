@@ -51,6 +51,7 @@
 
 			const mpUrl = form.mp_server_url as string | undefined;
 			const mpToken = form.mp_token as string | undefined;
+			const mpTmdbKey = form.mp_tmdb_apikey as string | undefined;
 
 			const addons = {
 				...(form.youtube && { youtube: form.youtube === 'true' }),
@@ -67,7 +68,8 @@
 					mpToken && {
 						movie_pilot: {
 							server_url: mpUrl,
-							token: mpToken
+							token: mpToken,
+							...(mpTmdbKey && { tmdb_apikey: mpTmdbKey })
 						}
 					})
 			};
@@ -91,7 +93,8 @@
 			if (mpUrl && mpToken) {
 				$configuration.addons.movie_pilot = {
 					server_url: mpUrl,
-					token: mpToken
+					token: mpToken,
+					...(mpTmdbKey && { tmdb_apikey: mpTmdbKey })
 				};
 			} else {
 				delete $configuration.addons.movie_pilot;
