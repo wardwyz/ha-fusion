@@ -88,7 +88,8 @@
 >
 	<!-- DEBUG: mp component rendered, loading={loading}, items={items.length}, error={error} -->
 	{#if loading}
-		<div class="state-wrap">
+		<div class="state-wrap" style="background-color:var(--theme-button-background-color-off);padding:1rem;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%">
+			<p style="font-size:0.9rem;opacity:0.7;margin:0 0 0.5rem">MoviePilot</p>
 			<Icon icon="svg-spinners:ring-resize" height="none" />
 			<span class="state-text">{$lang('loading')}</span>
 		</div>
