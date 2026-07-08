@@ -29,10 +29,13 @@ export const GET: RequestHandler = async () => {
 	}
 
 	try {
-		const resp = await fetch(`${cfg.server_url}/api/v1/transfer/?page=1&count=20`, {
+		// Use correct endpoint: GET /api/v1/history/transfer
+		const url = `${cfg.server_url}/api/v1/history/transfer?page=1&count=30&token=${encodeURIComponent(cfg.token)}`;
+
+		const resp = await fetch(url, {
 			headers: {
-				'Authorization': `Bearer ${cfg.token}`,
-				'Accept': 'application/json'
+				'Accept': 'application/json',
+				'Authorization': `Bearer ${cfg.token}`
 			}
 		});
 
@@ -43,15 +46,27 @@ export const GET: RequestHandler = async () => {
 			);
 		}
 
-		const data = await resp.json();
+		const body = await resp.json();
 
-		// Normalize transfer items: extract title, year, type, image (poster)
-		const items = (data?.data?.items ?? data?.items ?? data ?? []).map((item: any) => ({
-			title: item.title ?? item.name ?? '',
+		// MP wraps in {success, data, message}
+		if (!body.success) {
+			return new Response(
+				JSON.stringify({ error: body.message ?? 'API returned failure' }),
+				{ status: 500 }
+			);
+		}
+
+		// data can be an array or {items, total}
+		const raw = body.data ?? [];
+		const records = Array.isArray(raw) ? raw : (raw.items ?? raw.list ?? []);
+
+		// Map to normalized items
+		const items = records.map((item: any) => ({
+			title: item.title ?? '',
 			year: item.year ?? '',
-			type: item.type ?? item.media_type ?? '',
-			image: item.image ?? item.poster ?? item.poster_path ?? null,
-			state: item.state ?? '',
+			type: item.type ?? '',
+			category: item.category ?? '',
+			image: item.image ?? null,
 			tmdbid: item.tmdbid ?? null
 		}));
 

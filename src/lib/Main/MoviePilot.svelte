@@ -111,10 +111,11 @@
 			<!-- cover image -->
 			<div class="cover-area">
 				{#if currentItem?.image}
+					{@const imgSrc = currentItem.image.startsWith('http')
+						? currentItem.image
+						: `${mpUrl}/${currentItem.image.replace(/^\//, '')}`}
 					<img
-						src={currentItem.image.startsWith('http')
-							? currentItem.image
-							: `${mpUrl}/${currentItem.image.replace(/^\//, '')}`}
+						src={imgSrc}
 						alt={currentItem.title}
 						class="cover"
 						draggable="false"
