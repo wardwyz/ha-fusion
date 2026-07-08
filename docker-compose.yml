@@ -11,18 +11,3 @@ services:
       TZ: Europe/Stockholm
       HASS_URL: http://192.168.1.241:8123
     restart: always
-
-  moviepilot:
-    container_name: moviepilot
-    image: jxxghp/moviepilot:latest
-    network_mode: bridge
-    ports:
-      - "3000:3000"
-    volumes:
-      - /path/to/moviepilot/data:/config
-      - /path/to/media:/media
-    environment:
-      TZ: Asia/Shanghai
-      SUPERUSER: admin
-      API_TOKEN: moviepilot
-    restart: always
