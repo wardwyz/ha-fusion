@@ -29,7 +29,11 @@ export interface Addons {
 		token: string;
 		username?: string;
 	};
-}
+	movie_pilot?: {
+		server_url: string;
+		token: string;
+	};
+};
 
 export interface Dashboard {
 	views: Views[];
@@ -499,3 +503,19 @@ export interface RemoteItem {
 	icon?: string;
 	buttons?: RemoteButton[];
 }
+
+export interface MoviePilotItem {
+  type: 'movie_pilot';
+  id: number;
+  name?: string;
+}
+
+export interface MoviePilotTransfer {
+  title: string;
+  year: string;
+  type: string;
+  image: string | null;
+  state: string;
+  tmdbid: number | null;
+}
+

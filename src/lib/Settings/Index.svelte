@@ -49,6 +49,9 @@
 			const maToken = form.ma_token as string | undefined;
 			const maUser = form.ma_username as string | undefined;
 
+			const mpUrl = form.mp_server_url as string | undefined;
+			const mpToken = form.mp_token as string | undefined;
+
 			const addons = {
 				...(form.youtube && { youtube: form.youtube === 'true' }),
 				...(form.maptiler && { maptiler: { apikey: form.maptiler } }),
@@ -58,6 +61,13 @@
 							server_url: maUrl,
 							token: maToken,
 							...(maUser && { username: maUser })
+						}
+					}),
+				...(mpUrl &&
+					mpToken && {
+						movie_pilot: {
+							server_url: mpUrl,
+							token: mpToken
 						}
 					})
 			};
@@ -76,6 +86,15 @@
 				};
 			} else {
 				delete $configuration.addons.music_assistant;
+			}
+
+			if (mpUrl && mpToken) {
+				$configuration.addons.movie_pilot = {
+					server_url: mpUrl,
+					token: mpToken
+				};
+			} else {
+				delete $configuration.addons.movie_pilot;
 			}
 
 			const token = form.token || undefined;

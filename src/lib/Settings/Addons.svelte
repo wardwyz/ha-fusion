@@ -154,6 +154,31 @@
 		<input type="hidden" name="ma_token" value={maToken} />
 		<input type="hidden" name="ma_username" value={maUsername} />
 	</div>
+
+	<!-- MoviePilot -->
+	<div class="item">
+		<h3>MoviePilot</h3>
+		<div class="ma-login">
+			<input
+				class="input"
+				type="url"
+				name="mp_server_url"
+				placeholder="http://192.168.1.10:3000"
+				autocomplete="off"
+				value={data?.configuration?.addons?.movie_pilot?.server_url || ''}
+			/>
+			<input
+				class="input"
+				type="password"
+				name="mp_token"
+				placeholder={$lang('token')}
+				autocomplete="new-password"
+				value={data?.configuration?.addons?.movie_pilot?.token || ''}
+				on:focus={handleFocus}
+				on:blur={handleFocus}
+			/>
+		</div>
+	</div>
 </div>
 
 <style>

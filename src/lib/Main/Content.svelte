@@ -9,6 +9,7 @@
 	import CustomPanel from '$lib/Main/CustomPanel.svelte';
 	import Doorbell from '$lib/Main/Doorbell.svelte';
 	import MusicAssistant from '$lib/Main/MusicAssistant.svelte';
+	import MoviePilot from '$lib/Main/MoviePilot.svelte';
 	import Iframe from '$lib/Main/Iframe.svelte';
 	import Remote from '$lib/Main/Remote.svelte';
 

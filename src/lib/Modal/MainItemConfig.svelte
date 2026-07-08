@@ -114,6 +114,11 @@
 			id: 'remote',
 			type: $lang('remote'),
 			preview_icon: 'mdi:remote'
+		},
+		{
+			id: 'movie_pilot',
+			type: $lang('movie_pilot') || 'MoviePilot',
+			preview_icon: 'solar:videocamera-record-bold-duotone'
 		}
 	];
 
@@ -172,6 +177,9 @@
 				break;
 			case 'remote':
 				openModal(() => import('$lib/Modal/RemoteConfig.svelte'), { sel });
+				break;
+			case 'movie_pilot':
+				openModal(() => import('$lib/Modal/MoviePilotConfig.svelte'), { sel });
 				break;
 			default:
 				openModal(() => import('$lib/Modal/MainItemConfig.svelte'), { sel });
