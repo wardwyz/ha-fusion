@@ -9,6 +9,6 @@ services:
       - 5050:5050
     environment:
       TZ: Asia/Shanghai
-      HASS_URL: http://192.168.1.241:8123
+      HASS_URL: http://ward.myds.me:58123
     restart: always
 # cd /Users/ward/Documents/fusion && docker compose -f compose-dev.yml up -d --build

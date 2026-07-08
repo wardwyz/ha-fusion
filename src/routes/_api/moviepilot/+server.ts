@@ -36,8 +36,7 @@ export const GET: RequestHandler = async () => {
 
 		const resp = await fetch(url, {
 			headers: {
-				'Accept': 'application/json',
-				'Authorization': `Bearer ${cfg.token}`
+				'Accept': 'application/json'
 			}
 		});
 
