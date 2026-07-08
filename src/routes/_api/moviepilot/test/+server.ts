@@ -22,7 +22,6 @@ export const POST: RequestHandler = async ({ request }) => {
 			{
 				headers: {
 					Accept: 'application/json',
-					Authorization: `Bearer ${token}`
 				},
 				signal: AbortSignal.timeout(8000)
 			}
