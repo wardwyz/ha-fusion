@@ -46,6 +46,38 @@
 		maUsername = '';
 		loginPassword = '';
 	}
+
+	// MP test state
+	let mpTesting = false;
+	let mpTestResult: { ok: boolean; msg: string } | null = null;
+
+	async function testMP() {
+		mpTesting = true;
+		mpTestResult = null;
+		try {
+			const formEl = document.querySelector('form#settings') as HTMLFormElement | null;
+			const fd = new FormData(formEl ?? undefined);
+			const url = (fd.get('mp_server_url') as string)?.trim();
+			const token = (fd.get('mp_token') as string)?.trim();
+			if (!url || !token) {
+				mpTestResult = { ok: false, msg: 'Please enter server URL and token' };
+				return;
+			}
+			const resp = await fetch('/_api/moviepilot/test', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ server_url: url, token })
+			});
+			const json = await resp.json();
+			mpTestResult = json.success
+				? { ok: true, msg: json.count ? `Found ${json.count} records` : 'Connected, but no transfer records yet' }
+				: { ok: false, msg: json.error ?? 'Unknown error' };
+		} catch (e: any) {
+			mpTestResult = { ok: false, msg: e.message ?? 'Test failed' };
+		} finally {
+			mpTesting = false;
+		}
+	}
 </script>
 
 <h2>{$lang('addons')}</h2>
@@ -167,16 +199,37 @@
 				autocomplete="off"
 				value={data?.configuration?.addons?.movie_pilot?.server_url || ''}
 			/>
-			<input
-				class="input"
-				type="password"
-				name="mp_token"
-				placeholder={$lang('token')}
-				autocomplete="new-password"
-				value={data?.configuration?.addons?.movie_pilot?.token || ''}
-				on:focus={handleFocus}
-				on:blur={handleFocus}
-			/>
+			<div class="ma-pw-row">
+				<input
+					class="input"
+					type="password"
+					name="mp_token"
+					placeholder={$lang('token')}
+					autocomplete="new-password"
+					value={data?.configuration?.addons?.movie_pilot?.token || ''}
+					on:focus={handleFocus}
+					on:blur={handleFocus}
+				/>
+				<button
+					type="button"
+					class="btn-action"
+					on:click={testMP}
+					disabled={mpTesting}
+				>
+					{#if mpTesting}
+						<figure class="spin-icon">
+							<Icon icon="svg-spinners:ring-resize" height="none" />
+						</figure>
+					{:else}
+						{$lang('test_connection') || 'Test'}
+					{/if}
+				</button>
+			</div>
+			{#if mpTestResult}
+				<p class="ma-error" class:ma-success={mpTestResult.ok}>
+					{mpTestResult.msg}
+				</p>
+			{/if}
 		</div>
 	</div>
 </div>
@@ -291,6 +344,10 @@
 		font-size: 0.8rem;
 		margin: 0.2rem 0 0;
 		padding: 0;
+	}
+
+	.ma-success {
+		color: #00dd17;
 	}
 
 	.btn-action {

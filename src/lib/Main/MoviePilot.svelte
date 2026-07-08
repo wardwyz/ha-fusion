@@ -22,15 +22,19 @@
 		loading = true;
 		error = '';
 		try {
+			console.debug('[MoviePilot] fetching /_api/moviepilot...');
 			const resp = await fetch(`${base}/_api/moviepilot`);
+			console.debug('[MoviePilot] response status:', resp.status);
 			if (!resp.ok) {
 				const j = await resp.json().catch(() => ({}));
 				throw new Error(j.error ?? `HTTP ${resp.status}`);
 			}
 			const data = await resp.json();
+			console.debug('[MoviePilot] got', data?.items?.length ?? 0, 'items');
 			items = data?.items ?? [];
 			current = 0;
 		} catch (e: any) {
+			console.error('[MoviePilot] fetch error:', e);
 			error = e.message ?? 'Error';
 		} finally {
 			loading = false;
