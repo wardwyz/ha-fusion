@@ -25,7 +25,16 @@ async function loadConfig(): Promise<MPConfig | null> {
 	return null;
 }
 
+// Cache: MP items 5min, TMDB data 24h
+const CACHE_TTL = 2 * 60 * 60 * 1000;
+const TMDB_CACHE_TTL = 24 * 60 * 60 * 1000;
+let cache: { items: any[]; timestamp: number; hadTMDB: boolean } | null = null;
+let tmdbCache: Record<string, { data: any; ts: number }> = {};
+
 async function fetchTMDB(tmdbid: number, apikey: string): Promise<{ vote_average: number | null; vote_count: number; overview: string | null } | null> {
+	const ck = `${tmdbid}:${apikey}`;
+	const cached = tmdbCache[ck];
+	if (cached && Date.now() - cached.ts < TMDB_CACHE_TTL) return cached.data;
 	try {
 		const resp = await fetch(
 			`https://api.themoviedb.org/3/movie/${tmdbid}?api_key=${apikey}&language=zh-CN`,
@@ -33,11 +42,13 @@ async function fetchTMDB(tmdbid: number, apikey: string): Promise<{ vote_average
 		);
 		if (!resp.ok) return null;
 		const data = await resp.json();
-		return {
+		const result = {
 			vote_average: data.vote_average ?? null,
 			vote_count: data.vote_count ?? 0,
 			overview: data.overview ?? null
 		};
+		tmdbCache[ck] = { data: result, ts: Date.now() };
+		return result;
 	} catch {
 		return null;
 	}
@@ -47,6 +58,12 @@ export const GET: RequestHandler = async () => {
 	const cfg = await loadConfig();
 	if (!cfg) {
 		return new Response(JSON.stringify({ error: 'MoviePilot not configured' }), { status: 400 });
+	}
+
+	// Return cached data if fresh
+	const hasTMDB = !!cfg.tmdb_apikey;
+	if (cache && Date.now() - cache.timestamp < CACHE_TTL && cache.hadTMDB === hasTMDB) {
+		return json({ items: cache.items });
 	}
 
 	try {
@@ -95,6 +112,7 @@ export const GET: RequestHandler = async () => {
 			await Promise.allSettled(tmdbPromises);
 		}
 
+		cache = { items, timestamp: Date.now(), hadTMDB: !!cfg.tmdb_apikey };
 		return json({ items });
 	} catch (e: any) {
 		return new Response(JSON.stringify({ error: e.message ?? 'Unknown error' }), { status: 500 });
