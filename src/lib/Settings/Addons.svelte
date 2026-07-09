@@ -59,6 +59,8 @@
 			const fd = new FormData(formEl ?? undefined);
 			const url = (fd.get('mp_server_url') as string)?.trim();
 			const token = (fd.get('mp_token') as string)?.trim();
+			const tkey = (fd.get('mp_tmdb_apikey') as string)?.trim();
+			const turl = (fd.get('mp_tmdb_api_url') as string)?.trim();
 			if (!url || !token) {
 				mpTestResult = { ok: false, msg: 'Please enter server URL and token' };
 				return;
@@ -66,12 +68,12 @@
 			const resp = await fetch('/_api/moviepilot/test', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ server_url: url, token })
+				body: JSON.stringify({ server_url: url, token, tmdb_apikey: tkey || undefined, tmdb_api_url: turl || undefined })
 			});
 			const json = await resp.json();
-			mpTestResult = json.success
-				? { ok: true, msg: json.count ? `Found ${json.count} records` : 'Connected, but no transfer records yet' }
-				: { ok: false, msg: json.error ?? 'Unknown error' };
+			const mpPart = json.mp?.ok ? `MP: ${json.mp.msg}` : `MP: ❌ ${json.mp?.msg || 'Failed'}`;
+			const tmdbPart = json.tmdb ? ` | TMDB: ${json.tmdb.ok ? json.tmdb.msg : '❌ ' + (json.tmdb.msg || 'Failed')}` : '';
+			mpTestResult = { ok: json.mp?.ok !== false, msg: mpPart + tmdbPart };
 		} catch (e: any) {
 			mpTestResult = { ok: false, msg: e.message ?? 'Test failed' };
 		} finally {
@@ -211,10 +213,12 @@
 					on:blur={handleFocus}
 				/>
 				<input
-					class="input"
-					type="password"
-					name="mp_tmdb_apikey"
-					placeholder="TMDB API Key"
+				class="input"
+				type="password"
+				name="mp_tmdb_apikey"
+				placeholder="TMDB API Key"
+				autocomplete="new-password"
+				value={data?.configuration?.addons?.movie_pilot?.tmdb_apikey || ''}
 				on:focus={handleFocus}
 				on:blur={handleFocus}
 			/>
@@ -226,15 +230,7 @@
 				autocomplete="off"
 				value={data?.configuration?.addons?.movie_pilot?.tmdb_api_url || 'https://api.themoviedb.org/3'}
 			/>
-			<input
-				class="input"
-				type="password"
-				name="mp_tmdb_apikey_dup" style="display:none"
-					autocomplete="new-password"
-					value={data?.configuration?.addons?.movie_pilot?.tmdb_apikey || ''}
-					on:focus={handleFocus}
-					on:blur={handleFocus}
-				/>
+			
 				<button
 					type="button"
 					class="btn-action"
