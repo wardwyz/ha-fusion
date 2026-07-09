@@ -3,12 +3,11 @@ services:
     container_name: nova-domus
     build: .
     volumes:
-      - /Users/ward/Documents/fusion/data:/app/data
+      - ./data:/app/data
     network_mode: bridge
     ports:
       - 5050:5050
     environment:
       TZ: Asia/Shanghai
-      HASS_URL: http://ward.myds.me:58123
+      HASS_URL: http://XXXXXX
     restart: always
-# cd /Users/ward/Documents/fusion && docker compose -f compose-dev.yml up -d --build
