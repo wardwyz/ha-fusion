@@ -485,5 +485,12 @@
 	"welcome_home": "欢迎回家",
 	"year": "年",
 	"yes": "是",
-	"test_connection": "测试连接"
+	"test_connection": "测试连接",
+	"add_entity": "添加实体",
+	"whitelist": "添加实体",
+	"on_state": "触发状态",
+	"cover": "窗帘",
+	"entities_list": "实体列表",
+	"restore": "恢复",
+	"include_entities": "添加实体"
 }

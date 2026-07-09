@@ -197,6 +197,7 @@ export interface PowerSummaryGroup {
 	icon?: string;
 	domains?: string[];
 	exclude?: string[];
+	entity_labels?: Record<string, string>;
 	on_states?: string[];
 	entities?: PowerSummaryEntity[];
 }
@@ -512,11 +513,14 @@ export interface MoviePilotItem {
 }
 
 export interface MoviePilotTransfer {
-  title: string;
-  year: string;
-  type: string;
-  image: string | null;
-  state: string;
-  tmdbid: number | null;
+	title: string;
+	year: string;
+	type: string;
+	image: string | null;
+	state: string;
+	tmdbid: number | null;
+	vote_average?: number | null;
+	vote_count?: number;
+	overview?: string | null;
 }
 

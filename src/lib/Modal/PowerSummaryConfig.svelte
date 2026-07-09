@@ -22,7 +22,7 @@
 
 	let expandedIndex: number | null = sel.groups.length === 0 ? null : 0;
 
-	const DOMAINS = ['light', 'switch', 'climate', 'media_player', 'sensor', 'input_boolean', 'fan'];
+	const DOMAINS = ['light', 'switch', 'climate', 'media_player', 'sensor', 'input_boolean', 'fan', 'cover'];
 	const ON_STATES = ['on', 'playing', 'heat', 'cool', 'fan_only', 'dry', 'auto', 'idle', 'paused'];
 
 	function save() {
@@ -95,6 +95,15 @@
 		if (!current.includes(entityId)) {
 			setGroup(index, 'exclude', [...current, entityId]);
 		}
+	}
+
+	function setEntityLabel(index: number, entityId: string, val: string) {
+		if (!sel.groups) return;
+		const g = sel.groups[index];
+		const labels = { ...(g.entity_labels ?? {}) };
+		if (val.trim()) labels[entityId] = val.trim();
+		else delete labels[entityId];
+		setGroup(index, 'entity_labels', labels);
 	}
 
 	function removeExclude(index: number, entityId: string) {
@@ -300,35 +309,27 @@
 									{/each}
 								</div>
 
-								<h2>{$lang('exclude')}</h2>
-								{#if (group.domains ?? []).length > 0}
-									<Select
-										options={getExcludeOptions(group)}
-										placeholder={$lang('exclude')}
-										value={undefined}
-										on:change={(e) => addExclude(i, e.detail)}
-									/>
-									{#if (group.exclude ?? []).length > 0}
-										<div class="exclude-tags">
-											{#each group.exclude ?? [] as entityId}
-												<span class="tag">
-													{$states[entityId]?.attributes?.friendly_name ?? entityId}
-													<button
-														class="tag-remove"
-														on:click={() => removeExclude(i, entityId)}
-														aria-label="Remove {entityId}"
-													>
-														<Icon icon="mdi:close" height="0.8em" width="0.8em" />
-													</button>
-												</span>
-											{/each}
-										</div>
-									{/if}
-								{:else}
-									<p class="hint">{$lang('select_domains_first')}</p>
-								{/if}
-
-								<h2>{$lang('entities')}</h2>
+<h2>实体列表</h2>
+												{#if (group.domains ?? []).length > 0}
+													{@const domainEntities = Object.keys($states ?? {}).filter(id => (group.domains ?? []).includes(id.split(".")[0])).sort((a,b) => (($states[a]?.attributes?.friendly_name ?? a).localeCompare($states[b]?.attributes?.friendly_name ?? b)))}
+													{#if domainEntities.length > 0}
+														<div class="entity-list">
+														{#each domainEntities as entityId (entityId)}
+															{@const excluded = (group.exclude ?? []).includes(entityId)}
+															<span class="tag" class:excluded>
+																<input class="input tag-name" value={group.entity_labels?.[entityId] || $states[entityId]?.attributes?.friendly_name || entityId} on:input={(e) => setEntityLabel(i, entityId, e.currentTarget.value)} placeholder={$states[entityId]?.attributes?.friendly_name ?? entityId} spellcheck="false" />
+																<button class="tag-remove" on:click={() => excluded ? removeExclude(i, entityId) : addExclude(i, entityId)} aria-label={excluded ? "Restore" : "Exclude"}>
+																	<Icon icon={excluded ? "mdi:plus-circle" : "mdi:close"} height="0.8em" width="0.8em" />
+																</button>
+															</span>
+														{/each}
+														</div>
+													{:else}
+														<p class="hint">{$lang("nothing_found")}</p>
+													{/if}
+												{:else}
+													<p class="hint">{$lang("select_domains_first")}</p>
+												{/if}<h2>{$lang('entities')}</h2>
 								<Select
 									options={getEntityOptionsForGroup(i)}
 									placeholder="{$lang('add')} {$lang('entity')}"
@@ -503,7 +504,7 @@
 		border-color: rgba(255, 255, 255, 0.35);
 	}
 
-	.exclude-tags {
+	.tag-name-input{background:0 0;border:none;border-bottom:1px dashed rgba(255,255,255,.2);color:inherit;font-size:.75rem;padding:0;max-width:8rem;outline:none}.tag-name-input:focus{border-bottom-color:rgba(255,255,255,.5)}.excluded{opacity:.35;text-decoration:line-through}.entity-list{display:flex;flex-wrap:wrap;gap:.3rem}.exclude-tags {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.35rem;

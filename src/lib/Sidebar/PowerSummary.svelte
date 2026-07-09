@@ -64,7 +64,9 @@
 			const count = active.length;
 			let displayText = '';
 			if (count === 1) {
-				displayText = getName(undefined, active[0]) ?? active[0].entity_id.split('.')[1];
+				const eid = active[0].entity_id;
+				const customLib = group.entity_labels?.[eid];
+				displayText = customLib ?? getName(undefined, active[0]) ?? eid.split('.')[1];
 			}
 
 			return { group, count, displayText };

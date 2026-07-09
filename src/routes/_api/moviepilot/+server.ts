@@ -82,7 +82,7 @@ export const GET: RequestHandler = async () => {
 
 		// Enrich with TMDB data if key is configured
 		if (cfg.tmdb_apikey) {
-			const tmdbPromises = items.map(async (item) => {
+			const tmdbPromises = items.map(async (item: { tmdbid: number | null; vote_average: number | null; vote_count: number; overview: string | null }) => {
 				if (item.tmdbid) {
 					const tmdb = await fetchTMDB(item.tmdbid, cfg.tmdb_apikey!);
 					if (tmdb) {
