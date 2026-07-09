@@ -188,7 +188,7 @@
 	</div>
 
 	<!-- MoviePilot -->
-	<div class="item">
+	<div class="item ma-item">
 		<h3>MoviePilot</h3>
 		<div class="ma-login">
 			<input
@@ -215,6 +215,21 @@
 					type="password"
 					name="mp_tmdb_apikey"
 					placeholder="TMDB API Key"
+				on:focus={handleFocus}
+				on:blur={handleFocus}
+			/>
+			<input
+				class="input"
+				type="url"
+				name="mp_tmdb_api_url"
+				placeholder="TMDB API URL (mirror)"
+				autocomplete="off"
+				value={data?.configuration?.addons?.movie_pilot?.tmdb_api_url || 'https://api.themoviedb.org/3'}
+			/>
+			<input
+				class="input"
+				type="password"
+				name="mp_tmdb_apikey_dup" style="display:none"
 					autocomplete="new-password"
 					value={data?.configuration?.addons?.movie_pilot?.tmdb_apikey || ''}
 					on:focus={handleFocus}

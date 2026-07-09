@@ -164,6 +164,7 @@
 		border: none;
 		color: inherit;
 		border: 1px solid rgba(255,255,255,0.06);
+		isolation: isolate;
 		transition: border-color 200ms ease, box-shadow 200ms ease;
 	}
 	.container:hover {
@@ -222,7 +223,7 @@
 	.type-badge {
 		position: absolute;
 		top: 0.4rem; left: 0.4rem;
-		z-index: 2;
+		z-index: 1;
 		background: rgba(0,0,0,0.55);
 		backdrop-filter: blur(4px);
 		color: rgba(255,255,255,0.85);
@@ -234,7 +235,7 @@
 	.rating-badge {
 		position: absolute;
 		top: 0.4rem; right: 0.4rem;
-		z-index: 2;
+		z-index: 1;
 		background: rgba(0,0,0,0.55);
 		backdrop-filter: blur(4px);
 		color: #fbbf24;
@@ -248,7 +249,7 @@
 		position: absolute;
 		top: 50%;
 		transform: translateY(-50%);
-		z-index: 2;
+		z-index: 1;
 		background: rgba(0,0,0,0.5);
 		backdrop-filter: blur(4px);
 		border: none;

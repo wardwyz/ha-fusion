@@ -33,6 +33,7 @@ export interface Addons {
 		server_url: string;
 		token: string;
 		tmdb_apikey?: string;
+		tmdb_api_url?: string;
 	};
 };
 

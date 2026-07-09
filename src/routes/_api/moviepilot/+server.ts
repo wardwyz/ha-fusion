@@ -7,6 +7,7 @@ interface MPConfig {
 	server_url: string;
 	token: string;
 	tmdb_apikey?: string;
+	tmdb_api_url?: string;
 }
 
 async function loadConfig(): Promise<MPConfig | null> {
@@ -18,7 +19,8 @@ async function loadConfig(): Promise<MPConfig | null> {
 			return {
 				server_url: mp.server_url.replace(/\/$/, ''),
 				token: mp.token,
-				tmdb_apikey: mp.tmdb_apikey
+				tmdb_apikey: mp.tmdb_apikey,
+				tmdb_api_url: mp.tmdb_api_url
 			};
 		}
 	} catch {}
@@ -31,13 +33,14 @@ const TMDB_CACHE_TTL = 24 * 60 * 60 * 1000;
 let cache: { items: any[]; timestamp: number; hadTMDB: boolean } | null = null;
 let tmdbCache: Record<string, { data: any; ts: number }> = {};
 
-async function fetchTMDB(tmdbid: number, apikey: string): Promise<{ vote_average: number | null; vote_count: number; overview: string | null } | null> {
+async function fetchTMDB(tmdbid: number, apikey: string, baseUrl?: string): Promise<{ vote_average: number | null; vote_count: number; overview: string | null } | null> {
 	const ck = `${tmdbid}:${apikey}`;
 	const cached = tmdbCache[ck];
 	if (cached && Date.now() - cached.ts < TMDB_CACHE_TTL) return cached.data;
 	try {
+		
 		const resp = await fetch(
-			`https://api.themoviedb.org/3/movie/${tmdbid}?api_key=${apikey}&language=zh-CN`,
+			`${baseUrl}/movie/${tmdbid}?api_key=${apikey}&language=zh-CN`,
 			{ signal: AbortSignal.timeout(5000) }
 		);
 		if (!resp.ok) return null;
@@ -99,9 +102,10 @@ export const GET: RequestHandler = async () => {
 
 		// Enrich with TMDB data if key is configured
 		if (cfg.tmdb_apikey) {
+			const baseUrl = cfg.tmdb_api_url || 'https://api.themoviedb.org/3';
 			const tmdbPromises = items.map(async (item: { tmdbid: number | null; vote_average: number | null; vote_count: number; overview: string | null }) => {
 				if (item.tmdbid) {
-					const tmdb = await fetchTMDB(item.tmdbid, cfg.tmdb_apikey!);
+					const tmdb = await fetchTMDB(item.tmdbid, cfg.tmdb_apikey!, baseUrl);
 					if (tmdb) {
 						item.vote_average = tmdb.vote_average;
 						item.vote_count = tmdb.vote_count;

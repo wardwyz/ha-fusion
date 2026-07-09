@@ -51,6 +51,7 @@
 
 			const mpUrl = form.mp_server_url as string | undefined;
 			const mpToken = form.mp_token as string | undefined;
+			const mpTmdbApiUrl = form.mp_tmdb_api_url as string | undefined;
 			const mpTmdbKey = form.mp_tmdb_apikey as string | undefined;
 
 			const addons = {
@@ -69,7 +70,9 @@
 						movie_pilot: {
 							server_url: mpUrl,
 							token: mpToken,
-							...(mpTmdbKey && { tmdb_apikey: mpTmdbKey })
+							...(mpTmdbKey && { tmdb_apikey: mpTmdbKey,
+							...(mpTmdbApiUrl && { tmdb_api_url: mpTmdbApiUrl }),
+							...(mpTmdbApiUrl && { tmdb_api_url: mpTmdbApiUrl }) })
 						}
 					})
 			};
