@@ -1,5 +1,6 @@
 import { handler } from './build/handler.js';
 import express from 'express';
+import { existsSync } from 'fs';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import dotenv from 'dotenv';
 
@@ -49,12 +50,23 @@ const entryMiddleware = async (req, res, next) => {
 
 // production proxy
 const proxy = createProxyMiddleware({
-	pathFilter: ['/local/', '/api/'],
+	pathFilter: (path) => {
+		// proxy HA local/ and api/ paths, but NOT our screen-images endpoint
+		if (path.startsWith('/api/screen-images') || path.startsWith('/api/screen-lyrics')) return false;
+		return path.startsWith('/local/') || path.startsWith('/api/');
+	},
 	router: (req) => req.target,
 	changeOrigin: true
 });
 
 app.use(entryMiddleware, proxy);
+
+// Screen lock: serve static images from configured directory (production)
+const screenImageDir = process.env.SCREEN_IMAGE_DIR || './data/screen-images';
+if (existsSync(screenImageDir)) {
+	app.use('/screen-images', express.static(screenImageDir));
+	console.log('Serving screen images from:', screenImageDir);
+}
 
 // let SvelteKit handle everything else, including serving prerendered pages and static assets
 app.use(handler);

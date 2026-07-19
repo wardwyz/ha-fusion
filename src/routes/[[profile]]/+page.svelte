@@ -35,6 +35,7 @@
 	 * function +page.server.ts
 	 */
 	export let data;
+	export let params;
 
 	let altKeyPressed = false;
 	let inactivityTimer: ReturnType<typeof setTimeout> | null = null;

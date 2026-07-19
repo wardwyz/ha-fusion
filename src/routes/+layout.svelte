@@ -1,4 +1,5 @@
 <script lang="ts">
+	export let params;
 	import { motion } from '$lib/Stores';
 	import { fade } from 'svelte/transition';
 	import { Modals, closeModal } from 'svelte-modals';

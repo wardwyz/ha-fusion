@@ -24,3 +24,7 @@ CLAUDE.md
 # Superpowers plugin artifacts e documentazione interna
 .superpowers/
 docs/
+
+# Lock screen images
+data/screen-images/
+data/screen-images

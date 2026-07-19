@@ -68,10 +68,17 @@ export default defineConfig({
 				target: process.env.HASS_URL,
 				changeOrigin: true
 			},
-			'/api/': {
-				target: process.env.HASS_URL,
-				changeOrigin: true
-			}
+	'/api/': {
+		target: process.env.HASS_URL,
+		changeOrigin: true,
+		// must be a valid function even when target is undefined
+		bypass: (req) => {
+			// Don't proxy our own screen-images endpoint
+			if (req.url?.startsWith('/screen-images') || req.url?.startsWith('/api/screen-images') || req.url?.startsWith('/api/screen-lyrics')) return req.url;
+			// If no target is configured, serve locally
+			if (!process.env.HASS_URL) return req.url;
 		}
+	}
+}
 	}
 });

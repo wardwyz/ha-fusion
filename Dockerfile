@@ -23,7 +23,11 @@ COPY --from=builder /app/package.json .
 # set environment
 ENV PORT=5050 \
   NODE_ENV=production \
-  ADDON=false
+  ADDON=false \
+  SCREEN_IMAGE_DIR=/app/data/screen-images \
+  SCREEN_IMAGE_EXTENSIONS=jpg,jpeg,png,webp \
+  SCREEN_INTERVAL=30 \
+  SCREEN_LYRICS_API_URL=
 
 EXPOSE 5050
 CMD ["node", "server.js"]

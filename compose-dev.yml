@@ -10,4 +10,11 @@ services:
     environment:
       TZ: Asia/Shanghai
       HASS_URL: http://XXXXXX
+      # Lock screen image slideshow config
+      SCREEN_IMAGE_DIR: /app/data/screen-images
+      SCREEN_IMAGE_EXTENSIONS: jpg,jpeg,png,webp
+      SCREEN_INTERVAL: '30'
+      # Custom lyrics API URL (optional, uses api.lrc.cx by default)
+      # Use {artist} and {title} as placeholders
+      SCREEN_LYRICS_API_URL: ''
     restart: always
