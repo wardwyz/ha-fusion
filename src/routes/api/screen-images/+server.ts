@@ -20,6 +20,8 @@ export const GET: RequestHandler = async () => {
 	async function walkDir(dir: string, relativePath: string = '') {
 		const entries = await readdir(dir, { withFileTypes: true });
 		for (const entry of entries) {
+			// Skip Synology system directories and hidden folders
+			if (entry.name.startsWith('@') || entry.name.startsWith('#') || entry.name.startsWith('.')) continue;
 			const fullPath = path.join(dir, entry.name);
 			if (entry.isDirectory()) {
 				await walkDir(fullPath, path.join(relativePath, entry.name));

@@ -5,17 +5,11 @@ import type { RequestHandler } from './$types';
 import path from 'path';
 
 const MIME_TYPES: Record<string, string> = {
-	jpg: 'image/jpeg',
-	jpeg: 'image/jpeg',
-	png: 'image/png',
-	gif: 'image/gif',
-	webp: 'image/webp',
-	bmp: 'image/bmp',
-	svg: 'image/svg+xml',
-	avif: 'image/avif'
+	jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif',
+	webp: 'image/webp', bmp: 'image/bmp', svg: 'image/svg+xml', avif: 'image/avif'
 };
 
-// GET /api/screen-images/[file] — serve an image file
+// GET /api/screen-images/[...file] — serve an image from subdirectories
 export const GET: RequestHandler = async ({ params }) => {
 	const imageDir = process.env.SCREEN_IMAGE_DIR || './data/screen-images';
 	const fileName = params.file;
@@ -25,12 +19,9 @@ export const GET: RequestHandler = async ({ params }) => {
 	}
 
 	const filePath = path.resolve(imageDir, fileName);
-
-	// Ensure the resolved path stays within the image directory
 	if (!filePath.startsWith(path.resolve(imageDir))) {
 		error(403, 'Forbidden');
 	}
-
 	if (!existsSync(filePath)) {
 		error(404, 'Image not found');
 	}
