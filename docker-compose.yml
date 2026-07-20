@@ -4,8 +4,8 @@ services:
     image: ghcr.io/amedello/nova-domus
     volumes:
       - /path/to/ha-fusion:/app/data
-      # Uncomment and adjust to mount your custom photo directory:
-      # - /volume2/photo:/volume2/photo
+      # Mount your photo folder directly to the default image directory:
+      # - /volume2/photo:/app/data/screen-images
     network_mode: bridge
     ports:
       - 5050:5050
@@ -13,9 +13,8 @@ services:
       TZ: Europe/Stockholm
       HASS_URL: http://192.168.1.241:8123
       # Lock screen image slideshow config
-      SCREEN_IMAGE_DIR: /app/data/screen-images
-      # If using a custom path, mount it in volumes above, then set it here:
-      # SCREEN_IMAGE_DIR: /volume2/photo
+      # Leave SCREEN_IMAGE_DIR at default. Mount photos to /app/data/screen-images in volumes above.
+      # SCREEN_IMAGE_DIR: /app/data/screen-images
       SCREEN_IMAGE_EXTENSIONS: jpg,jpeg,png,webp
       SCREEN_INTERVAL: '30'
       # Custom lyrics API URL (optional, uses api.lrc.cx by default)

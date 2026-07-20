@@ -4,8 +4,8 @@ services:
     build: .
     volumes:
       - ./data:/app/data
-      # Uncomment and adjust to mount your custom photo directory:
-      # - /path/to/your/photos:/path/to/your/photos
+      # Mount your photo folder directly to the default image directory:
+      # - /volume2/photo:/app/data/screen-images
     network_mode: bridge
     ports:
       - 5050:5050
@@ -13,9 +13,8 @@ services:
       TZ: Asia/Shanghai
       HASS_URL: http://XXXXXX
       # Lock screen image slideshow config
-      SCREEN_IMAGE_DIR: /app/data/screen-images
-      # If using a custom path, mount it in volumes above, then set it here:
-      # SCREEN_IMAGE_DIR: /path/to/your/photos
+      # Leave SCREEN_IMAGE_DIR at default. Mount your photos to /app/data/screen-images in volumes above.
+      # SCREEN_IMAGE_DIR: /app/data/screen-images
       SCREEN_IMAGE_EXTENSIONS: jpg,jpeg,png,webp
       SCREEN_INTERVAL: '30'
       # Custom lyrics API URL (optional, uses api.lrc.cx by default)
