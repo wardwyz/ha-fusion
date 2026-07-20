@@ -20,11 +20,16 @@ export const GET: RequestHandler = async ({ params }) => {
 	const imageDir = process.env.SCREEN_IMAGE_DIR || './data/screen-images';
 	const fileName = params.file;
 
-	if (!fileName || fileName.includes('..') || fileName.includes('/')) {
+	if (!fileName || fileName.includes('..')) {
 		error(400, 'Invalid file name');
 	}
 
-	const filePath = path.join(imageDir, fileName);
+	const filePath = path.resolve(imageDir, fileName);
+
+	// Ensure the resolved path stays within the image directory
+	if (!filePath.startsWith(path.resolve(imageDir))) {
+		error(403, 'Forbidden');
+	}
 
 	if (!existsSync(filePath)) {
 		error(404, 'Image not found');

@@ -15,14 +15,26 @@ export const GET: RequestHandler = async () => {
 		return json({ images: [], dir: imageDir });
 	}
 
+	// Recursive directory walk
+	const images: string[] = [];
+	async function walkDir(dir: string, relativePath: string = '') {
+		const entries = await readdir(dir, { withFileTypes: true });
+		for (const entry of entries) {
+			const fullPath = path.join(dir, entry.name);
+			if (entry.isDirectory()) {
+				await walkDir(fullPath, path.join(relativePath, entry.name));
+			} else if (entry.isFile()) {
+				const ext = path.extname(entry.name).toLowerCase().replace('.', '');
+				if (extensions.includes(ext)) {
+					images.push(relativePath ? path.join(relativePath, entry.name) : entry.name);
+				}
+			}
+		}
+	}
+
 	try {
-		const files = await readdir(imageDir);
-		const images = files
-			.filter((file) => {
-				const ext = path.extname(file).toLowerCase().replace('.', '');
-				return extensions.includes(ext);
-			})
-			.sort(() => Math.random() - 0.5); // shuffle
+		await walkDir(imageDir);
+		images.sort(() => Math.random() - 0.5); // shuffle
 
 		return json({ images, dir: imageDir });
 	} catch (err: any) {
