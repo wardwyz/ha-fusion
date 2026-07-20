@@ -1,6 +1,6 @@
 import { readdir } from 'fs/promises';
 import { existsSync } from 'fs';
-import { json, error } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import path from 'path';
 
@@ -12,7 +12,7 @@ export const GET: RequestHandler = async () => {
 		.map((ext) => ext.trim().toLowerCase());
 
 	if (!existsSync(imageDir)) {
-		return json({ images: [], dir: imageDir });
+		return json({ images: [], dir: imageDir, exists: false, hint: 'Directory not found. For Docker, add a volume mount like: volumes: - /path/to/photos:/path/to/photos' });
 	}
 
 	// Recursive directory walk
@@ -36,8 +36,8 @@ export const GET: RequestHandler = async () => {
 		await walkDir(imageDir);
 		images.sort(() => Math.random() - 0.5); // shuffle
 
-		return json({ images, dir: imageDir });
+		return json({ images, dir: imageDir, exists: true, count: images.length });
 	} catch (err: any) {
-		error(500, `Failed to read image directory: ${err.message}`);
+		return json({ images: [], dir: imageDir, exists: true, error: `Failed to read: ${err.message}` });
 	}
 };
