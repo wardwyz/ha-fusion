@@ -11,7 +11,7 @@
 	import Token from '$lib/Settings/Token.svelte';
 	import CustomJs from '$lib/Settings/CustomJs.svelte';
 	import CustomCss from '$lib/Settings/CustomCss.svelte';
-import LyricsOffset from '$lib/Settings/LyricsOffset.svelte';
+	import LyricsOffset from '$lib/Settings/LyricsOffset.svelte';
 	import Logout from '$lib/Settings/Logout.svelte';
 	import Ripple from 'svelte-ripple';
 
@@ -184,6 +184,8 @@ import LyricsOffset from '$lib/Settings/LyricsOffset.svelte';
 			<CustomJs />
 
 			<CustomCss />
+
+			<LyricsOffset />
 
 			<Motion />
 

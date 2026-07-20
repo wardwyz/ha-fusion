@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { configuration, lang, motion } from '$lib/Stores';
-	import { slide } from 'svelte/transition';
+	import { configuration, lang } from '$lib/Stores';
 
 	let offsetValue: number = $configuration?.lyrics_offset ?? 0;
 
@@ -21,17 +20,19 @@
 	</div>
 
 	<div class="controls">
-		<button
-			class="btn"
-			on:click={() => adjust(-0.5)}
-			disabled={offsetValue <= -10}
-		>-</button>
-		<div class="value">{offsetValue >= 0 ? '+' : ''}{offsetValue.toFixed(1)}</div>
-		<button
-			class="btn"
-			on:click={() => adjust(0.5)}
-			disabled={offsetValue >= 10}
-		>+</button>
+		<button class="btn" on:click={() => adjust(-0.5)} disabled={offsetValue <= -10}>−</button>
+
+		<input
+			type="number"
+			class="num-input"
+			bind:value={offsetValue}
+			min="-10"
+			max="10"
+			step="0.5"
+		/>
+
+		<button class="btn" on:click={() => adjust(0.5)} disabled={offsetValue >= 10}>+</button>
+
 		<button class="btn-reset" on:click={() => (offsetValue = 0)} disabled={offsetValue === 0}>
 			重置
 		</button>
@@ -60,6 +61,35 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
+		flex-wrap: wrap;
+	}
+
+	.num-input {
+		width: 5rem;
+		padding: 0.4rem 0.6rem;
+		border-radius: 0.4rem;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		background: rgba(255, 255, 255, 0.08);
+		color: inherit;
+		font-size: 1rem;
+		font-weight: 500;
+		text-align: center;
+		font-variant-numeric: tabular-nums;
+		outline: none;
+	}
+
+	.num-input:focus {
+		border-color: rgba(255, 255, 255, 0.4);
+	}
+
+	input[type="number"]::-webkit-inner-spin-button,
+	input[type="number"]::-webkit-outer-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	input[type="number"] {
+		-moz-appearance: textfield;
 	}
 
 	.btn {
@@ -85,14 +115,6 @@
 	.btn:disabled {
 		opacity: 0.3;
 		cursor: default;
-	}
-
-	.value {
-		font-size: 1.1rem;
-		font-weight: 500;
-		min-width: 4rem;
-		text-align: center;
-		font-variant-numeric: tabular-nums;
 	}
 
 	.btn-reset {

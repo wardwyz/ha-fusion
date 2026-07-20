@@ -1,8 +1,17 @@
 import { json } from '@sveltejs/kit';
+import { Converter } from 'opencc-js';
 import type { RequestHandler } from './$types';
 
 // GET /api/screen-lyrics?artist=...&title=...
 // Proxies to public lyrics APIs
+
+// Traditional to Simplified Chinese converter (lazy init)
+let _t2s: ((text: string) => string) | null = null;
+function t2s(text: string): string {
+	if (!_t2s) _t2s = Converter({ from: 'tw', to: 'cn' });
+	return _t2s(text);
+}
+
 export const GET: RequestHandler = async ({ url }) => {
 	const artist = url.searchParams.get('artist') || '';
 	const title = url.searchParams.get('title') || '';
@@ -119,7 +128,8 @@ export const GET: RequestHandler = async ({ url }) => {
 		try {
 			const result = await source();
 			if (result) {
-				return json({ lyrics: result, source: 'public' });
+				const converted = t2s(result);
+				return json({ lyrics: converted, source: 'public' });
 			}
 		} catch {
 			// try next
