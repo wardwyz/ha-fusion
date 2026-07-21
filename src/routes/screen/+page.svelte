@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { fly } from 'svelte/transition';
 	import { browser } from '$app/environment';
 	import { authentication } from '$lib/Socket';
 	import {
@@ -13,19 +12,9 @@
 		selectedLanguage,
 		timer
 	} from '$lib/Stores';
-	import { get } from 'svelte/store';
 	import Icon from '@iconify/svelte';
 	import { slide } from 'svelte/transition';
-
-	// MA stores
-	import {
-		maPlayers,
-		maQueues,
-		connectMA,
-		disconnectMA,
-		callMA
-	} from '$lib/MusicAssistant';
-import { solarToLunar, getFestival, WEATHER_ZH } from '$lib/Lunar';
+	import { solarToLunar, getFestival, WEATHER_ZH } from '$lib/Lunar';
 
 	export let data;
 	export let params;
@@ -33,9 +22,6 @@ import { solarToLunar, getFestival, WEATHER_ZH } from '$lib/Lunar';
 	// --- configuration ---
 	const intervalMs = (data?.imageInterval || 30) * 1000;
 	const hassUrl = data?.hassUrl || '';
-	const maUrl = data?.maUrl || '';
-	const maToken = data?.maToken || '';
-	const lyricsOffset = data?.lyricsOffset ?? 0;
 	$: if (data?.locale) $selectedLanguage = data.locale;
 
 	// --- image slideshow state ---
@@ -65,11 +51,6 @@ import { solarToLunar, getFestival, WEATHER_ZH } from '$lib/Lunar';
 	}
 
 	// --- MA connection ---
-	$: if (browser && maUrl && maToken && !_maConnected) {
-		_maConnected = true;
-		connectMA(maUrl, maToken);
-	}
-
 	// --- fetch image list ---
 	async function fetchImages() {
 		try {
@@ -146,174 +127,7 @@ import { solarToLunar, getFestival, WEATHER_ZH } from '$lib/Lunar';
 	$: notificationCount = notificationEntries.length;
 
 	// --- Music Assistant state ---
-	$: maPlayingPlayer = $maPlayers?.find((p) => p.playback_state === 'playing');
-	$: maPlayingQueue = maPlayingPlayer ? $maQueues?.[maPlayingPlayer.player_id] : null;
-	$: currentTrack = maPlayingQueue?.current_item || null;
-	$: isPlaying = !!maPlayingPlayer;
 
-	// Song info from HA media_player entities (fallback)
-	$: maMediaPlayers = $states
-		? Object.keys($states).filter((k) => k.startsWith('media_player.') && $states[k]?.state === 'playing')
-		: [];
-	$: firstPlayingMedia = maMediaPlayers.length > 0 ? $states?.[maMediaPlayers[0]] : null;
-	$: songTitle = currentTrack?.name || firstPlayingMedia?.attributes?.media_title || '';
-	$: songArtist = currentTrack?.artists?.[0]?.name || firstPlayingMedia?.attributes?.media_artist || '';
-
-	// --- Lyrics state ---
-	let lyrics: string[] | null = null;
-	let lyricsLoading = false;
-	let lyricsError = false;
-	let prevTrackKey = '';
-
-	async function fetchLyrics(trackName: string, artistName: string, uri: string) {
-		// Parse track info properly
-		let songName = trackName;
-		let songArtist = artistName;
-
-		if (!songArtist && trackName.includes(' - ')) {
-			const parts = trackName.split(' - ');
-			songArtist = parts[0].trim();
-			songName = parts.slice(1).join(' - ').trim();
-		}
-
-		console.debug('[Screen] fetchLyrics:', 'title=' + songName, 'artist=' + songArtist);
-
-		lyricsLoading = true;
-		lyricsError = false;
-		lyricLines = [];
-
-		// Try public lyrics API
-		try {
-				const res = await fetch(
-				`/api/screen-lyrics?artist=${encodeURIComponent(songArtist)}&title=${encodeURIComponent(songName)}`
-			);
-
-			if (res.ok) {
-				const data = await res.json();
-				if (data?.lyrics) {
-					const parsed = parseLyricsToLines(data.lyrics);
-					if (parsed && parsed.length > 0) {
-						console.debug('[Screen] Lyrics success:', parsed.length, 'lines');
-						lyricLines = parsed;
-						lyricsLoading = false;
-						return;
-					}
-				}
-			}
-		} catch (e) {
-			console.debug('[Screen] Lyrics fetch failed:', e);
-		}
-
-		console.debug('[Screen] All lyrics sources failed');
-		lyricsLoading = false;
-		lyricsError = true;
-	}
-
-	interface LyricLine {
-		text: string;
-		time?: number;
-	}
-
-	let lyricLines: LyricLine[] = [];
-	let currentLyricIndex = 0;
-	let lyricTickInterval: ReturnType<typeof setInterval>;
-
-	function parseLyricsToLines(text: string): LyricLine[] {
-		if (!text) return [];
-		const rawLines = text.split('\n').map(l => l.trim()).filter(Boolean);
-		const result: LyricLine[] = [];
-		let hasTimestamps = false;
-
-		for (const line of rawLines) {
-			// Try LRC format: [mm:ss.xx]Text
-			const lrcMatch = line.match(/^\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)/);
-			if (lrcMatch) {
-				const mins = parseInt(lrcMatch[1]);
-				const secs = parseInt(lrcMatch[2]);
-				const cs = parseInt(lrcMatch[3]);
-				const time = mins * 60 + secs + cs / (lrcMatch[3].length === 2 ? 100 : 1000);
-				const text = lrcMatch[4].trim();
-				if (text) {
-					result.push({ text, time });
-					hasTimestamps = true;
-				}
-			} else {
-				result.push({ text: line });
-			}
-		}
-
-		// If we found timed lyrics, sort by time
-		if (hasTimestamps) {
-			result.sort((a, b) => (a.time ?? Infinity) - (b.time ?? Infinity));
-		}
-
-		return result.length > 0 ? result : text.split('\n').map(l => l.trim()).filter(Boolean).map(t => ({ text: t }));
-	}
-
-	// Update current lyric index based on playback position
-
-
-	function parseLyricsResult(result: unknown): string[] | null {
-		if (result == null) return null;
-
-		// String directly — plain text or LRC
-		if (typeof result === 'string') {
-			const lines = result.split('\n').map((l) => l.trim()).filter(Boolean);
-			return lines.length > 0 ? lines : null;
-		}
-
-		// Object result
-		if (typeof result === 'object' && result !== null) {
-			const obj = result as Record<string, unknown>;
-
-			// Array of { line: string, start?: number } — timed lyrics (Apple Music / MA format)
-			if (Array.isArray(obj)) {
-				const lines = (obj as Array<Record<string, unknown>>)
-					.map((item) => String(item.line ?? item.text ?? item.content ?? ''))
-					.filter(Boolean);
-				return lines.length > 0 ? lines : null;
-			}
-
-			// result.lyrics array — timed lines
-			if (Array.isArray(obj.lyrics)) {
-				const lines = (obj.lyrics as Array<Record<string, unknown>>)
-					.map((item) => String(item.line ?? item.text ?? item.content ?? ''))
-					.filter(Boolean);
-				return lines.length > 0 ? lines : null;
-			}
-
-			// Plain text in various field names
-			const text = String(obj.lyrics ?? obj.text ?? obj.content ?? obj.data ?? '');
-			if (typeof text === 'string' && text.trim()) {
-				const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
-				return lines.length > 0 ? lines : null;
-			}
-		}
-
-		// Array of strings directly
-		if (Array.isArray(result)) {
-			const lines = result.map((l) => String(l)).filter(Boolean);
-			return lines.length > 0 ? lines : null;
-		}
-
-		return null;
-	}
-
-	// Reactively fetch lyrics when track changes
-	$: {
-		const trackKey = `${songTitle}|${songArtist}|${currentTrack?.uri || ''}`;
-		if (browser && isPlaying && trackKey && trackKey !== prevTrackKey) {
-			prevTrackKey = trackKey;
-			fetchLyrics(songTitle, songArtist, currentTrack?.uri || '');
-		} else if (!isPlaying) {
-			lyrics = null;
-			lyricsLoading = false;
-			lyricsError = false;
-			prevTrackKey = '';
-		}
-	}
-
-	// --- greeting based on time ---
 	$: hour = $timer.getHours();
 	$: greeting =
 		hour < 6 ? '夜深了' :
@@ -327,41 +141,6 @@ import { solarToLunar, getFestival, WEATHER_ZH } from '$lib/Lunar';
 			connect();
 			retryInterval = setInterval(connect, 3000);
 			fetchImages();
-			// Lyric position tick: every second
-			lyricTickInterval = setInterval(() => {
-				if (lyricLines.length > 0 && lyricLines[0]?.time != null) {
-					const players = get(maPlayers);
-					const queues = get(maQueues);
-					const p = players.find((pl) => pl.playback_state === 'playing');
-					const q = p ? queues[p.player_id] : null;
-					const now = Date.now() / 1000;
-					const rawPos = q?.elapsed_time ?? 0;
-					const lastUpdated = q?.elapsed_time_last_updated;
-					const isPlaying = q?.state === 'playing';
-					const drift = (lastUpdated && isPlaying) ? (now - lastUpdated) : 0;
-					const pos = rawPos + drift;
-					const adjustedPos = pos + lyricsOffset;
-					if (adjustedPos > 0) {
-						let idx = 0;
-						for (let i = lyricLines.length - 1; i >= 0; i--) {
-							if (lyricLines[i].time != null && lyricLines[i].time! <= adjustedPos) {
-								idx = i;
-								break;
-							}
-						}
-						currentLyricIndex = idx;
-					}
-				}
-			}, 1000);
-		}
-	});
-
-	onDestroy(() => {
-		if (slideTimer) clearInterval(slideTimer);
-		if (lyricTickInterval) clearInterval(lyricTickInterval);
-		clearInterval(retryInterval);
-		if (_maConnected && maUrl) {
-			disconnectMA(maUrl);
 		}
 	});
 
@@ -421,39 +200,9 @@ import { solarToLunar, getFestival, WEATHER_ZH } from '$lib/Lunar';
 			</div>
 		</div>
 
-		<!-- center: greeting / now playing / lyrics -->
+		<!-- center: greeting -->
 		<div class="center">
-			{#if isPlaying && songTitle}
-				<div class="now-playing" class:has-lyrics={lyricLines.length > 0}>
-					{#if lyricLines.length > 0}
-						<div class="now-playing-header">
-							<div class="now-playing-title">{songTitle}</div>
-							<div class="now-playing-artist">{songArtist}</div>
-						</div>
-						<div class="lyrics-view">
-							{#each lyricLines as line, i}
-								{#if i >= currentLyricIndex - 2 && i <= currentLyricIndex + 2}
-									<div
-										class="lyric-line"
-										class:current={i === currentLyricIndex}
-										class:above={i === currentLyricIndex - 2}
-										class:below={i === currentLyricIndex + 2}
-									>
-										{line.text}
-									</div>
-								{/if}
-							{/each}
-						</div>
-					{:else}
-						<div class="song-info">
-							<div class="song-title">{songTitle}</div>
-							<div class="song-artist">{songArtist}</div>
-						</div>
-					{/if}
-				</div>
-			{:else}
-				<div class="greeting">{greeting}</div>
-			{/if}
+			<div class="greeting">{greeting}</div>
 		</div>
 
 		<!-- bottom bar: weather + notifications -->
@@ -633,7 +382,7 @@ import { solarToLunar, getFestival, WEATHER_ZH } from '$lib/Lunar';
 		opacity: 0.7;
 	}
 
-	/* Center: greeting / now playing / lyrics */
+	/* Center: greeting */
 	.center {
 		display: flex;
 		justify-content: center;
@@ -647,90 +396,6 @@ import { solarToLunar, getFestival, WEATHER_ZH } from '$lib/Lunar';
 		font-weight: 300;
 		text-shadow: 0 2px 16px rgba(0,0,0,0.4);
 		opacity: 0.9;
-	}
-
-	/* Now Playing — lyrics sliding window */
-	.now-playing {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		flex-direction: column;
-		width: 100%;
-	}
-
-	.now-playing.has-lyrics {
-		max-height: 70vh;
-	}
-
-	/* Song info header above lyrics */
-	.now-playing-header {
-		text-align: center;
-		margin-bottom: 0.8rem;
-	}
-
-	.now-playing-title {
-		font-size: 1.1rem;
-		font-weight: 500;
-		text-shadow: 0 2px 12px rgba(0,0,0,0.4);
-		letter-spacing: 0.04em;
-	}
-
-	.now-playing-artist {
-		font-size: 0.85rem;
-		font-weight: 300;
-		opacity: 0.6;
-		margin-top: 0.15rem;
-		text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-	}
-
-	/* Song info (no lyrics) — fallback */
-	.song-info {
-		text-align: center;
-	}
-
-	.song-title {
-		font-size: 2.2rem;
-		font-weight: 500;
-		text-shadow: 0 2px 16px rgba(0,0,0,0.4);
-		margin-bottom: 0.5rem;
-		letter-spacing: 0.02em;
-	}
-
-	.song-artist {
-		font-size: 1.2rem;
-		font-weight: 300;
-		opacity: 0.75;
-		text-shadow: 0 2px 12px rgba(0,0,0,0.3);
-	}
-
-	/* Lyrics view — no background, floating text */
-	.lyrics-view {
-		text-align: center;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		min-height: 7em;
-		padding: 0 2rem;
-	}
-
-	.lyric-line {
-		font-size: 1.5rem;
-		font-weight: 300;
-		line-height: 1.6;
-		padding: 0.15rem 0;
-		text-shadow: 0 2px 16px rgba(0,0,0,0.45);
-		transition: all 0.5s ease;
-		opacity: 0.3;
-		transform: scale(0.95);
-	}
-
-	.lyric-line.current {
-		opacity: 1;
-		font-size: 1.8rem;
-		font-weight: 400;
-		transform: scale(1);
-		text-shadow: 0 2px 20px rgba(0,0,0,0.5);
 	}
 
 	/* Bottom bar */
@@ -871,10 +536,6 @@ import { solarToLunar, getFestival, WEATHER_ZH } from '$lib/Lunar';
 		.song-title { font-size: 1.6rem; }
 		.song-artist { font-size: 1rem; }
 
-		.lyric-line { font-size: 1.1rem; }
-		.lyric-line.current { font-size: 1.35rem; }
-		.lyrics-view { padding: 0 1.5rem; }
-
 		.weather-temp { font-size: 1.5rem; }
 		.weather-icon img { width: 36px; height: 36px; }
 		.notifications-section { max-width: 50%; }
@@ -889,10 +550,6 @@ import { solarToLunar, getFestival, WEATHER_ZH } from '$lib/Lunar';
 
 		.song-title { font-size: 1.3rem; }
 		.song-artist { font-size: 0.9rem; }
-
-		.lyric-line { font-size: 0.9rem; }
-		.lyric-line.current { font-size: 1.1rem; }
-		.lyrics-view { padding: 0 1rem; }
 
 		.bottom-bar {
 			flex-direction: column;

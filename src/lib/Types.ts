@@ -14,7 +14,6 @@ export interface Configuration {
 	custom_js?: boolean;
 	custom_css?: boolean;
 	motion?: boolean;
-	lyrics_offset?: number;
 	addons?: Addons;
 	token?: string;
 	profiles?: ProfileConfig[];

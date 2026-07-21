@@ -9,9 +9,7 @@ export async function load({ request }): Promise<{
 	hassUrl: string;
 	locale: string | undefined;
 	imageInterval: number;
-	lyricsOffset: number;
-	maUrl: string | undefined;
-	maToken: string | undefined;
+
 }> {
 	// Load minimal config for HA WebSocket connection
 	let configuration: any = {};
@@ -29,15 +27,12 @@ export async function load({ request }): Promise<{
 	const locale = configuration?.locale || 'en';
 	const imageInterval = parseInt(process.env.SCREEN_INTERVAL || '30', 10);
 
-	const maConfig = configuration?.addons?.music_assistant;
-	const lyricsOffset = typeof configuration?.lyrics_offset === 'number' ? configuration.lyrics_offset : 0;
+
 
 	return {
 		hassUrl,
 		locale,
 		imageInterval,
-		lyricsOffset,
-		maUrl: maConfig?.server_url || undefined,
-		maToken: maConfig?.token || undefined
+
 	};
 }
