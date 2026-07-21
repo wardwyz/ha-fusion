@@ -6,7 +6,8 @@ import path from 'path';
 
 const MIME_TYPES: Record<string, string> = {
 	jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif',
-	webp: 'image/webp', bmp: 'image/bmp', svg: 'image/svg+xml', avif: 'image/avif'
+	webp: 'image/webp', bmp: 'image/bmp', svg: 'image/svg+xml', avif: 'image/avif',
+	heic: 'image/heic', heif: 'image/heif'
 };
 
 // GET /api/screen-images/[...file] — serve an image from subdirectories

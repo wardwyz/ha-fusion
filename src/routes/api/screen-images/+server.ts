@@ -7,7 +7,7 @@ import path from 'path';
 // GET /api/screen-images — list image files from configured directory
 export const GET: RequestHandler = async () => {
 	const imageDir = process.env.SCREEN_IMAGE_DIR || './data/screen-images';
-	const extensions = (process.env.SCREEN_IMAGE_EXTENSIONS || 'jpg,jpeg,png,webp')
+	const extensions = (process.env.SCREEN_IMAGE_EXTENSIONS || 'jpg,jpeg,png,webp,heic,heif')
 		.split(',')
 		.map((ext) => ext.trim().toLowerCase());
 
