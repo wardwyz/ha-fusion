@@ -11,7 +11,7 @@
 	import Token from '$lib/Settings/Token.svelte';
 	import CustomJs from '$lib/Settings/CustomJs.svelte';
 	import CustomCss from '$lib/Settings/CustomCss.svelte';
-import DailyQuoteSensor from '$lib/Settings/DailyQuoteSensor.svelte';
+	import DailyQuoteSensor from '$lib/Settings/DailyQuoteSensor.svelte';
 	import Logout from '$lib/Settings/Logout.svelte';
 	import Ripple from 'svelte-ripple';
 
@@ -185,6 +185,7 @@ import DailyQuoteSensor from '$lib/Settings/DailyQuoteSensor.svelte';
 
 			<CustomCss />
 
+			<DailyQuoteSensor />
 
 			<Motion />
 
