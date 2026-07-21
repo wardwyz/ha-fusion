@@ -9,7 +9,7 @@ export async function load({ request }): Promise<{
 	hassUrl: string;
 	locale: string | undefined;
 	imageInterval: number;
-
+	dailyQuoteSensor: string;
 }> {
 	// Load minimal config for HA WebSocket connection
 	let configuration: any = {};
@@ -26,13 +26,12 @@ export async function load({ request }): Promise<{
 	const hassUrl = process.env.HASS_URL || request.headers.get('X-Proxy-Target') || '';
 	const locale = configuration?.locale || 'en';
 	const imageInterval = parseInt(process.env.SCREEN_INTERVAL || '30', 10);
-
-
+	const dailyQuoteSensor = configuration?.daily_quote_sensor || '';
 
 	return {
 		hassUrl,
 		locale,
 		imageInterval,
-
+		dailyQuoteSensor,
 	};
 }
