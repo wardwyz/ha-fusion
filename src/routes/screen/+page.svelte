@@ -23,6 +23,7 @@
 	const intervalMs = (data?.imageInterval || 30) * 1000;
 	const hassUrl = data?.hassUrl || '';
 	$: if (data?.locale) $selectedLanguage = data.locale;
+	const dailyQuoteSensorId = data?.dailyQuoteSensor ?? '';
 
 	// --- image slideshow state ---
 	let images: string[] = [];
@@ -117,6 +118,7 @@
 
 	// --- Chinese weather & lunar calendar ---
 	$: weatherConditionZh = WEATHER_ZH[weatherCondition] || weatherCondition;
+	$: dailyQuote = dailyQuoteSensorId && $states?.[dailyQuoteSensorId]?.state || '';
 	$: lunarDate = solarToLunar($timer);
 	$: lunarStr = lunarDate.monthStr + '月' + lunarDate.dayStr;
 	$: festivalStr = getFestival(lunarDate, $timer);
@@ -202,7 +204,7 @@
 
 		<!-- center: greeting -->
 		<div class="center">
-			<div class="greeting">{greeting}</div>
+			<div class="greeting">{dailyQuote || greeting}</div>
 		</div>
 
 		<!-- bottom bar: weather + notifications -->

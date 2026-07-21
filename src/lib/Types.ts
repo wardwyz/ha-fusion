@@ -14,6 +14,7 @@ export interface Configuration {
 	custom_js?: boolean;
 	custom_css?: boolean;
 	motion?: boolean;
+	daily_quote_sensor?: string;
 	addons?: Addons;
 	token?: string;
 	profiles?: ProfileConfig[];
