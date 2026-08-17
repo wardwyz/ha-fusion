@@ -70,7 +70,7 @@ export const GET: RequestHandler = async () => {
 	}
 
 	try {
-		const url = `${cfg.server_url}/api/v1/history/transfer?page=1&count=30&token=${encodeURIComponent(cfg.token)}`;
+		const url = `${cfg.server_url}/api/v1/history/transfer?page=1&count=100&token=${encodeURIComponent(cfg.token)}`;
 		const resp = await fetch(url, {
 			headers: { 'Accept': 'application/json' }
 		});
@@ -87,8 +87,22 @@ export const GET: RequestHandler = async () => {
 		const raw = body.data ?? [];
 		const records = Array.isArray(raw) ? raw : (raw.items ?? raw.list ?? []);
 
+		// Only keep movies — filter out TV shows and other media types
+		const isMovie = (item: any): boolean => {
+			const type = String(item.type ?? '').toLowerCase();
+			const category = String(item.category ?? '').toLowerCase();
+			const mediaType = String(item.media_type ?? '').toLowerCase();
+			return (
+				type === '电影' || type === 'movie' || type === 'film' ||
+				category === 'movie' || category === '电影' ||
+				mediaType === 'movie' || mediaType === 'film'
+			);
+		};
+
+		const movies = records.filter(isMovie);
+
 		// Map to normalized items
-		const items = records.map((item: any) => ({
+		const items = movies.map((item: any) => ({
 			title: item.title ?? '',
 			year: item.year ?? '',
 			type: item.type ?? '',
