@@ -27,18 +27,84 @@ async function loadConfig(): Promise<MPConfig | null> {
 	return null;
 }
 
-// Cache: MP items 5min, TMDB data 24h
+// Cache: MP items 2h, MP media info 24h, TMDB data 24h
 const CACHE_TTL = 2 * 60 * 60 * 1000;
+const MEDIA_INFO_TTL = 24 * 60 * 60 * 1000;
 const TMDB_CACHE_TTL = 24 * 60 * 60 * 1000;
 let cache: { items: any[]; timestamp: number; hadTMDB: boolean } | null = null;
-let tmdbCache: Record<string, { data: any; ts: number }> = {};
+let mpMediaCache: Record<string, { data: { vote_average: number | null; vote_count: number; overview: string | null }; ts: number }> = {};
+let tmdbCache: Record<string, { data: { vote_average: number | null; vote_count: number; overview: string | null }; ts: number }> = {};
+
+/** Extract rating/overview from a generic object (flexible field names) */
+function extractMediaInfo(obj: any): { vote_average: number | null; vote_count: number; overview: string | null } {
+	return {
+		vote_average: obj?.vote_average ?? obj?.voteAverage ?? obj?.rating ?? null,
+		vote_count: obj?.vote_count ?? obj?.voteCount ?? 0,
+		overview: obj?.overview ?? obj?.description ?? obj?.intro ?? null
+	};
+}
+
+/** Fetch movie details from MoviePilot API first */
+async function fetchMPMediaInfo(
+	tmdbid: number,
+	serverUrl: string,
+	token: string
+): Promise<{ vote_average: number | null; vote_count: number; overview: string | null } | null> {
+	const ck = String(tmdbid);
+	const cached = mpMediaCache[ck];
+	if (cached && Date.now() - cached.ts < MEDIA_INFO_TTL) return cached.data;
+
+	try {
+		// MoviePilot media groups endpoint — returns array of media info
+		const groupsUrl = `${serverUrl}/api/v1/media/groups/${tmdbid}?token=${encodeURIComponent(token)}`;
+		const groupsResp = await fetch(groupsUrl, {
+			headers: { 'Accept': 'application/json' },
+			signal: AbortSignal.timeout(5000)
+		});
+		if (groupsResp.ok) {
+			const groups = await groupsResp.json();
+			const arr = Array.isArray(groups) ? groups : (groups?.data ?? []);
+			if (Array.isArray(arr) && arr.length > 0) {
+				// Find the movie entry (may be nested)
+				const found = arr.find((g: any) => g?.tmdbid === tmdbid || g?.tmdb_id === tmdbid || g?.media_type === 'movie') ?? arr[0];
+				const result = extractMediaInfo(found);
+				if (result.vote_average != null || result.overview) {
+					mpMediaCache[ck] = { data: result, ts: Date.now() };
+					return result;
+				}
+			}
+		}
+
+		// Fallback: MoviePilot Radarr movie lookup (by TMDB id via term)
+		const lookupUrl = `${serverUrl}/api/v3/movie/lookup?term=tmdb:${tmdbid}&token=${encodeURIComponent(token)}`;
+		const lookupResp = await fetch(lookupUrl, {
+			headers: { 'Accept': 'application/json' },
+			signal: AbortSignal.timeout(5000)
+		});
+		if (lookupResp.ok) {
+			const results = await lookupResp.json();
+			const arr = Array.isArray(results) ? results : (results?.data ?? []);
+			const movie = arr.find((r: any) => r?.tmdbId === tmdbid) ?? arr[0];
+			if (movie) {
+				const result = extractMediaInfo(movie);
+				if (result.vote_average != null || result.overview) {
+					mpMediaCache[ck] = { data: result, ts: Date.now() };
+					return result;
+				}
+			}
+		}
+	} catch {
+		// MP failed — fall through to TMDB
+	}
+
+	return null;
+}
 
 async function fetchTMDB(tmdbid: number, apikey: string, baseUrl?: string): Promise<{ vote_average: number | null; vote_count: number; overview: string | null } | null> {
 	const ck = `${tmdbid}:${apikey}`;
 	const cached = tmdbCache[ck];
 	if (cached && Date.now() - cached.ts < TMDB_CACHE_TTL) return cached.data;
 	try {
-		
 		const resp = await fetch(
 			`${baseUrl}/movie/${tmdbid}?api_key=${apikey}&language=zh-CN`,
 			{ signal: AbortSignal.timeout(5000) }
@@ -63,7 +129,6 @@ export const GET: RequestHandler = async () => {
 		return new Response(JSON.stringify({ error: 'MoviePilot not configured' }), { status: 400 });
 	}
 
-	// Return cached data if fresh
 	const hasTMDB = !!cfg.tmdb_apikey;
 	if (cache && Date.now() - cache.timestamp < CACHE_TTL && cache.hadTMDB === hasTMDB) {
 		return json({ items: cache.items });
@@ -101,7 +166,7 @@ export const GET: RequestHandler = async () => {
 
 		const movies = records.filter(isMovie);
 
-		// Map to normalized items
+		// Map to normalized items, keeping any rating/overview already returned by MP
 		const items = movies.map((item: any) => ({
 			title: item.title ?? '',
 			year: item.year ?? '',
@@ -109,26 +174,39 @@ export const GET: RequestHandler = async () => {
 			category: item.category ?? '',
 			image: item.image ?? null,
 			tmdbid: item.tmdbid ?? null,
-			vote_average: null as number | null,
-			vote_count: 0,
-			overview: null as string | null
+			vote_average: item.vote_average ?? item.voteAverage ?? null as number | null,
+			vote_count: item.vote_count ?? item.voteCount ?? 0,
+			overview: item.overview ?? item.description ?? null as string | null
 		}));
 
-		// Enrich with TMDB data if key is configured
-		if (cfg.tmdb_apikey) {
-			const baseUrl = cfg.tmdb_api_url || 'https://api.themoviedb.org/3';
-			const tmdbPromises = items.map(async (item: { tmdbid: number | null; vote_average: number | null; vote_count: number; overview: string | null }) => {
-				if (item.tmdbid) {
+		// Enrich: MoviePilot API first, TMDB as fallback
+		const enrichPromises = items.map(async (item: any) => {
+			if (item.tmdbid) {
+				// Already has rating/overview from transfer history — skip external calls
+				if (item.vote_average != null && item.overview) return;
+
+				// 1) MoviePilot media info
+				const mpInfo = await fetchMPMediaInfo(item.tmdbid, cfg.server_url, cfg.token);
+				if (mpInfo && (mpInfo.vote_average != null || mpInfo.overview)) {
+					item.vote_average = mpInfo.vote_average ?? item.vote_average;
+					item.vote_count = mpInfo.vote_count ?? item.vote_count;
+					item.overview = mpInfo.overview ?? item.overview;
+					return;
+				}
+
+				// 2) TMDB fallback
+				if (cfg.tmdb_apikey) {
+					const baseUrl = cfg.tmdb_api_url || 'https://api.themoviedb.org/3';
 					const tmdb = await fetchTMDB(item.tmdbid, cfg.tmdb_apikey!, baseUrl);
 					if (tmdb) {
-						item.vote_average = tmdb.vote_average;
-						item.vote_count = tmdb.vote_count;
-						item.overview = tmdb.overview;
+						item.vote_average = tmdb.vote_average ?? item.vote_average;
+						item.vote_count = tmdb.vote_count ?? item.vote_count;
+						item.overview = tmdb.overview ?? item.overview;
 					}
 				}
-			});
-			await Promise.allSettled(tmdbPromises);
-		}
+			}
+		});
+		await Promise.allSettled(enrichPromises);
 
 		cache = { items, timestamp: Date.now(), hadTMDB: !!cfg.tmdb_apikey };
 		return json({ items });
