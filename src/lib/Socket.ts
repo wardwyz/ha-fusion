@@ -1,5 +1,4 @@
 import {
-	getAuth,
 	createLongLivedTokenAuth,
 	createConnection,
 	subscribeConfig,
@@ -9,10 +8,9 @@ import {
 	ERR_INVALID_AUTH,
 	ERR_CONNECTION_LOST,
 	ERR_HASS_HOST_REQUIRED,
-	ERR_INVALID_HTTPS_TO_HTTP,
-	ERR_INVALID_AUTH_CALLBACK
+	ERR_INVALID_HTTPS_TO_HTTP
 } from 'home-assistant-js-websocket';
-import type { Auth, AuthData } from 'home-assistant-js-websocket';
+import type { Auth } from 'home-assistant-js-websocket';
 import {
 	states,
 	connection,
@@ -22,7 +20,7 @@ import {
 	persistentNotifications,
 	services
 } from '$lib/Stores';
-import { openModal, closeModal } from 'svelte-modals';
+import { closeModal } from 'svelte-modals';
 import type { Configuration, PersistentNotification } from '$lib/Types';
 
 // Module-level reference to the active connection. Prevents authentication()
@@ -30,29 +28,6 @@ import type { Configuration, PersistentNotification } from '$lib/Types';
 // abandon the old subscribeEntities callback and leave states empty until the
 // new subscription fires).
 let _activeConn: any = null;
-
-const options = {
-	hassUrl: undefined as string | undefined,
-	async loadTokens() {
-		try {
-			const raw = localStorage.hassTokens;
-			// guard against literal "null" string written by old clearTokens()
-			if (!raw || raw === 'null' || raw === 'undefined') return undefined;
-			const tokens = JSON.parse(raw);
-			// validate token structure before returning
-			if (!tokens?.access_token && !tokens?.refresh_token) return undefined;
-			return tokens;
-		} catch {
-			return undefined;
-		}
-	},
-	saveTokens(tokens: AuthData | null) {
-		localStorage.hassTokens = JSON.stringify(tokens);
-	},
-	clearTokens() {
-		localStorage.removeItem('hassTokens');
-	}
-};
 
 export async function authentication(configuration: Configuration) {
 	if (!configuration?.hassUrl) {
@@ -67,27 +42,17 @@ export async function authentication(configuration: Configuration) {
 	let auth: Auth | undefined;
 
 	try {
-		// long lived access token
 		if (configuration?.token) {
+			// Long lived access token — connect directly without login redirect
 			auth = createLongLivedTokenAuth(configuration?.hassUrl, configuration?.token);
-
-			// companion app and ingress causes issues with auth redirect
-			// open special modal to enter long lived access token
-		} else if (navigator.userAgent.includes('Home Assistant')) {
-			openModal(() => import('$lib/Components/TokenModal.svelte'));
-			return;
-
-			// default auth flow
 		} else {
-			const isIngress = window.location.pathname.includes('/api/hassio_ingress/');
-			const redirectUrl = isIngress ? `${window.location.origin}/?auth_callback=1` : undefined;
-
-			auth = await getAuth({
-				...options,
-				hassUrl: configuration?.hassUrl,
-				...(redirectUrl && { redirectUrl })
-			});
-			if (auth.expired) auth.refreshAccessToken();
+			// No token configured — allow access without login.
+			// Initialize empty states so dashboards render with placeholder values
+			// instead of blocking on a Home Assistant login redirect.
+			console.warn('No HA token configured — running without authentication');
+			states.set({});
+			connected.set(false);
+			return;
 		}
 
 		// connection
@@ -127,11 +92,6 @@ export async function authentication(configuration: Configuration) {
 			_activeConn = null; // allow a fresh authentication() attempt
 			connected.set(false);
 		});
-
-		// clear auth query string
-		if (location.search.includes('auth_callback=1')) {
-			history.replaceState(null, '', location.pathname);
-		}
 
 		// custom events
 		conn?.subscribeMessage(
@@ -200,16 +160,7 @@ function handleError(_error: unknown) {
 	switch (_error) {
 		case ERR_INVALID_AUTH:
 			console.error('ERR_INVALID_AUTH');
-			options.clearTokens();
-			break;
-		case ERR_INVALID_AUTH_CALLBACK:
-			// raised by getAuth() when limitHassInstance is true and the
-			// client ID or hassURL in the auth callback state don't match
-			console.error('ERR_INVALID_AUTH_CALLBACK');
-			options.clearTokens();
-			if (location.search.includes('auth_callback=1')) {
-				history.replaceState(null, '', location.pathname);
-			}
+			localStorage.removeItem('hassTokens');
 			break;
 		case ERR_CANNOT_CONNECT:
 			console.error('ERR_CANNOT_CONNECT');
