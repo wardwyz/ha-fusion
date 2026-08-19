@@ -138,7 +138,7 @@ export function connectMA(url: string, token: string): void {
 	connections.set(url, entry);
 
 	ws.onopen = () => {
-		callOn(entry, 'auth', { token: entry.token, locale: navigator.language || 'en' })
+		callOn(entry, 'auth', { token: entry.token })
 			.then(() => Promise.all([callOn(entry, 'players/all'), callOn(entry, 'player_queues/all')]))
 			.then(([players, queues]) => {
 				const playerList = (players as MAPlayer[]) ?? [];
@@ -149,6 +149,10 @@ export function connectMA(url: string, token: string): void {
 				maQueues.set(qmap);
 			})
 			.catch((e) => console.error('[MA] init error', e));
+	};
+
+	ws.onerror = (e) => {
+		console.error('[MA] WebSocket error', e);
 	};
 
 	ws.onmessage = ({ data }) => {
@@ -210,6 +214,13 @@ export function disconnectMA(url: string): void {
 		connections.delete(url);
 		if (activeUrl === url) activeUrl = null;
 	}
+}
+
+/** Returns true when the active Music Assistant WebSocket is open */
+export function isMAConnected(): boolean {
+	if (!activeUrl) return false;
+	const entry = connections.get(activeUrl);
+	return !!entry && entry.ws.readyState === WebSocket.OPEN;
 }
 
 export function callMA(command: string, data: Record<string, unknown> = {}): Promise<unknown> {

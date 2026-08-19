@@ -22,7 +22,7 @@
 		historyIndex
 	} from '$lib/Stores';
 	import { authentication } from '$lib/Socket';
-	import { connectMA, disconnectMA } from '$lib/MusicAssistant';
+	import { connectMA, disconnectMA, isMAConnected } from '$lib/MusicAssistant';
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { modals, openModal } from 'svelte-modals';
@@ -145,6 +145,7 @@
 	 */
 	let isConnecting = false;
 	let retryInterval: ReturnType<typeof setInterval>;
+	let maReconnectInterval: ReturnType<typeof setInterval>;
 
 	// Track active MA url so we can disconnect/reconnect on config change
 	let _maUrl = '';
@@ -177,6 +178,7 @@
 
 	onDestroy(() => {
 		clearInterval(retryInterval);
+		if (maReconnectInterval) clearInterval(maReconnectInterval);
 		if (_maUrl) disconnectMA(_maUrl);
 	});
 
@@ -196,6 +198,15 @@
 		document.documentElement.lang = $selectedLanguage || 'en';
 		connect();
 		retryInterval = setInterval(connect, 3000);
+
+		// Reconnect Music Assistant if the WebSocket drops
+		maReconnectInterval = setInterval(() => {
+			const maConfig = $configuration?.addons?.music_assistant;
+			if (maConfig?.server_url && maConfig?.token && !isMAConnected()) {
+				console.debug('[MA] reconnecting...');
+				connectMA(maConfig.server_url, maConfig.token);
+			}
+		}, 10000);
 
 		/**
 		 * Unregister service worker because it
