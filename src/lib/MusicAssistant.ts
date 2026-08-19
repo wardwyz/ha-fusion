@@ -139,14 +139,24 @@ export function connectMA(url: string, token: string): void {
 
 	ws.onopen = () => {
 		callOn(entry, 'auth', { token: entry.token })
-			.then(() => Promise.all([callOn(entry, 'players/all'), callOn(entry, 'player_queues/all')]))
-			.then(([players, queues]) => {
-				const playerList = (players as MAPlayer[]) ?? [];
-				const queueList = (queues as MAQueue[]) ?? [];
-				maPlayers.set(playerList);
-				const qmap: Record<string, MAQueue> = {};
-				for (const q of queueList) qmap[q.queue_id] = q;
-				maQueues.set(qmap);
+			.then(() => {
+				// Fetch players independently so a queue command failure
+				// doesn't leave the player list empty
+				callOn(entry, 'players/all')
+					.then((players) => {
+						maPlayers.set((players as MAPlayer[]) ?? []);
+					})
+					.catch((e) => console.error('[MA] players error', e));
+
+				// Fetch queues independently
+				callOn(entry, 'player_queues/all')
+					.then((queues) => {
+						const queueList = (queues as MAQueue[]) ?? [];
+						const qmap: Record<string, MAQueue> = {};
+						for (const q of queueList) qmap[q.queue_id] = q;
+						maQueues.set(qmap);
+					})
+					.catch((e) => console.error('[MA] queues error', e));
 			})
 			.catch((e) => console.error('[MA] init error', e));
 	};
