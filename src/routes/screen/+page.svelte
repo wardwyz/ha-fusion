@@ -24,6 +24,10 @@
 	const hassUrl = data?.hassUrl || '';
 	$: if (data?.locale) $selectedLanguage = data.locale;
 	const dailyQuoteSensorId = data?.dailyQuoteSensor ?? '';
+	let serverTimeOffset = 0;
+
+	// Server time = client timer + offset (computed on mount)
+	$: serverNow = new Date($timer.getTime() + serverTimeOffset);
 
 	// --- image slideshow state ---
 	let images: string[] = [];
@@ -85,14 +89,14 @@
 	}
 
 	// --- time/date formatting ---
-	$: timeStr = $timer.toLocaleTimeString($selectedLanguage, {
+	$: timeStr = serverNow.toLocaleTimeString($selectedLanguage, {
 		hour: '2-digit',
 		minute: '2-digit',
 		second: '2-digit',
 		hour12: false
 	});
 
-	$: dateStr = $timer.toLocaleDateString($selectedLanguage, {
+	$: dateStr = serverNow.toLocaleDateString($selectedLanguage, {
 		weekday: 'long',
 		year: 'numeric',
 		month: 'long',
@@ -119,9 +123,9 @@
 	// --- Chinese weather & lunar calendar ---
 	$: weatherConditionZh = WEATHER_ZH[weatherCondition] || weatherCondition;
 	$: dailyQuote = dailyQuoteSensorId && $states?.[dailyQuoteSensorId]?.state || '';
-	$: lunarDate = solarToLunar($timer);
+	$: lunarDate = solarToLunar(serverNow);
 	$: lunarStr = lunarDate.monthStr + '月' + lunarDate.dayStr;
-	$: festivalStr = getFestival(lunarDate, $timer);
+	$: festivalStr = getFestival(lunarDate, serverNow);
 
 	// --- notifications ---
 	$: notifications = $persistentNotifications || {};
@@ -130,7 +134,7 @@
 
 	// --- Music Assistant state ---
 
-	$: hour = $timer.getHours();
+	$: hour = serverNow.getHours();
 	$: greeting =
 		hour < 6 ? '夜深了' :
 		hour < 12 ? '早上好' :
@@ -140,6 +144,9 @@
 
 	onMount(() => {
 		if (browser) {
+			if (data?.serverTime) {
+				serverTimeOffset = data.serverTime - Date.now();
+			}
 			connect();
 			retryInterval = setInterval(connect, 3000);
 			fetchImages();

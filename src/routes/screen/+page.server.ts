@@ -10,6 +10,7 @@ export async function load({ request }): Promise<{
 	locale: string | undefined;
 	imageInterval: number;
 	dailyQuoteSensor: string;
+	serverTime: number;
 }> {
 	// Load minimal config for HA WebSocket connection
 	let configuration: any = {};
@@ -33,5 +34,6 @@ export async function load({ request }): Promise<{
 		locale,
 		imageInterval,
 		dailyQuoteSensor,
+		serverTime: Date.now()
 	};
 }
