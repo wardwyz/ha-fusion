@@ -120,31 +120,20 @@
 		{#if attributes?.hvac_modes}
 			<h2>{$lang('hvac_modes')}</h2>
 
-			{#if attributes?.hvac_modes?.length <= MAX_ITEMS}
-				<div class="button-container">
-					{#each attributes?.hvac_modes as hvacMode}
-						<button
-							title={$lang(hvacMode)}
-							on:click={() => handleClick('hvac_mode', hvacMode)}
-							class:selected={hvacMode === entity?.state}
-						>
-							<div class="icon">
-								<Icon icon={hvacModesIcons?.[hvacMode]} height="none" />
-							</div>
-						</button>
-					{/each}
-				</div>
-			{:else if optionsHvacModes}
-				<Select
-					options={optionsHvacModes}
-					placeholder={$lang('hvac_modes')}
-					value={entity?.state}
-					on:change={(event) => {
-						if (event?.detail === null) return;
-						handleClick('hvac_mode', event?.detail);
-					}}
-				/>
-			{/if}
+			<div class="button-container">
+				{#each attributes?.hvac_modes as hvacMode}
+					<button
+						title={$lang(hvacMode)}
+						on:click={() => handleClick('hvac_mode', hvacMode)}
+						class:selected={hvacMode === entity?.state}
+					>
+						<div class="icon">
+							<Icon icon={hvacModesIcons?.[hvacMode]} height="none" />
+						</div>
+						<span class="label">{$lang(hvacMode)}</span>
+					</button>
+				{/each}
+			</div>
 		{/if}
 
 		{#if supports?.TARGET_TEMPERATURE}
@@ -297,6 +286,23 @@
 {/if}
 
 <style>
+	.button-container {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+
+	.button-container button {
+		display: flex;
+		align-items: center;
+		gap: 0.3rem;
+	}
+
+	.label {
+		font-size: 0.8rem;
+		font-weight: 500;
+	}
+
 	.icon {
 		height: 1.25rem;
 		width: 1.25rem;
