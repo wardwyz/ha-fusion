@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { connection, states, lang } from '$lib/Stores';
-	import Modal from '$lib/Modal/Index.svelte';
 	import Camera from '$lib/Main/Camera.svelte';
 	import Icon from '@iconify/svelte';
 	import { callService } from 'home-assistant-js-websocket';
@@ -102,67 +101,110 @@
 </script>
 
 {#if isOpen}
-	<Modal size="large">
-		<svelte:fragment slot="title">
+	<div class="doorbell-fullscreen">
+		<div class="camera-wrap">
+			<Camera
+				sel={{ ...sel, entity_id: sel?.camera_entity, size: 'contain' }}
+				responsive={true}
+				muted={false}
+				controls={true}
+			/>
+		</div>
+
+		<div class="doorbell-top">
 			<span class="title-row">
 				<Icon icon="mdi:doorbell" height="1.1em" />
 				{sel?.name || $lang('doorbell') || 'Doorbell'}
 			</span>
+
 			{#if countdown !== null}
 				<span class="countdown">{countdown}s</span>
 			{/if}
-		</svelte:fragment>
-
-		<div class="modal-content">
-			<div class="camera-wrap">
-				<Camera
-					sel={{ ...sel, entity_id: sel?.camera_entity, size: 'contain' }}
-					responsive={true}
-					muted={false}
-					controls={true}
-				/>
-			</div>
-
-			{#if sel?.action_entity}
-				<button class="action-btn" on:click={handleAction}>
-					<Icon icon={getActionIcon()} height="1.6em" />
-					{getActionLabel()}
-				</button>
-			{/if}
 		</div>
-	</Modal>
+
+		<button class="close-btn" on:click={closeModal} aria-label="close">
+			<Icon icon="mdi:close" height="none" />
+		</button>
+
+		{#if sel?.action_entity}
+			<button class="action-btn" on:click={handleAction}>
+				<Icon icon={getActionIcon()} height="1.6em" />
+				{getActionLabel()}
+			</button>
+		{/if}
+	</div>
 {/if}
 
 <style>
+	.doorbell-fullscreen {
+		position: fixed;
+		inset: 0;
+		z-index: 99999;
+		background: #000;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.doorbell-top {
+		position: absolute;
+		top: 0.8rem;
+		left: 0.8rem;
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		color: white;
+		background: rgba(0, 0, 0, 0.55);
+		backdrop-filter: blur(6px);
+		border-radius: 0.5rem;
+		padding: 0.45rem 0.8rem;
+		font-size: 1rem;
+		font-weight: 500;
+	}
+
 	.title-row {
 		display: flex;
 		align-items: center;
 		gap: 0.4rem;
-		flex: 1;
 	}
 
 	.countdown {
 		font-size: 0.85rem;
-		opacity: 0.5;
+		opacity: 0.85;
 		font-weight: 400;
-		margin-left: auto;
-		padding-right: 0.5rem;
+		font-variant-numeric: tabular-nums;
 	}
 
-	.modal-content {
+	.close-btn {
+		position: absolute;
+		top: 0.8rem;
+		right: 0.8rem;
+		background: rgba(0, 0, 0, 0.55);
+		border: none;
+		color: white;
+		cursor: pointer;
+		width: 2.4rem;
+		height: 2.4rem;
+		border-radius: 50%;
 		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-		padding: 0.5rem 0;
+		align-items: center;
+		justify-content: center;
+		z-index: 100000;
+		transition: background-color 120ms ease;
+	}
+
+	.close-btn:hover {
+		background: rgba(0, 0, 0, 0.8);
+	}
+
+	.close-btn :global(svg) {
+		width: 1.4rem;
+		height: 1.4rem;
 	}
 
 	.camera-wrap {
-		position: relative;
-		border-radius: 0.5rem;
-		overflow: hidden;
-		height: calc(85vh - 14rem);
-		min-height: 50px;
-		width: 100%;
+		position: absolute;
+		inset: 0;
 		background: black;
 		display: flex;
 		align-items: center;
@@ -170,7 +212,7 @@
 	}
 
 	.camera-wrap :global(button) {
-		width: fit-content !important;
+		width: 100%;
 		height: 100% !important;
 		max-width: 100% !important;
 		padding: 0 !important;
@@ -182,29 +224,36 @@
 	}
 
 	.camera-wrap :global(video) {
-		width: auto !important;
+		width: 100% !important;
 		height: 100% !important;
 		max-width: 100% !important;
 		object-fit: contain !important;
 	}
 
 	.action-btn {
-		width: 100%;
+		position: absolute;
+		bottom: 1.5rem;
+		left: 50%;
+		transform: translateX(-50%);
+		width: auto;
+		min-width: 12rem;
+		max-width: calc(100vw - 3rem);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		gap: 0.6rem;
-		padding: 0.9rem;
+		padding: 0.9rem 2rem;
 		border-radius: 0.75rem;
 		border: none;
-		background: var(--theme-navigate-background-color, rgba(255, 255, 255, 0.15));
+		background: rgba(255, 255, 255, 0.2);
+		backdrop-filter: blur(8px);
 		color: inherit;
 		font-size: 1.05rem;
 		font-weight: 600;
 		cursor: pointer;
 		transition: opacity 150ms ease;
 		letter-spacing: 0.02em;
-		flex-shrink: 0;
+		z-index: 100000;
 	}
 
 	.action-btn:hover {
@@ -215,45 +264,17 @@
 		opacity: 0.6;
 	}
 
-	/* Tablet portrait (Galaxy Tab A7 Lite and similar: 800x1280) */
-	@media (max-width: 1024px) {
-		.camera-wrap {
-			height: calc(80vh - 12rem);
-		}
-
-		.modal-content {
-			gap: 0.6rem;
-		}
-	}
-
 	/* Mobile phones */
 	@media (max-width: 768px) {
-		.camera-wrap {
-			height: calc(75vh - 11rem);
-		}
-
-		.modal-content {
-			gap: 0.5rem;
-			padding: 0;
+		.doorbell-top {
+			font-size: 0.9rem;
+			padding: 0.35rem 0.6rem;
 		}
 
 		.action-btn {
-			padding: 0.8rem;
+			padding: 0.8rem 1.4rem;
 			font-size: 0.95rem;
-		}
-	}
-
-	/* FHD monitors (1366px – 1919px) — modal max-height drops to 80vh */
-	@media (min-width: 1366px) and (max-width: 1919px) {
-		.camera-wrap {
-			height: calc(80vh - 11rem);
-		}
-	}
-
-	/* QHD / 4K displays (≥ 1920px) — modal max-height drops to 75vh, extra padding */
-	@media (min-width: 1920px) {
-		.camera-wrap {
-			height: calc(75vh - 13rem);
+			bottom: 1rem;
 		}
 	}
 </style>
