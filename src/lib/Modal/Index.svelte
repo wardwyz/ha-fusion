@@ -193,17 +193,21 @@
 					<slot name="title" />
 				</h1>
 
-				<button
-					on:click={() => {
-						closeModal();
-					}}
-					aria-label="close"
-					style:outline="none"
-					use:Ripple={$ripple}
-					tabindex="-1"
-				>
-					<Icon icon="mingcute:close-fill" height="none" />
-				</button>
+				<div class="header-actions">
+					<slot name="header-actions" />
+
+					<button
+						on:click={() => {
+							closeModal();
+						}}
+						aria-label="close"
+						style:outline="none"
+						use:Ripple={$ripple}
+						tabindex="-1"
+					>
+						<Icon icon="mingcute:close-fill" height="none" />
+					</button>
+				</div>
 			</div>
 
 			<div class="body" class:fill>
@@ -223,6 +227,12 @@
 	.header {
 		display: flex;
 		justify-content: space-between;
+	}
+
+	.header-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
 	}
 
 	.warning {
