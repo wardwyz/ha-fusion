@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { connection, states, lang } from '$lib/Stores';
+	import { connection, lang } from '$lib/Stores';
 	import Camera from '$lib/Main/Camera.svelte';
 	import Icon from '@iconify/svelte';
 	import { callService } from 'home-assistant-js-websocket';
@@ -12,8 +12,7 @@
 	export let sel: DoorbellItem;
 	export let autoClose = false;
 
-	$: actionEntity = sel?.action_entity ? $states?.[sel.action_entity] : undefined;
-	$: actionDomain = getDomain(sel?.action_entity);
+	$: announceDomain = getDomain(sel?.announce_entity);
 
 	let countdown: number | null = null;
 	let countdownTimer: ReturnType<typeof setInterval> | null = null;
@@ -46,57 +45,40 @@
 
 	$: if (!isOpen) stopCountdown();
 
-	function getActionLabel(): string {
-		switch (actionDomain) {
-			case 'lock':
-				return $lang('open_door');
-			case 'button':
-			case 'input_button':
-				return $lang('press');
-			case 'cover':
-				return $lang('open_cover');
-			default:
-				return $lang('open_door');
-		}
+	function getAnnounceLabel(): string {
+		return $lang('voice_broadcast') || '语音播报';
 	}
 
-	function getActionIcon(): string {
-		switch (actionDomain) {
-			case 'lock':
-				return 'mdi:lock-open-outline';
-			case 'cover':
-				return 'mdi:garage-open';
-			default:
-				return 'mdi:door-open';
-		}
+	function getAnnounceIcon(): string {
+		return 'mdi:bullhorn-outline';
 	}
 
-	async function handleAction() {
-		if (!$connection || !sel?.action_entity) return;
-		const domain = actionDomain;
+	async function handleAnnounce() {
+		if (!$connection || !sel?.announce_entity) return;
+		const domain = announceDomain;
 		if (!domain) return;
 
 		let service: string;
 		switch (domain) {
-			case 'lock':
-				service = 'unlock';
-				break;
 			case 'button':
 			case 'input_button':
 				service = 'press';
 				break;
-			case 'cover':
-				service = 'open_cover';
+			case 'automation':
+				service = 'trigger';
 				break;
 			case 'switch':
 			case 'input_boolean':
+			case 'script':
+			case 'light':
+			case 'fan':
 				service = 'turn_on';
 				break;
 			default:
 				service = 'turn_on';
 		}
 
-		await callService($connection, domain, service, { entity_id: sel.action_entity });
+		await callService($connection, domain, service, { entity_id: sel.announce_entity });
 	}
 </script>
 
@@ -126,10 +108,10 @@
 			<Icon icon="mdi:close" height="none" />
 		</button>
 
-		{#if sel?.action_entity}
-			<button class="action-btn" on:click={handleAction}>
-				<Icon icon={getActionIcon()} height="1.6em" />
-				{getActionLabel()}
+		{#if sel?.announce_entity}
+			<button class="action-btn" on:click={handleAnnounce}>
+				<Icon icon={getAnnounceIcon()} height="1.6em" />
+				{getAnnounceLabel()}
 			</button>
 		{/if}
 	</div>

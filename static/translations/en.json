@@ -478,5 +478,7 @@
 	"week": "Week",
 	"welcome_home": "Welcome Home",
 	"year": "year",
-	"yes": "Yes"
+	"yes": "Yes",
+	"announce_entity": "Announce entity",
+	"voice_broadcast": "Voice broadcast"
 }

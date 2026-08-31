@@ -492,5 +492,7 @@
 	"cover": "窗帘",
 	"entities_list": "实体列表",
 	"restore": "恢复",
-	"include_entities": "添加实体"
+	"include_entities": "添加实体",
+	"announce_entity": "语音播报实体",
+	"voice_broadcast": "语音播报"
 }

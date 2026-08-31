@@ -469,7 +469,7 @@ export interface DoorbellItem {
 	id: number;
 	name?: string;
 	camera_entity?: string;
-	action_entity?: string;
+	announce_entity?: string;
 	trigger_entity?: string;
 	trigger_timeout?: number;
 	stream?: boolean;

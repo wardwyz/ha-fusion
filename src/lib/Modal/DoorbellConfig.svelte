@@ -70,14 +70,14 @@
 			</button>
 		</div>
 
-		<!-- action entity -->
-		<h2>{$lang('action_entity') || 'Action entity'}</h2>
+		<!-- announce entity (optional) -->
+		<h2>{$lang('announce_entity') || 'Announce entity'}</h2>
 		<Select
 			computeIcons={true}
 			options={allOptions}
-			placeholder={$lang('action_entity') || 'Action entity'}
-			value={sel?.action_entity}
-			on:change={(e) => set('action_entity', e)}
+			placeholder={$lang('announce_entity') || 'Announce entity'}
+			value={sel?.announce_entity}
+			on:change={(e) => set('announce_entity', e)}
 		/>
 
 		<!-- trigger entity -->
