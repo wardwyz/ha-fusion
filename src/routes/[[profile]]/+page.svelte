@@ -379,8 +379,8 @@
 			'header header'
 			'aside nav'
 			'aside main';
-		min-height: 100vh;
-		min-height: 100dvh;
+		height: 100vh;
+		height: 100dvh;
 		overflow: hidden;
 	}
 

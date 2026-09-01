@@ -484,6 +484,8 @@
 		padding-bottom: 1.4rem !important;
 		background-color: var(--theme-colors-sidebar-background);
 		border-right: var(--theme-colors-sidebar-border);
+		overflow-y: auto;
+		min-height: 0;
 	}
 
 	div {

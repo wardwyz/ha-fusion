@@ -539,6 +539,8 @@
 		gap: 1.5rem;
 		outline: transparent;
 		align-content: start;
+		overflow-y: auto;
+		min-height: 0;
 	}
 
 	section {
