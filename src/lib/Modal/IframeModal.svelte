@@ -1,55 +1,30 @@
 <script lang="ts">
 	import { lang } from '$lib/Stores';
-	import Modal from '$lib/Modal/Index.svelte';
 	import Icon from '@iconify/svelte';
+	import { closeModal } from 'svelte-modals';
 	import type { IframeGridItem } from '$lib/Types';
 
 	export let isOpen: boolean;
 	export let sel: IframeGridItem;
-
-	let fullscreen = false;
-
-	$: if (!isOpen && fullscreen) fullscreen = false;
-
-	function toggleFullscreen() {
-		fullscreen = !fullscreen;
-	}
 </script>
 
 {#if isOpen}
-	{#if fullscreen}
-		<div class="fullscreen">
-			{#if sel?.url}
-				<iframe src={sel.url} title={sel?.name || $lang('iframe')} />
-			{/if}
+	<div class="fullscreen">
+		{#if sel?.url}
+			<iframe src={sel.url} title={sel?.name || $lang('iframe')} />
+		{:else}
+			<p class="empty-hint">{$lang('no_url') || 'No URL configured'}</p>
+		{/if}
 
-			<button
-				class="fullscreen-close"
-				on:click={() => (fullscreen = false)}
-				aria-label="exit fullscreen"
-			>
-				<Icon icon="mdi:close" height="none" />
-			</button>
-		</div>
-	{:else}
-		<Modal size="large" fill={true}>
-			<h1 slot="title">{sel?.name || $lang('iframe')}</h1>
-
-			<button
-				slot="header-actions"
-				class="fullscreen-btn"
-				on:click={toggleFullscreen}
-				aria-label="fullscreen"
-				title="fullscreen"
-			>
-				<Icon icon="mdi:fullscreen" height="none" />
-			</button>
-
-			{#if sel?.url}
-				<iframe src={sel.url} title={sel?.name || $lang('iframe')} />
-			{/if}
-		</Modal>
-	{/if}
+		<button
+			class="exit-btn"
+			on:click={closeModal}
+			aria-label="exit fullscreen"
+			title="exit fullscreen"
+		>
+			<Icon icon="mdi:close" height="none" />
+		</button>
+	</div>
 {/if}
 
 <style>
@@ -57,32 +32,7 @@
 		width: 100%;
 		height: 100%;
 		border: none;
-		border-radius: 0.6rem;
 		display: block;
-	}
-
-	.fullscreen-btn {
-		background: none;
-		border: none;
-		color: inherit;
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0.25rem;
-		border-radius: 0.35rem;
-		opacity: 0.7;
-		transition: opacity 120ms ease, background-color 120ms ease;
-	}
-
-	.fullscreen-btn:hover {
-		opacity: 1;
-		background: rgba(255, 255, 255, 0.1);
-	}
-
-	.fullscreen-btn :global(svg) {
-		width: 1.3rem;
-		height: 1.3rem;
 	}
 
 	.fullscreen {
@@ -93,16 +43,9 @@
 		display: flex;
 	}
 
-	.fullscreen iframe {
-		width: 100%;
-		height: 100%;
-		border: none;
-		border-radius: 0;
-	}
-
-	.fullscreen-close {
+	.exit-btn {
 		position: absolute;
-		top: 0.8rem;
+		top: 25vh;
 		right: 0.8rem;
 		background: rgba(0, 0, 0, 0.6);
 		border: none;
@@ -118,12 +61,18 @@
 		transition: background-color 120ms ease;
 	}
 
-	.fullscreen-close:hover {
+	.exit-btn:hover {
 		background: rgba(0, 0, 0, 0.85);
 	}
 
-	.fullscreen-close :global(svg) {
+	.exit-btn :global(svg) {
 		width: 1.3rem;
 		height: 1.3rem;
+	}
+
+	.empty-hint {
+		margin: auto;
+		color: rgba(255, 255, 255, 0.6);
+		font-size: 1rem;
 	}
 </style>
