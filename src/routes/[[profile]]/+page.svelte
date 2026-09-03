@@ -310,14 +310,9 @@
 		style:grid-template-columns="{$dashboard?.hide_sidebar || !$dashboard?.sidebar?.length
 			? '0'
 			: $dashboard?.sidebarWidth || 350}px auto"
-		style:grid-template-rows={$showDrawer ? 'auto auto 1fr' : '0fr auto 1fr'}
+		style:grid-template-rows={$showDrawer ? 'auto 1fr' : '0fr 1fr'}
 		style:transition="grid-template-rows {$motion}ms ease, grid-template-columns {$motion}ms ease"
 	>
-		<!-- nav -->
-		{#await import('$lib/Main/Views.svelte') then Views}
-			<svelte:component this={Views.default} {view} />
-		{/await}
-
 		<!-- main -->
 		{#if view?.iframe_url}
 			{#await import('$lib/Main/IframeView.svelte') then IframeView}
@@ -377,7 +372,6 @@
 		display: grid;
 		grid-template-areas:
 			'header header'
-			'aside nav'
 			'aside main';
 		height: 100vh;
 		height: 100dvh;
@@ -390,9 +384,8 @@
 			grid-template-areas:
 				'header header'
 				'aside aside'
-				'nav nav'
 				'main main';
-			grid-template-rows: auto auto auto 1fr !important;
+			grid-template-rows: auto auto 1fr !important;
 		}
 	}
 
@@ -402,9 +395,8 @@
 			grid-template-areas:
 				'header header'
 				'aside aside'
-				'nav nav'
 				'main main';
-			grid-template-rows: auto auto auto 1fr !important;
+			grid-template-rows: auto auto 1fr !important;
 		}
 	}
 </style>
