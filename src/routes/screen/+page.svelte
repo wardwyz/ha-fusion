@@ -567,6 +567,56 @@
 	}
 
 	/* Mobile/small screens */
+	/* 16:10 landscape tablets: retain the photo as the focal point while scaling the status details. */
+	@media (min-width: 900px) and (max-width: 1600px) and (orientation: landscape) and (min-aspect-ratio: 8 / 5) and (max-aspect-ratio: 17 / 10) {
+		.overlay {
+			padding:
+				clamp(1.25rem, 2.25vh, 1.8rem)
+				clamp(1.75rem, 3.5vw, 3.25rem)
+				clamp(1.1rem, 2vh, 1.6rem);
+		}
+
+		.time { font-size: clamp(3.5rem, 7vw, 5rem); }
+		.date { font-size: clamp(1rem, 1.8vw, 1.3rem); }
+		.lunar { font-size: clamp(0.8rem, 1.25vw, 0.95rem); }
+		.greeting { font-size: clamp(1.75rem, 3.4vw, 2.5rem); }
+
+		.weather-section { gap: clamp(0.55rem, 1vw, 0.8rem); }
+		.weather-icon img {
+			width: clamp(2.25rem, 4vw, 3rem);
+			height: clamp(2.25rem, 4vw, 3rem);
+		}
+		.weather-temp { font-size: clamp(1.45rem, 3vw, 2rem); }
+		.weather-condition { font-size: clamp(0.75rem, 1.2vw, 0.9rem); }
+
+		.notifications-section {
+			max-width: min(31vw, 25rem);
+			gap: clamp(0.35rem, 0.75vw, 0.5rem);
+		}
+		.notif-count {
+			font-size: clamp(0.9rem, 1.35vw, 1.1rem);
+			width: clamp(1.55rem, 2.25vw, 1.8rem);
+			height: clamp(1.55rem, 2.25vw, 1.8rem);
+		}
+		.notif-title { font-size: clamp(0.72rem, 1vw, 0.8rem); }
+		.notif-msg {
+			font-size: clamp(0.68rem, 0.95vw, 0.75rem);
+			max-width: min(18vw, 13rem);
+		}
+		.notif-more, .notif-empty { font-size: clamp(0.68rem, 0.95vw, 0.85rem); }
+
+		.weather-atmosphere {
+			inset: -8vmax;
+			background-size: clamp(32rem, 72vmax, 58rem);
+			opacity: 0.12;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.weather-atmosphere, .spinner { animation: none; }
+		.bg-image, .tap-hint { transition: none; }
+	}
+
 	@media (max-width: 768px) {
 		.overlay { padding: 1.5rem; }
 
