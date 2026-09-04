@@ -25,7 +25,7 @@
 	import { connectMA, disconnectMA, isMAConnected } from '$lib/MusicAssistant';
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import { modals, openModal } from 'svelte-modals';
+	import { closeAllModals, modals, openModal } from 'svelte-modals';
 	import Theme from '$lib/Components/Theme.svelte';
 	import Loader from '$lib/Components/Loader.svelte';
 	import type { DoorbellItem } from '$lib/Types';
@@ -39,6 +39,10 @@
 
 	let altKeyPressed = false;
 	let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
+
+	// Start fetching the modal chunk as soon as the dashboard mounts. A ring can
+	// then render the modal immediately instead of waiting for a lazy import.
+	const loadDoorbellModal = () => import('$lib/Modal/DoorbellModal.svelte');
 
 	function resetInactivityTimer() {
 		if (inactivityTimer) {
@@ -86,11 +90,16 @@
 	}
 
 	function processDoorbellQueue() {
-		if ($modals.length > 0 || doorbellQueue.length === 0 || $editMode) return;
+		if (doorbellQueue.length === 0 || $editMode) return;
+
+		// A ringing doorbell is time-sensitive. It takes priority over ordinary
+		// dialogs so the live camera is not held behind an unrelated modal.
+		if ($modals.length > 0) closeAllModals();
+
 		const next = doorbellQueue[0];
 		doorbellQueue = doorbellQueue.slice(1);
 		doorbellQueueIds.delete(next.id);
-		openModal(() => import('$lib/Modal/DoorbellModal.svelte'), { sel: next, autoClose: true });
+		openModal(loadDoorbellModal, { sel: next, autoClose: true });
 	}
 
 	$: if ($states) {
@@ -107,6 +116,10 @@
 	}
 
 	$: if ($modals.length === 0) processDoorbellQueue();
+
+	onMount(() => {
+		void loadDoorbellModal();
+	});
 
 	$: {
 		$configuration = data?.configuration;

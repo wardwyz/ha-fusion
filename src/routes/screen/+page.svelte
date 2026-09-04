@@ -22,6 +22,7 @@
 	// --- configuration ---
 	const intervalMs = (data?.imageInterval || 30) * 1000;
 	const hassUrl = data?.hassUrl || '';
+	const token = data?.token || '';
 	$: if (data?.locale) $selectedLanguage = data.locale;
 	const dailyQuoteSensorId = data?.dailyQuoteSensor ?? '';
 	let serverTimeOffset = 0;
@@ -46,7 +47,7 @@
 		if (isConnecting || !hassUrl) return;
 		isConnecting = true;
 		try {
-			await authentication({ hassUrl });
+			await authentication({ hassUrl, token });
 			clearInterval(retryInterval);
 		} catch {
 			// will retry via interval
@@ -197,6 +198,15 @@
 		</div>
 	{/if}
 
+	<!-- full-screen weather atmosphere; the information overlay stays unobstructed -->
+	{#if weatherIconFile}
+		<div
+			class="weather-atmosphere"
+			style:background-image={`url("${weatherIconFile}")`}
+			aria-hidden="true"
+		></div>
+	{/if}
+
 	<!-- overlay content -->
 	<div class="overlay">
 		<!-- top-right: time & date -->
@@ -315,6 +325,28 @@
 			rgba(0,0,0,0.65) 100%
 		);
 		pointer-events: none;
+	}
+
+	.weather-atmosphere {
+		position: absolute;
+		inset: -12vmax;
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: min(110vmax, 1300px);
+		opacity: 0.18;
+		filter: blur(0.35rem) drop-shadow(0 0 5rem rgba(255, 255, 255, 0.25));
+		mix-blend-mode: screen;
+		pointer-events: none;
+		animation: weather-atmosphere-drift 24s ease-in-out infinite alternate;
+	}
+
+	@keyframes weather-atmosphere-drift {
+		from {
+			transform: scale(1) translate3d(-1%, -1%, 0);
+		}
+		to {
+			transform: scale(1.08) translate3d(1%, 1%, 0);
+		}
 	}
 
 	.no-image, .loading-area {
