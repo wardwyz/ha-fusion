@@ -7,6 +7,7 @@ dotenv.config();
 
 export async function load({ request }): Promise<{
 	hassUrl: string;
+	token: string | undefined;
 	locale: string | undefined;
 	imageInterval: number;
 	dailyQuoteSensor: string;
@@ -25,12 +26,14 @@ export async function load({ request }): Promise<{
 	}
 
 	const hassUrl = process.env.HASS_URL || request.headers.get('X-Proxy-Target') || '';
+	const token = configuration?.token;
 	const locale = configuration?.locale || 'en';
 	const imageInterval = parseInt(process.env.SCREEN_INTERVAL || '30', 10);
 	const dailyQuoteSensor = configuration?.daily_quote_sensor || '';
 
 	return {
 		hassUrl,
+		token,
 		locale,
 		imageInterval,
 		dailyQuoteSensor,

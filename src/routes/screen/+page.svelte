@@ -22,6 +22,7 @@
 	// --- configuration ---
 	const intervalMs = (data?.imageInterval || 30) * 1000;
 	const hassUrl = data?.hassUrl || '';
+	const token = data?.token || '';
 	$: if (data?.locale) $selectedLanguage = data.locale;
 	const dailyQuoteSensorId = data?.dailyQuoteSensor ?? '';
 	let serverTimeOffset = 0;
@@ -46,7 +47,7 @@
 		if (isConnecting || !hassUrl) return;
 		isConnecting = true;
 		try {
-			await authentication({ hassUrl });
+			await authentication({ hassUrl, token });
 			clearInterval(retryInterval);
 		} catch {
 			// will retry via interval
@@ -197,6 +198,15 @@
 		</div>
 	{/if}
 
+	<!-- full-screen weather atmosphere; the information overlay stays unobstructed -->
+	{#if weatherIconFile}
+		<div
+			class="weather-atmosphere"
+			style:background-image={`url("${weatherIconFile}")`}
+			aria-hidden="true"
+		></div>
+	{/if}
+
 	<!-- overlay content -->
 	<div class="overlay">
 		<!-- top-right: time & date -->
@@ -315,6 +325,28 @@
 			rgba(0,0,0,0.65) 100%
 		);
 		pointer-events: none;
+	}
+
+	.weather-atmosphere {
+		position: absolute;
+		inset: -12vmax;
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: min(110vmax, 1300px);
+		opacity: 0.18;
+		filter: blur(0.35rem) drop-shadow(0 0 5rem rgba(255, 255, 255, 0.25));
+		mix-blend-mode: screen;
+		pointer-events: none;
+		animation: weather-atmosphere-drift 24s ease-in-out infinite alternate;
+	}
+
+	@keyframes weather-atmosphere-drift {
+		from {
+			transform: scale(1) translate3d(-1%, -1%, 0);
+		}
+		to {
+			transform: scale(1.08) translate3d(1%, 1%, 0);
+		}
 	}
 
 	.no-image, .loading-area {
@@ -534,6 +566,54 @@
 		opacity: 0.7;
 	}
 
+	/* Landscape tablets, including the 16:10 Xiaomi Pad 4 Plus. */
+	@media (min-width: 900px) and (max-width: 1400px) and (orientation: landscape) {
+		.overlay {
+			padding:
+				max(2rem, env(safe-area-inset-top))
+				max(2.5rem, env(safe-area-inset-right))
+				max(1.75rem, env(safe-area-inset-bottom))
+				max(2.5rem, env(safe-area-inset-left));
+		}
+
+		.time {
+			font-size: clamp(4rem, 6.5vw, 5rem);
+		}
+
+		.date {
+			font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+		}
+
+		.lunar {
+			font-size: clamp(0.85rem, 1.2vw, 1rem);
+		}
+
+		.greeting {
+			font-size: clamp(2rem, 3vw, 2.5rem);
+		}
+
+		.notifications-section {
+			max-width: min(34%, 22rem);
+		}
+
+		.notif-msg {
+			max-width: clamp(10rem, 16vw, 14rem);
+		}
+
+		.weather-atmosphere {
+			inset: -8vmax;
+			background-size: min(92vmax, 950px);
+			filter: blur(0.2rem) drop-shadow(0 0 3.5rem rgba(255, 255, 255, 0.2));
+			animation-duration: 36s;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.weather-atmosphere {
+			animation: none;
+		}
+	}
+
 	/* Mobile/small screens */
 	@media (max-width: 768px) {
 		.overlay { padding: 1.5rem; }
@@ -541,9 +621,6 @@
 		.time { font-size: 3.5rem; }
 		.date { font-size: 1rem; }
 		.greeting { font-size: 1.8rem; }
-
-		.song-title { font-size: 1.6rem; }
-		.song-artist { font-size: 1rem; }
 
 		.weather-temp { font-size: 1.5rem; }
 		.weather-icon img { width: 36px; height: 36px; }
@@ -556,9 +633,6 @@
 
 		.time { font-size: 2.8rem; }
 		.greeting { font-size: 1.4rem; }
-
-		.song-title { font-size: 1.3rem; }
-		.song-artist { font-size: 0.9rem; }
 
 		.bottom-bar {
 			flex-direction: column;
