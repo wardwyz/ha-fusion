@@ -59,13 +59,17 @@
 		}, defaultView.default_timeout * 1000);
 	}
 
-	$: $currentViewId, $editMode, $modals, resetInactivityTimer();
+	$: ($currentViewId, $editMode, $modals, resetInactivityTimer());
 
 	// doorbell auto-trigger queue
 	let doorbellQueue: DoorbellItem[] = [];
-	const doorbellTriggered = new Map<number, boolean>();
-	const doorbellQueueIds = new Set<number>();
+	const doorbellTriggered = new Map<string, boolean>();
+	const doorbellQueueKeys = new Set<string>();
 	let doorbellItems: DoorbellItem[] = [];
+
+	function doorbellTriggerKey(item: DoorbellItem) {
+		return `${item.id}:${item.trigger_entity ?? ''}`;
+	}
 
 	// recompute only when dashboard changes, not on every state update
 	$: {
@@ -82,10 +86,13 @@
 				}
 			}
 		}
-		// clean up stale map entries when items are removed
-		const currentIds = new Set(doorbellItems.map((d) => d.id));
-		for (const id of doorbellTriggered.keys()) {
-			if (!currentIds.has(id)) doorbellTriggered.delete(id);
+		const currentKeys = new Set(doorbellItems.map(doorbellTriggerKey));
+		for (const key of doorbellTriggered.keys()) {
+			if (!currentKeys.has(key)) doorbellTriggered.delete(key);
+		}
+		doorbellQueue = doorbellQueue.filter((item) => currentKeys.has(doorbellTriggerKey(item)));
+		for (const key of doorbellQueueKeys) {
+			if (!currentKeys.has(key)) doorbellQueueKeys.delete(key);
 		}
 	}
 
@@ -98,19 +105,24 @@
 
 		const next = doorbellQueue[0];
 		doorbellQueue = doorbellQueue.slice(1);
-		doorbellQueueIds.delete(next.id);
+		doorbellQueueKeys.delete(doorbellTriggerKey(next));
 		openModal(loadDoorbellModal, { sel: next, autoClose: true });
 	}
 
 	$: if ($states) {
 		for (const item of doorbellItems) {
+			const key = doorbellTriggerKey(item);
 			const isOn = $states[item.trigger_entity!]?.state === 'on';
-			const wasOn = doorbellTriggered.get(item.id) ?? false;
-			if (isOn && !wasOn && !doorbellQueueIds.has(item.id)) {
-				doorbellQueue = [...doorbellQueue, item];
-				doorbellQueueIds.add(item.id);
+			const wasOn = doorbellTriggered.get(key);
+			if (wasOn === undefined) {
+				doorbellTriggered.set(key, isOn);
+				continue;
 			}
-			doorbellTriggered.set(item.id, isOn);
+			if (isOn && !wasOn && !doorbellQueueKeys.has(key)) {
+				doorbellQueue = [...doorbellQueue, item];
+				doorbellQueueKeys.add(key);
+			}
+			doorbellTriggered.set(key, isOn);
 		}
 		processDoorbellQueue();
 	}
