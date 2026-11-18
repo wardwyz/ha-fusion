@@ -114,6 +114,7 @@ export interface ButtonItem {
 	type: string;
 	id: number;
 	entity_id: string;
+	size?: 'small' | 'medium' | 'large';
 	name?: string;
 	icon?: string;
 	color?: string;

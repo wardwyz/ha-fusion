@@ -387,6 +387,7 @@
 
 <div
 	class="container"
+	data-size={sel?.size || 'small'}
 	bind:this={container}
 	data-state={displayStateOn}
 	tabindex="-1"
@@ -560,6 +561,21 @@
 		transform: translateZ(0);
 		overflow: hidden;
 	}
+
+	.container[data-size='medium'] {
+		--container-padding: 1rem;
+		border-radius: 0.9rem;
+	}
+
+	.container[data-size='large'] {
+		--container-padding: 1.2rem;
+		border-radius: 1.1rem;
+	}
+
+	.container[data-size='medium'] .icon { --icon-size: 2.8rem; }
+	.container[data-size='large'] .icon { --icon-size: 3.4rem; }
+	.container[data-size='medium'] .name { font-size: 1.05rem; }
+	.container[data-size='large'] .name { font-size: 1.15rem; }
 
 	.image {
 		background-size: cover;

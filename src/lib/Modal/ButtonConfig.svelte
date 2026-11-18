@@ -88,6 +88,23 @@
 			<Button {sel} {sectionName} />
 		</div>
 
+		<h2>{$lang('button_size')}</h2>
+		<div class="size-options" role="group" aria-label={$lang('button_size')}>
+			{#each ['small', 'medium', 'large'] as size}
+				<button
+					class="size-option"
+					class:selected={(sel?.size || 'small') === size}
+					on:click={() => set('size', size)}
+					use:Ripple={$ripple}
+				>
+					<span class="size-preview" class:medium={size === 'medium'} class:large={size === 'large'}>
+						<Icon icon="mdi:lightbulb-outline" />
+					</span>
+					<span>{$lang(size)}</span>
+				</button>
+			{/each}
+		</div>
+
 		<h2>{$lang('entity')}</h2>
 
 		<div style="display: flex; gap: 0.8rem;">
@@ -484,6 +501,43 @@
 {/if}
 
 <style>
+	.size-options {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.65rem;
+	}
+
+	.size-option {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.55rem;
+		min-height: 6.5rem;
+		padding: 0.75rem;
+		border: 1px solid var(--theme-border-color, rgba(255, 255, 255, 0.14));
+		border-radius: 0.8rem;
+		background: var(--theme-button-background-color-off);
+		color: inherit;
+	}
+
+	.size-option.selected {
+		border-color: var(--theme-accent-color, #77a9ff);
+		box-shadow: inset 0 0 0 1px var(--theme-accent-color, #77a9ff);
+	}
+
+	.size-preview {
+		display: grid;
+		place-items: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		border-radius: 0.65rem;
+		background: color-mix(in srgb, var(--theme-accent-color, #77a9ff) 35%, var(--theme-button-background-color-off));
+	}
+
+	.size-preview.medium { width: 3.25rem; }
+	.size-preview.large { width: 3.25rem; height: 2.75rem; }
+
 	input[type='color'] {
 		color-scheme: dark;
 		height: inherit;

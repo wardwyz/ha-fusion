@@ -193,8 +193,16 @@
     `;
 	}
 
-	function itemStyles(type: string) {
+	function itemStyles(item: any) {
+		const type = item?.type;
 		const large = ['conditional_media', 'picture_elements', 'camera', 'doorbell', 'movie_pilot'];
+		const size = item?.size || 'small';
+		if (type === 'button') {
+			const columns = size === 'small' ? 1 : 2;
+			const rows = size === 'large' ? 2 : 1;
+			const minHeight = size === 'large' ? $itemHeight * 2 + 8 : $itemHeight;
+			return `grid-column: span ${columns}; grid-row: span ${rows}; height: ${minHeight}px; min-height: ${minHeight}px;`;
+		}
 		return `
 			grid-column: ${large.includes(type) ? 'span 2' : 'span 1'};
 			grid-row: ${large.includes(type) ? 'span 4' : 'span 1'};
@@ -374,9 +382,10 @@
 										id={item?.id}
 										data-is-dnd-shadow-item-hint={item?.[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
 										class="item"
+										data-size={item?.type === 'button' ? item?.size || 'small' : undefined}
 										animate:flip={{ duration: $motion }}
 										tabindex="-1"
-										style={itemStyles(item?.type)}
+										style={itemStyles(item)}
 									>
 										<Content {item} sectionName={stackSection?.name} />
 									</div>
@@ -444,9 +453,10 @@
 										id={item?.id}
 										data-is-dnd-shadow-item-hint={item?.[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
 										class="item"
+										data-size={item?.type === 'button' ? item?.size || 'small' : undefined}
 										animate:flip={{ duration: $motion }}
 										tabindex="-1"
-										style={itemStyles(item?.type)}
+										style={itemStyles(item)}
 									>
 										<Content {item} sectionName={stackSection?.name} />
 									</div>
@@ -518,9 +528,10 @@
 							id={item?.id}
 							data-is-dnd-shadow-item-hint={item?.[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
 							class="item"
+							data-size={item?.type === 'button' ? item?.size || 'small' : undefined}
 							animate:flip={{ duration: $motion }}
 							tabindex="-1"
-							style={itemStyles(item?.type)}
+							style={itemStyles(item)}
 						>
 							<Content {item} sectionName={section?.name} />
 						</div>
@@ -598,6 +609,10 @@
 			flex-wrap: wrap;
 			gap: 0.3rem;
 		}
+
+		.items > .item[data-size='small'] { flex: 1 1 calc(50% - 0.3rem); }
+		.items > .item[data-size='medium'],
+		.items > .item[data-size='large'] { flex: 1 1 100%; }
 	}
 
 	/* Phones and tablets portrait (480px – 768px) */
@@ -616,6 +631,10 @@
 			display: flex;
 			flex-wrap: wrap;
 		}
+
+		.items > .item[data-size='small'] { flex: 1 1 calc(33.333% - 0.5rem); }
+		.items > .item[data-size='medium'] { flex: 2 1 calc(66.666% - 0.5rem); }
+		.items > .item[data-size='large'] { flex: 1 1 100%; }
 	}
 
 	/* FHD monitors (1366px – 1919px) */
