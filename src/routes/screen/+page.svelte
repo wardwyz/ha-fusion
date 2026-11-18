@@ -15,6 +15,7 @@
 	import Icon from '@iconify/svelte';
 	import { slide } from 'svelte/transition';
 	import { solarToLunar, getFestival, WEATHER_ZH } from '$lib/Lunar';
+	import { maPlayers, maQueues, connectMA, disconnectMA, imageUrl } from '$lib/MusicAssistant';
 
 	export let data;
 	export let params;
@@ -23,6 +24,8 @@
 	const intervalMs = (data?.imageInterval || 30) * 1000;
 	const hassUrl = data?.hassUrl || '';
 	const token = data?.token || '';
+	const maUrl = data?.maUrl || '';
+	const maToken = data?.maToken || '';
 	$: if (data?.locale) $selectedLanguage = data.locale;
 	const dailyQuoteSensorId = data?.dailyQuoteSensor ?? '';
 	let serverTimeOffset = 0;
@@ -42,6 +45,11 @@
 	let isConnecting = false;
 	let retryInterval: ReturnType<typeof setInterval>;
 	let _maConnected = false;
+	let lyricLines: { text: string; time?: number }[] = [];
+	let lyricsLoading = false;
+	let currentLyricIndex = 0;
+	let lyricTickInterval: ReturnType<typeof setInterval> | null = null;
+	let lyricTrackKey = '';
 
 	async function connect() {
 		if (isConnecting || !hassUrl) return;
@@ -56,7 +64,77 @@
 		}
 	}
 
-	// --- MA connection ---
+	// --- Music Assistant playback and artwork ---
+	$: if (browser && maUrl && maToken && !_maConnected) {
+		_maConnected = true;
+		connectMA(maUrl, maToken);
+	}
+	$: playingPlayer = $maPlayers.find((player) => player.playback_state === 'playing');
+	$: playingQueue = playingPlayer ? $maQueues[playingPlayer.player_id] : null;
+	$: track = playingQueue?.current_item;
+	$: isMusicPlaying = !!playingPlayer && !!track;
+	$: trackTitle = track?.name || '';
+	$: trackArtist = track?.artists?.map((artist) => artist.name).join(', ') || '';
+	$: artwork = track?.image ? imageUrl(track.image, maUrl) : null;
+	$: {
+		const key = isMusicPlaying ? `${track?.uri || trackTitle}|${trackArtist}` : '';
+		if (key !== lyricTrackKey) {
+			lyricTrackKey = key;
+			lyricLines = [];
+			currentLyricIndex = 0;
+			if (key) void fetchTrackLyrics(trackTitle, trackArtist, key);
+		}
+	}
+
+	async function fetchTrackLyrics(title: string, artist: string, requestKey: string) {
+		if (!title) return;
+		lyricsLoading = true;
+		try {
+			const response = await fetch(`/api/screen-lyrics?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`);
+			if (!response.ok) return;
+			const result = await response.json();
+			if (lyricTrackKey !== requestKey) return;
+			lyricLines = parseLyrics(result?.lyrics || '');
+		} catch (error) {
+			console.debug('[Screen] Lyrics unavailable', error);
+		} finally {
+			if (lyricTrackKey === requestKey) lyricsLoading = false;
+		}
+	}
+
+	function parseLyrics(input: string): { text: string; time?: number }[] {
+		if (typeof input !== 'string') return [];
+		const lines: { text: string; time?: number }[] = [];
+		for (const raw of input.split(/\r?\n/)) {
+			const line = raw.trim();
+			if (!line) continue;
+			const matches = [...line.matchAll(/\[(\d{1,2}):(\d{2})(?:[.:](\d{1,3}))?\]/g)];
+			const text = line.replace(/\[\d{1,2}:\d{2}(?:[.:]\d{1,3})?\]/g, '').trim();
+			if (matches.length && text) {
+				for (const match of matches) {
+					const fraction = match[3] || '0';
+					lines.push({ text, time: Number(match[1]) * 60 + Number(match[2]) + Number(`0.${fraction}`) });
+				}
+			} else if (text) lines.push({ text });
+		}
+		return lines.sort((a, b) => (a.time ?? Infinity) - (b.time ?? Infinity));
+	}
+
+	function updateLyricPosition() {
+		if (!lyricLines.length || !playingQueue) return;
+		const elapsed = playingQueue.elapsed_time || 0;
+		const updated = playingQueue.elapsed_time_last_updated || Date.now() / 1000;
+		const position = elapsed + (playingQueue.state === 'playing' ? Math.max(0, Date.now() / 1000 - updated) : 0);
+		let index = 0;
+		if (lyricLines[0].time != null) {
+			for (let i = 0; i < lyricLines.length; i++) {
+				if (lyricLines[i].time != null && lyricLines[i].time! <= position) index = i;
+			}
+		} else if ((playingQueue.current_item?.duration || 0) > 0) {
+			index = Math.min(lyricLines.length - 1, Math.floor((position / playingQueue.current_item!.duration) * lyricLines.length));
+		}
+		currentLyricIndex = index;
+	}
 	// --- fetch image list ---
 	async function fetchImages() {
 		try {
@@ -151,7 +229,15 @@
 			connect();
 			retryInterval = setInterval(connect, 3000);
 			fetchImages();
+			lyricTickInterval = setInterval(updateLyricPosition, 500);
 		}
+	});
+
+	onDestroy(() => {
+		if (slideTimer) clearInterval(slideTimer);
+		if (lyricTickInterval) clearInterval(lyricTickInterval);
+		clearInterval(retryInterval);
+		if (_maConnected && maUrl) disconnectMA(maUrl);
 	});
 
 	$: {
@@ -221,7 +307,34 @@
 
 		<!-- center: greeting -->
 		<div class="center">
-			<div class="greeting">{dailyQuote || greeting}</div>
+			{#if isMusicPlaying}
+				<div class="music-card">
+					{#if artwork}
+						<img class="album-art" src={artwork} alt="{trackTitle} album cover" />
+					{:else}
+					<div class="album-art art-placeholder"><Icon icon="mdi:music-note" width="64" height="64" /></div>
+					{/if}
+					<div class="music-details">
+						<div class="track-title">{trackTitle}</div>
+						{#if trackArtist}<div class="track-artist">{trackArtist}</div>{/if}
+						<div class="lyrics-view" aria-live="polite">
+							{#if lyricLines.length}
+								{#each lyricLines as line, index}
+									{#if index >= currentLyricIndex - 1 && index <= currentLyricIndex + 2}
+										<div class="lyric-line" class:current={index === currentLyricIndex}>{line.text}</div>
+									{/if}
+								{/each}
+							{:else if lyricsLoading}
+								<div class="lyric-empty">正在获取歌词…</div>
+							{:else}
+								<div class="lyric-empty">暂无歌词</div>
+							{/if}
+						</div>
+					</div>
+				</div>
+			{:else}
+				<div class="greeting">{dailyQuote || greeting}</div>
+			{/if}
 		</div>
 
 		<!-- bottom bar: weather + notifications -->
@@ -439,6 +552,63 @@
 		opacity: 0.9;
 	}
 
+	.music-card {
+		display: flex;
+		align-items: center;
+		gap: clamp(1.5rem, 4vw, 4rem);
+		width: min(100%, 1100px);
+		max-height: min(62vh, 680px);
+		padding: clamp(1.25rem, 3vw, 2.5rem);
+		border: 1px solid rgba(255, 255, 255, 0.18);
+		border-radius: 1.5rem;
+		background: rgba(0, 0, 0, 0.42);
+		backdrop-filter: blur(18px);
+		box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+	}
+
+	.album-art {
+		width: min(38vw, 42vh, 390px);
+		aspect-ratio: 1;
+		object-fit: cover;
+		border-radius: 1rem;
+		flex: 0 0 auto;
+		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+	}
+
+	.art-placeholder {
+		display: grid;
+		place-items: center;
+		background: rgba(255, 255, 255, 0.12);
+	}
+
+	.music-details { min-width: 0; flex: 1; text-align: left; }
+	.track-title {
+		font-size: clamp(1.5rem, 3vw, 3rem);
+		font-weight: 600;
+		line-height: 1.15;
+		text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+	}
+	.track-artist { margin-top: 0.55rem; font-size: clamp(1rem, 1.5vw, 1.4rem); opacity: 0.78; }
+	.lyrics-view {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 0.55rem;
+		min-height: 10rem;
+		max-height: 30vh;
+		margin-top: clamp(1rem, 2.5vh, 2rem);
+		overflow: hidden;
+		mask-image: linear-gradient(transparent, #000 10%, #000 90%, transparent);
+	}
+	.lyric-line {
+		font-size: clamp(1rem, 1.8vw, 1.65rem);
+		line-height: 1.45;
+		opacity: 0.45;
+		transition: opacity 250ms ease, transform 250ms ease;
+	}
+	.lyric-line.current { opacity: 1; transform: scale(1.025); font-weight: 600; }
+	.lyric-empty { opacity: 0.58; font-size: 1rem; }
+
 	/* Bottom bar */
 	.bottom-bar {
 		display: flex;
@@ -619,6 +789,9 @@
 
 	@media (max-width: 768px) {
 		.overlay { padding: 1.5rem; }
+		.music-card { gap: 1rem; padding: 1rem; border-radius: 1rem; }
+		.album-art { width: min(34vw, 28vh); border-radius: 0.7rem; }
+		.lyrics-view { min-height: 7rem; margin-top: 0.8rem; }
 
 		.time { font-size: 3.5rem; }
 		.date { font-size: 1rem; }
@@ -635,6 +808,12 @@
 
 	@media (max-width: 480px) {
 		.overlay { padding: 1rem; }
+		.music-card { align-items: flex-start; gap: 0.8rem; padding: 0.8rem; }
+		.album-art { width: 28vw; border-radius: 0.55rem; }
+		.track-title { font-size: 1.15rem; }
+		.track-artist { margin-top: 0.25rem; font-size: 0.85rem; }
+		.lyrics-view { min-height: 5.5rem; max-height: 22vh; gap: 0.35rem; margin-top: 0.55rem; }
+		.lyric-line { font-size: 0.9rem; }
 
 		.time { font-size: 2.8rem; }
 		.greeting { font-size: 1.4rem; }

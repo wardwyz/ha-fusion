@@ -11,6 +11,8 @@ export async function load({ request }): Promise<{
 	locale: string | undefined;
 	imageInterval: number;
 	dailyQuoteSensor: string;
+	maUrl: string | undefined;
+	maToken: string | undefined;
 	serverTime: number;
 }> {
 	// Load minimal config for HA WebSocket connection
@@ -30,6 +32,7 @@ export async function load({ request }): Promise<{
 	const locale = configuration?.locale || 'en';
 	const imageInterval = parseInt(process.env.SCREEN_INTERVAL || '30', 10);
 	const dailyQuoteSensor = configuration?.daily_quote_sensor || '';
+	const maConfig = configuration?.addons?.music_assistant;
 
 	return {
 		hassUrl,
@@ -37,6 +40,8 @@ export async function load({ request }): Promise<{
 		locale,
 		imageInterval,
 		dailyQuoteSensor,
+		maUrl: maConfig?.server_url || undefined,
+		maToken: maConfig?.token || undefined,
 		serverTime: Date.now()
 	};
 }
