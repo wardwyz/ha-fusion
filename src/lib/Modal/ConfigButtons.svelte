@@ -66,6 +66,7 @@
 		'remote',
 		'movie_pilot'
 	];
+	const tileSizes = ['small', 'medium', 'large'] as const;
 	const legacyLargeTileTypes = ['conditional_media', 'picture_elements', 'camera', 'doorbell', 'movie_pilot'];
 	$: showSizeOptions =
 		!!sel?.type &&
@@ -137,11 +138,11 @@
 <div class="container" use:portalToModal>
 	{#if $editMode && showSizeOptions}
 		<div class="size-options" role="group" aria-label={$lang('button_size') || 'Tile size'}>
-			{#each ['small', 'medium', 'large'] as size}
+			{#each tileSizes as size}
 				<button
 					class="size-option"
 					class:selected={selectedTileSize() === size}
-					on:click={() => setSize(size as 'small' | 'medium' | 'large')}
+					on:click={() => setSize(size)}
 					use:Ripple={$ripple}
 				>
 					<span class="size-icon" class:medium={size === 'medium'} class:large={size === 'large'}>
