@@ -89,13 +89,13 @@
 			role="presentation"
 		>
 			<button class="ctrl" on:click={prevTrack}>
-				<Icon icon="solar:skip-previous-bold" height="none" />
+				<Icon icon="mdi:skip-previous" width="1rem" height="1rem" />
 			</button>
 			<button class="ctrl main" on:click={playPause}>
-				<Icon icon={isPlaying ? 'solar:pause-bold' : 'solar:play-bold'} height="none" />
+				<Icon icon={isPlaying ? 'mdi:pause' : 'mdi:play'} width="1.15rem" height="1.15rem" />
 			</button>
 			<button class="ctrl" on:click={nextTrack}>
-				<Icon icon="solar:skip-next-bold" height="none" />
+				<Icon icon="mdi:skip-next" width="1rem" height="1rem" />
 			</button>
 		</div>
 	{/if}

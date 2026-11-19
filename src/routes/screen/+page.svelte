@@ -301,15 +301,6 @@
 		</div>
 	{/if}
 
-	<!-- full-screen weather atmosphere; the information overlay stays unobstructed -->
-	{#if weatherIconFile}
-		<div
-			class="weather-atmosphere"
-			style:background-image={`url("${weatherIconFile}")`}
-			aria-hidden="true"
-		></div>
-	{/if}
-
 	<!-- overlay content -->
 	<div class="overlay" class:music-active={isMusicPlaying}>
 		<!-- top-right: time & date -->
@@ -455,28 +446,6 @@
 			rgba(0,0,0,0.65) 100%
 		);
 		pointer-events: none;
-	}
-
-	.weather-atmosphere {
-		position: absolute;
-		inset: -12vmax;
-		background-position: center;
-		background-repeat: no-repeat;
-		background-size: min(110vmax, 1300px);
-		opacity: 0.18;
-		filter: blur(0.35rem) drop-shadow(0 0 5rem rgba(255, 255, 255, 0.25));
-		mix-blend-mode: screen;
-		pointer-events: none;
-		animation: weather-atmosphere-drift 24s ease-in-out infinite alternate;
-	}
-
-	@keyframes weather-atmosphere-drift {
-		from {
-			transform: scale(1) translate3d(-1%, -1%, 0);
-		}
-		to {
-			transform: scale(1.08) translate3d(1%, 1%, 0);
-		}
 	}
 
 	.no-image, .loading-area {
@@ -798,15 +767,10 @@
 		}
 		.notif-more, .notif-empty { font-size: clamp(0.68rem, 0.95vw, 0.85rem); }
 
-		.weather-atmosphere {
-			inset: -8vmax;
-			background-size: clamp(32rem, 72vmax, 58rem);
-			opacity: 0.12;
-		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.weather-atmosphere, .spinner { animation: none; }
+		.spinner { animation: none; }
 		.bg-image, .tap-hint { transition: none; }
 	}
 

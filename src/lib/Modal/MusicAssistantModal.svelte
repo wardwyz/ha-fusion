@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { lang, ripple } from '$lib/Stores';
+	import { lang, ripple, dashboard } from '$lib/Stores';
 	import { onMount, onDestroy } from 'svelte';
 	import Modal from '$lib/Modal/Index.svelte';
 	import Icon from '@iconify/svelte';
@@ -251,6 +251,12 @@
 
 	function onPlayerVolumeChange(playerId: string, e: Event) {
 		setPlayerVolume(playerId, parseFloat((e.target as HTMLInputElement).value));
+	}
+
+	function selectPlayer(playerId: string) {
+		sel.player_id = playerId;
+		sel = sel;
+		$dashboard = $dashboard;
 	}
 </script>
 
@@ -546,11 +552,16 @@
 		{:else if activeTab === 'players'}
 			<div class="player-list-tab">
 				{#each $maPlayers as p (p.player_id)}
-					<div class="player-row">
-						<div class="p-info">
+					<div class="player-row" class:selected={p.player_id === sel?.player_id}>
+						<button
+							class="p-info player-select"
+							aria-pressed={p.player_id === sel?.player_id}
+							title={$lang('select_player') || 'Set as this component player'}
+							on:click={() => selectPlayer(p.player_id)}
+						>
 							<span class="p-name">{p.name}</span>
 							<span class="p-state">{$lang(p.playback_state) || p.playback_state}</span>
-						</div>
+						</button>
 						<div class="p-volume">
 							<Icon icon="solar:volume-small-bold" height="none" />
 							<input
@@ -1057,12 +1068,32 @@
 		border-radius: 0.5rem;
 	}
 
+	.player-row.selected {
+		border-color: rgba(255, 255, 255, 0.28);
+		background: rgba(255, 255, 255, 0.09);
+	}
+
 	.p-info {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
 		gap: 0.1rem;
 		min-width: 0;
+	}
+
+	.player-select {
+		padding: 0;
+		border: 0;
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+	}
+
+	.player-select:hover .p-name,
+	.player-select:focus-visible .p-name {
+		text-decoration: underline;
 	}
 
 	.p-name {
