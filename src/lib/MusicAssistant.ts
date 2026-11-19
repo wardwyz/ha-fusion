@@ -86,7 +86,6 @@ interface PendingCall {
 
 interface ConnectionEntry {
 	ws: WebSocket;
-	refCount: number;
 	msgId: number;
 	pending: Map<number, PendingCall>;
 	token: string;
@@ -127,14 +126,16 @@ function callOn(
 
 export function connectMA(url: string, token: string): void {
 	const existing = connections.get(url);
-	if (existing) {
-		existing.refCount++;
+	// Multiple components share one socket. A reconnect timer must not keep
+	// incrementing a reference count while that socket is still connecting.
+	if (existing && existing.ws.readyState < WebSocket.CLOSING && existing.token === token) {
 		return;
 	}
+	if (existing) connections.delete(url);
 
 	const wsUrl = toWsUrl(url);
 	const ws = new WebSocket(wsUrl);
-	const entry: ConnectionEntry = { ws, refCount: 1, msgId: 0, pending: new Map(), token };
+	const entry: ConnectionEntry = { ws, msgId: 0, pending: new Map(), token };
 	connections.set(url, entry);
 
 	ws.onopen = () => {
@@ -144,14 +145,19 @@ export function connectMA(url: string, token: string): void {
 				// doesn't leave the player list empty
 				callOn(entry, 'players/all')
 					.then((players) => {
-						maPlayers.set((players as MAPlayer[]) ?? []);
+						const playerList = Array.isArray(players)
+							? players
+							: ((players as { players?: MAPlayer[] } | null)?.players ?? []);
+						maPlayers.set(playerList as MAPlayer[]);
 					})
 					.catch((e) => console.error('[MA] players error', e));
 
 				// Fetch queues independently
 				callOn(entry, 'player_queues/all')
 					.then((queues) => {
-						const queueList = (queues as MAQueue[]) ?? [];
+						const queueList = Array.isArray(queues)
+							? (queues as MAQueue[])
+							: ((queues as { queues?: MAQueue[] } | null)?.queues ?? []);
 						const qmap: Record<string, MAQueue> = {};
 						for (const q of queueList) qmap[q.queue_id] = q;
 						maQueues.set(qmap);
@@ -208,7 +214,7 @@ export function connectMA(url: string, token: string): void {
 	};
 
 	ws.onclose = () => {
-		connections.delete(url);
+		if (connections.get(url) === entry) connections.delete(url);
 		if (activeUrl === url) activeUrl = null;
 	};
 
@@ -218,12 +224,9 @@ export function connectMA(url: string, token: string): void {
 export function disconnectMA(url: string): void {
 	const entry = connections.get(url);
 	if (!entry) return;
-	entry.refCount--;
-	if (entry.refCount <= 0) {
-		entry.ws.close();
-		connections.delete(url);
-		if (activeUrl === url) activeUrl = null;
-	}
+	connections.delete(url);
+	entry.ws.close();
+	if (activeUrl === url) activeUrl = null;
 }
 
 /** Returns true when the active Music Assistant WebSocket is open */

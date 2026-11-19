@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { editMode, itemHeight, states } from '$lib/Stores';
+	import { editMode, states } from '$lib/Stores';
 	import { modals, openModal } from 'svelte-modals';
 	import Loader from '$lib/Components/Loader.svelte';
 	import Icon from '@iconify/svelte';
@@ -36,8 +36,8 @@
 </script>
 
 <button
-	style:height="calc({$itemHeight}px * 4 + 0.4rem * 3)"
-	style:width="calc(14.5rem * 2 + 0.4rem)"
+	style:height="100%"
+	style:width="100%"
 	on:click={handleClick}
 >
 	{#if sel?.camera_entity}

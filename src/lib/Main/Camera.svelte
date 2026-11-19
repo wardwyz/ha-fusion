@@ -66,8 +66,8 @@
 <button
 	style:background-size={size}
 	style:cursor={$editMode || responsive ? 'unset' : 'pointer'}
-	style:height={responsive ? '100%' : `calc(${$itemHeight}px * 4 + 0.4rem * 3)`}
-	style:width={responsive ? '100%' : 'calc(14.5rem * 2 + 0.4rem)'}
+	style:height="100%"
+	style:width="100%"
 	on:click={handleClick}
 >
 	{#if loaderVisible && !$editMode}

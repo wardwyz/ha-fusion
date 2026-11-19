@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { editMode, itemHeight, lang, ripple, configuration } from '$lib/Stores';
+	import { editMode, lang, ripple, configuration } from '$lib/Stores';
 	import { onDestroy, onMount } from 'svelte';
 	import { openModal } from 'svelte-modals';
 	import Icon from '@iconify/svelte';
@@ -67,7 +67,7 @@
 
 <div
 	class="container"
-	style:min-height="{$itemHeight * 4}px"
+	style:height="100%"
 	on:click={handleClick}
 	use:Ripple={$ripple}
 	role="button"

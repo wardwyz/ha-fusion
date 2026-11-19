@@ -52,6 +52,19 @@
 		}));
 	}
 
+	const sizedMainTypes = [
+		'button', 'custom_panel', 'camera', 'picture_elements', 'empty', 'conditional_media',
+		'doorbell', 'music_assistant', 'iframe', 'remote', 'movie_pilot'
+	];
+	$: showSizeOptions = !!sel?.type && sizedMainTypes.includes(sel.type) && !sidebarItem();
+
+	function setSize(size: 'small' | 'medium' | 'large') {
+		if (!sel) return;
+		sel.size = size;
+		$dashboard = $dashboard;
+		$record();
+	}
+
 	/**
 	 * Removes a ViewItem
 	 */
@@ -99,6 +112,24 @@
 </script>
 
 <div class="container" use:portalToModal>
+	{#if $editMode && showSizeOptions}
+		<div class="size-options" role="group" aria-label="组件尺寸">
+			{#each ['small', 'medium', 'large'] as size}
+				<button
+					class="size-option"
+					class:selected={(sel?.size || 'small') === size}
+					title={size === 'small' ? '1 格' : size === 'medium' ? '上下 2 格' : '上下左右 4 格'}
+					on:click={() => setSize(size as 'small' | 'medium' | 'large')}
+					use:Ripple={$ripple}
+				>
+					<span class="size-icon" class:medium={size === 'medium'} class:large={size === 'large'}>
+						<Icon icon="mdi:view-grid-outline" />
+					</span>
+					<span>{$lang(size)}</span>
+				</button>
+			{/each}
+		</div>
+	{/if}
 	<div class="align-left">
 		{#if $editMode && (sel?.type || sel?.sections)}
 			<button
@@ -141,6 +172,42 @@
 		margin: 0 -1.9rem -1.9rem;
 		padding: 0.75rem 1.9rem;
 		border-top: 1px solid rgba(255, 255, 255, 0.08);
+	}
+
+	.size-options {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		margin-right: auto;
+	}
+
+	.size-option {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		padding: 0.45rem 0.65rem;
+		border: 1px solid var(--theme-border-color, rgba(127, 127, 127, 0.35));
+		border-radius: 0.55rem;
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		font-size: 0.8rem;
+		cursor: pointer;
+	}
+
+	.size-option.selected {
+		background: var(--theme-button-background-color-on, rgba(127, 127, 127, 0.2));
+		border-color: var(--theme-accent-color, currentColor);
+	}
+
+	.size-icon { display: grid; place-items: center; }
+	.size-icon.medium { transform: scaleY(1.15); }
+	.size-icon.large { transform: scale(1.18); }
+
+	@media (max-width: 520px) {
+		.container { flex-wrap: wrap; gap: 0.55rem; }
+		.size-options { width: 100%; order: -1; }
+		.size-option { flex: 1; justify-content: center; }
 	}
 
 	.align-left {

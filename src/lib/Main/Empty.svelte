@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { editMode, itemHeight, motion } from '$lib/Stores';
+	import { editMode, motion } from '$lib/Stores';
 	import { openModal } from 'svelte-modals';
 
 	export let sel: any;
@@ -17,7 +17,7 @@
 <div
 	on:click={handleClick}
 	class="container"
-	style:height="{$itemHeight}px"
+	style:height="100%"
 	style:opacity={$editMode ? '1' : '0'}
 	style:transition="opacity {$motion}ms ease"
 	on:keydown
@@ -27,7 +27,7 @@
 
 <style>
 	.container {
-		width: 14.5rem;
+		width: 100%;
 		background-color: rgba(255, 255, 255, 0.25);
 		border-radius: 0.65rem;
 		margin: 0;

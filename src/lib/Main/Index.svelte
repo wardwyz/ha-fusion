@@ -194,20 +194,11 @@
 	}
 
 	function itemStyles(item: any) {
-		const type = item?.type;
-		const large = ['conditional_media', 'picture_elements', 'camera', 'doorbell', 'movie_pilot'];
 		const size = item?.size || 'small';
-		if (type === 'button') {
-			const columns = size === 'small' ? 1 : 2;
-			const rows = size === 'large' ? 2 : 1;
-			const minHeight = size === 'large' ? $itemHeight * 2 + 8 : $itemHeight;
-			return `grid-column: span ${columns}; grid-row: span ${rows}; height: ${minHeight}px; min-height: ${minHeight}px;`;
-		}
-		return `
-			grid-column: ${large.includes(type) ? 'span 2' : 'span 1'};
-			grid-row: ${large.includes(type) ? 'span 4' : 'span 1'};
-			display: ${type ? '' : 'none'};
-    `;
+		const columns = size === 'large' ? 2 : 1;
+		const rows = size === 'small' ? 1 : 2;
+		const height = $itemHeight * rows + 6.4 * (rows - 1);
+		return `grid-column: span ${columns}; grid-row: span ${rows}; height: ${height}px; min-height: ${height}px; display: ${item?.type ? '' : 'none'};`;
 	}
 
 	/**
@@ -382,7 +373,7 @@
 										id={item?.id}
 										data-is-dnd-shadow-item-hint={item?.[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
 										class="item"
-										data-size={item?.type === 'button' ? item?.size || 'small' : undefined}
+						data-size={item?.size || 'small'}
 										animate:flip={{ duration: $motion }}
 										tabindex="-1"
 										style={itemStyles(item)}
@@ -453,7 +444,7 @@
 										id={item?.id}
 										data-is-dnd-shadow-item-hint={item?.[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
 										class="item"
-										data-size={item?.type === 'button' ? item?.size || 'small' : undefined}
+								data-size={item?.size || 'small'}
 										animate:flip={{ duration: $motion }}
 										tabindex="-1"
 										style={itemStyles(item)}
@@ -528,7 +519,7 @@
 							id={item?.id}
 							data-is-dnd-shadow-item-hint={item?.[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
 							class="item"
-							data-size={item?.type === 'button' ? item?.size || 'small' : undefined}
+								data-size={item?.size || 'small'}
 							animate:flip={{ duration: $motion }}
 							tabindex="-1"
 							style={itemStyles(item)}
@@ -581,7 +572,7 @@
 		outline-offset: -2px;
 		display: grid;
 		grid-template-columns: repeat(auto-fill, 14.5rem);
-		grid-auto-rows: min-content;
+		grid-auto-rows: 61.35px;
 		gap: 0.4rem;
 		border-radius: 0.6rem;
 		height: 100%;
@@ -590,7 +581,11 @@
 	.item {
 		position: relative;
 		border-radius: 0.65rem;
+		display: flex;
+		min-width: 0;
 	}
+
+	.item > :global(*) { flex: 1; min-width: 0; }
 
 	/* Small phones (< 480px) */
 	@media (max-width: 479px) {
@@ -605,14 +600,11 @@
 		}
 
 		.items {
-			display: flex;
-			flex-wrap: wrap;
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			grid-auto-rows: 61.35px;
 			gap: 0.3rem;
 		}
-
-		.items > .item[data-size='small'] { flex: 1 1 calc(50% - 0.3rem); }
-		.items > .item[data-size='medium'],
-		.items > .item[data-size='large'] { flex: 1 1 100%; }
 	}
 
 	/* Phones and tablets portrait (480px – 768px) */
@@ -628,13 +620,10 @@
 		}
 
 		.items {
-			display: flex;
-			flex-wrap: wrap;
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			grid-auto-rows: 61.35px;
 		}
-
-		.items > .item[data-size='small'] { flex: 1 1 calc(33.333% - 0.5rem); }
-		.items > .item[data-size='medium'] { flex: 2 1 calc(66.666% - 0.5rem); }
-		.items > .item[data-size='large'] { flex: 1 1 100%; }
 	}
 
 	/* FHD monitors (1366px – 1919px) */

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, tick } from 'svelte';
 	import { browser } from '$app/environment';
 	import { authentication } from '$lib/Socket';
 	import {
@@ -15,7 +15,7 @@
 	import Icon from '@iconify/svelte';
 	import { slide } from 'svelte/transition';
 	import { solarToLunar, getFestival, WEATHER_ZH } from '$lib/Lunar';
-	import { maPlayers, maQueues, connectMA, disconnectMA, imageUrl } from '$lib/MusicAssistant';
+	import { maPlayers, maQueues, connectMA, disconnectMA, isMAConnected, imageUrl } from '$lib/MusicAssistant';
 
 	export let data;
 	export let params;
@@ -49,7 +49,9 @@
 	let lyricsLoading = false;
 	let currentLyricIndex = 0;
 	let lyricTickInterval: ReturnType<typeof setInterval> | null = null;
+	let maReconnectInterval: ReturnType<typeof setInterval> | null = null;
 	let lyricTrackKey = '';
+	let lyricsEl: HTMLDivElement;
 
 	async function connect() {
 		if (isConnecting || !hassUrl) return;
@@ -69,8 +71,10 @@
 		_maConnected = true;
 		connectMA(maUrl, maToken);
 	}
-	$: playingPlayer = $maPlayers.find((player) => player.playback_state === 'playing');
-	$: playingQueue = playingPlayer ? $maQueues[playingPlayer.player_id] : null;
+	$: activeQueue = Object.values($maQueues).find((queue) => queue.state === 'playing') ?? null;
+	$: playingPlayer = $maPlayers.find((player) => player.playback_state === 'playing') ??
+		(activeQueue ? $maPlayers.find((player) => player.player_id === activeQueue.queue_id) : null);
+	$: playingQueue = activeQueue ?? (playingPlayer ? $maQueues[playingPlayer.player_id] : null);
 	$: track = playingQueue?.current_item;
 	$: isMusicPlaying = !!playingPlayer && !!track;
 	$: trackTitle = track?.name || '';
@@ -82,6 +86,7 @@
 			lyricTrackKey = key;
 			lyricLines = [];
 			currentLyricIndex = 0;
+			lastScrolledLyricIndex = -1;
 			if (key) void fetchTrackLyrics(trackTitle, trackArtist, key);
 		}
 	}
@@ -134,7 +139,12 @@
 			index = Math.min(lyricLines.length - 1, Math.floor((position / playingQueue.current_item!.duration) * lyricLines.length));
 		}
 		currentLyricIndex = index;
+		if (index !== lastScrolledLyricIndex) {
+			lastScrolledLyricIndex = index;
+			void tick().then(() => lyricsEl?.querySelector('.lyric-line.current')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+		}
 	}
+	let lastScrolledLyricIndex = -1;
 	// --- fetch image list ---
 	async function fetchImages() {
 		try {
@@ -230,12 +240,19 @@
 			retryInterval = setInterval(connect, 3000);
 			fetchImages();
 			lyricTickInterval = setInterval(updateLyricPosition, 500);
+			maReconnectInterval = setInterval(() => {
+				if (maUrl && maToken && !isMAConnected()) {
+					_maConnected = true;
+					connectMA(maUrl, maToken);
+				}
+			}, 5000);
 		}
 	});
 
 	onDestroy(() => {
 		if (slideTimer) clearInterval(slideTimer);
 		if (lyricTickInterval) clearInterval(lyricTickInterval);
+		if (maReconnectInterval) clearInterval(maReconnectInterval);
 		clearInterval(retryInterval);
 		if (_maConnected && maUrl) disconnectMA(maUrl);
 	});
@@ -255,7 +272,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 </svelte:head>
 
-<div class="screen" on:click={goToMain} on:keydown role="button" tabindex="0">
+<div class="screen" class:music-active={isMusicPlaying} on:click={goToMain} on:keydown role="button" tabindex="0">
 	<!-- background image -->
 	{#if images.length > 0}
 		<div class="image-container">
@@ -294,7 +311,7 @@
 	{/if}
 
 	<!-- overlay content -->
-	<div class="overlay">
+	<div class="overlay" class:music-active={isMusicPlaying}>
 		<!-- top-right: time & date -->
 		<div class="top-right">
 			<div class="time">{timeStr}</div>
@@ -312,17 +329,16 @@
 					{#if artwork}
 						<img class="album-art" src={artwork} alt="{trackTitle} album cover" />
 					{:else}
-					<div class="album-art art-placeholder"><Icon icon="mdi:music-note" width="64" height="64" /></div>
+						<div class="album-art art-placeholder"><Icon icon="mdi:music-note" width="64" height="64" /></div>
 					{/if}
 					<div class="music-details">
+						<div class="now-playing-label">正在播放</div>
 						<div class="track-title">{trackTitle}</div>
 						{#if trackArtist}<div class="track-artist">{trackArtist}</div>{/if}
-						<div class="lyrics-view" aria-live="polite">
+						<div class="lyrics-view" bind:this={lyricsEl} aria-live="polite">
 							{#if lyricLines.length}
-								{#each lyricLines as line, index}
-									{#if index >= currentLyricIndex - 1 && index <= currentLyricIndex + 2}
-										<div class="lyric-line" class:current={index === currentLyricIndex}>{line.text}</div>
-									{/if}
+								{#each lyricLines as line, index (index)}
+									<div class="lyric-line" class:current={index === currentLyricIndex}>{line.text}</div>
 								{/each}
 							{:else if lyricsLoading}
 								<div class="lyric-empty">正在获取歌词…</div>
@@ -330,6 +346,7 @@
 								<div class="lyric-empty">暂无歌词</div>
 							{/if}
 						</div>
+						<div class="lyrics-progress" aria-hidden="true"><span style:width={`${lyricLines.length > 1 ? (currentLyricIndex / (lyricLines.length - 1)) * 100 : 0}%`}></span></div>
 					</div>
 				</div>
 			{:else}
@@ -555,24 +572,24 @@
 	.music-card {
 		display: flex;
 		align-items: center;
-		gap: clamp(1.5rem, 4vw, 4rem);
-		width: min(100%, 1100px);
-		max-height: min(62vh, 680px);
-		padding: clamp(1.25rem, 3vw, 2.5rem);
-		border: 1px solid rgba(255, 255, 255, 0.18);
-		border-radius: 1.5rem;
-		background: rgba(0, 0, 0, 0.42);
-		backdrop-filter: blur(18px);
-		box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+		gap: clamp(2rem, 5vw, 5rem);
+		width: min(100%, 1440px);
+		max-height: min(70vh, 820px);
+		padding: clamp(1rem, 2vh, 1.75rem);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 2rem;
+		background: linear-gradient(115deg, rgba(15, 15, 18, 0.78), rgba(20, 20, 24, 0.58));
+		backdrop-filter: blur(30px) saturate(1.35);
+		box-shadow: 0 30px 100px rgba(0, 0, 0, 0.4);
 	}
 
 	.album-art {
-		width: min(38vw, 42vh, 390px);
+		width: min(42vw, 56vh, 540px);
 		aspect-ratio: 1;
 		object-fit: cover;
-		border-radius: 1rem;
+		border-radius: clamp(1rem, 2vw, 1.75rem);
 		flex: 0 0 auto;
-		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+		box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
 	}
 
 	.art-placeholder {
@@ -581,33 +598,39 @@
 		background: rgba(255, 255, 255, 0.12);
 	}
 
-	.music-details { min-width: 0; flex: 1; text-align: left; }
+	.music-details { min-width: 0; flex: 1; text-align: left; display: flex; flex-direction: column; max-height: min(62vh, 700px); }
+	.now-playing-label { font-size: clamp(0.72rem, 1.1vw, 0.95rem); font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #ff6b79; margin-bottom: 0.8rem; }
 	.track-title {
-		font-size: clamp(1.5rem, 3vw, 3rem);
+		font-size: clamp(1.7rem, 3.2vw, 3.5rem);
 		font-weight: 600;
 		line-height: 1.15;
 		text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
 	}
-	.track-artist { margin-top: 0.55rem; font-size: clamp(1rem, 1.5vw, 1.4rem); opacity: 0.78; }
+	.track-artist { margin-top: 0.55rem; font-size: clamp(1rem, 1.5vw, 1.4rem); opacity: 0.65; }
 	.lyrics-view {
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
-		gap: 0.55rem;
-		min-height: 10rem;
-		max-height: 30vh;
-		margin-top: clamp(1rem, 2.5vh, 2rem);
+		justify-content: flex-start;
+		gap: clamp(0.7rem, 1.6vh, 1.2rem);
+		min-height: 0;
+		max-height: min(38vh, 380px);
+		margin-top: clamp(1.5rem, 3vh, 2.5rem);
 		overflow: hidden;
-		mask-image: linear-gradient(transparent, #000 10%, #000 90%, transparent);
+		mask-image: linear-gradient(transparent, #000 12%, #000 88%, transparent);
+		 scroll-behavior: smooth;
 	}
 	.lyric-line {
-		font-size: clamp(1rem, 1.8vw, 1.65rem);
-		line-height: 1.45;
-		opacity: 0.45;
-		transition: opacity 250ms ease, transform 250ms ease;
+		font-size: clamp(1.1rem, 2vw, 1.8rem);
+		line-height: 1.35;
+		font-weight: 600;
+		color: rgba(255,255,255,0.42);
+		transition: color 350ms ease, opacity 350ms ease, transform 350ms ease;
 	}
-	.lyric-line.current { opacity: 1; transform: scale(1.025); font-weight: 600; }
+	.lyric-line.current { color: #fff; opacity: 1; transform: translateX(0.35rem); }
 	.lyric-empty { opacity: 0.58; font-size: 1rem; }
+	.lyrics-progress { height: 3px; border-radius: 99px; overflow: hidden; margin-top: 1.3rem; background: rgba(255,255,255,0.16); }
+	.lyrics-progress span { display: block; height: 100%; border-radius: inherit; background: #ff6576; transition: width 500ms ease; }
+	.screen.music-active .image-container { opacity: 0.28; }
 
 	/* Bottom bar */
 	.bottom-bar {
@@ -790,8 +813,8 @@
 	@media (max-width: 768px) {
 		.overlay { padding: 1.5rem; }
 		.music-card { gap: 1rem; padding: 1rem; border-radius: 1rem; }
-		.album-art { width: min(34vw, 28vh); border-radius: 0.7rem; }
-		.lyrics-view { min-height: 7rem; margin-top: 0.8rem; }
+		.album-art { width: min(38vw, 42vh); border-radius: 0.7rem; }
+		.lyrics-view { min-height: 0; max-height: 30vh; margin-top: 1rem; }
 
 		.time { font-size: 3.5rem; }
 		.date { font-size: 1rem; }
@@ -804,6 +827,19 @@
 		.weather-icon img { width: 36px; height: 36px; }
 		.notifications-section { max-width: 50%; }
 		.notif-msg { max-width: 120px; }
+	}
+
+	@media (max-width: 900px) and (orientation: portrait) {
+		.music-card { flex-direction: column; justify-content: center; gap: 1.2rem; max-height: 74vh; overflow: hidden; }
+		.album-art { width: min(56vw, 32vh); }
+		.music-details { width: 100%; max-height: 34vh; }
+		.now-playing-label, .track-title, .track-artist { text-align: center; }
+		.now-playing-label { margin-bottom: 0.35rem; }
+		.track-title { font-size: clamp(1.25rem, 4vw, 2rem); }
+		.track-artist { margin-top: 0.2rem; }
+		.lyrics-view { margin-top: 0.7rem; max-height: 19vh; gap: 0.55rem; text-align: center; }
+		.lyric-line { font-size: clamp(1rem, 3.2vw, 1.4rem); }
+		.lyrics-progress { margin-top: 0.65rem; }
 	}
 
 	@media (max-width: 480px) {
@@ -828,5 +864,11 @@
 		}
 
 		.notifications-section { max-width: 100%; }
+	}
+
+	@media (max-width: 900px) and (orientation: portrait) {
+		.music-card { align-items: center; }
+		.album-art { width: min(56vw, 32vh); border-radius: 0.7rem; }
+		.lyrics-view { min-height: 0; max-height: 19vh; }
 	}
 </style>

@@ -2,7 +2,6 @@
 	import {
 		states,
 		connection,
-		itemHeight,
 		editMode,
 		youtubeData,
 		youtubeAddon,
@@ -292,7 +291,7 @@
 	on:click={handleClick}
 	class="container"
 	style:background-image={backgroundImage}
-	style:height="calc({$itemHeight}px * 4 + 0.4rem * 3)"
+	style:height="100%"
 	style:cursor={$editMode || !active ? 'unset' : 'pointer'}
 	use:Ripple={{
 		...$ripple,
