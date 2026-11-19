@@ -5,10 +5,13 @@ WORKDIR /app
 # copy all files
 COPY . .
 
-# install, build and prune
-RUN rm -rf .svelte-kit && npm install --verbose && \
-  npm run build && \
-  npm prune --omit=dev
+# Install from the checked-in pnpm lockfile, build, then remove dev dependencies.
+RUN corepack enable && \
+  corepack prepare pnpm@10.33.0 --activate && \
+  rm -rf .svelte-kit && \
+  pnpm install --frozen-lockfile && \
+  pnpm run build && \
+  pnpm prune --prod
 
 # second stage
 FROM node:22-alpine
