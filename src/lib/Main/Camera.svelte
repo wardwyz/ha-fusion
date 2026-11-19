@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { editMode, itemHeight, states } from '$lib/Stores';
+	import { editMode, states } from '$lib/Stores';
 	import { openModal } from 'svelte-modals';
 	import Loader from '$lib/Components/Loader.svelte';
 	import { writable } from 'svelte/store';

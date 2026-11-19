@@ -35,10 +35,4 @@
 		outline-offset: -2px;
 	}
 
-	/* Phone and Tablet (portrait) */
-	@media all and (max-width: 768px) {
-		.container {
-			width: calc(50vw - 1.45rem);
-		}
-	}
 </style>

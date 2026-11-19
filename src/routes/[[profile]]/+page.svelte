@@ -174,13 +174,16 @@
 
 	// Track active MA url so we can disconnect/reconnect on config change
 	let _maUrl = '';
+	let _maToken = '';
 	$: if (browser) {
 		const maConfig = $configuration?.addons?.music_assistant;
 		const newUrl = maConfig?.server_url && maConfig?.token ? maConfig.server_url : '';
-		if (newUrl !== _maUrl) {
+		const newToken = newUrl ? maConfig?.token ?? '' : '';
+		if (newUrl !== _maUrl || newToken !== _maToken) {
 			if (_maUrl) disconnectMA(_maUrl);
-			if (newUrl) connectMA(maConfig!.server_url, maConfig!.token);
+			if (newUrl && newToken) connectMA(newUrl, newToken);
 			_maUrl = newUrl;
+			_maToken = newToken;
 		}
 	}
 

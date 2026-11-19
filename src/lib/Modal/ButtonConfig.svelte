@@ -48,6 +48,7 @@
 
 	function set(key: string, event?: any) {
 		sel = updateObj(sel, key, event);
+		if (key === 'size') sel.tile_size = event;
 		$dashboard = $dashboard;
 	}
 

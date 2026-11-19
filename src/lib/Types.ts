@@ -115,6 +115,7 @@ export interface ButtonItem {
 	id: number;
 	entity_id: string;
 	size?: 'small' | 'medium' | 'large';
+	tile_size?: 'small' | 'medium' | 'large';
 	name?: string;
 	icon?: string;
 	color?: string;
@@ -250,6 +251,7 @@ export interface CameraItem {
 	entity_id?: string;
 	stream?: boolean;
 	size?: string;
+	tile_size?: 'small' | 'medium' | 'large';
 	hide_mobile?: boolean;
 }
 
@@ -289,6 +291,7 @@ export interface IframeItem {
 	id?: number;
 	url?: string;
 	size?: string;
+	tile_size?: 'small' | 'medium' | 'large';
 	hide_mobile?: boolean;
 }
 

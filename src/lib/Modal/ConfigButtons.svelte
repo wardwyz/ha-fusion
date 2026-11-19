@@ -4,6 +4,7 @@
 	import { closeModal, openModal } from 'svelte-modals';
 	import Ripple from 'svelte-ripple';
 	import { fade } from 'svelte/transition';
+	import Icon from '@iconify/svelte';
 
 	export let sel: any = undefined;
 	export let disableChangeType: boolean | undefined = undefined;
@@ -18,7 +19,7 @@
 	 * Checks if current id is in/from sidebar
 	 */
 	function sidebarItem() {
-		return $dashboard.sidebar.some((item) => item?.id === sel?.id);
+		return ($dashboard?.sidebar ?? []).some((item) => item?.id === sel?.id);
 	}
 
 	/**
@@ -53,16 +54,38 @@
 	}
 
 	const sizedMainTypes = [
-		'button', 'custom_panel', 'camera', 'picture_elements', 'empty', 'conditional_media',
-		'doorbell', 'music_assistant', 'iframe', 'remote', 'movie_pilot'
+		'button',
+		'custom_panel',
+		'camera',
+		'picture_elements',
+		'empty',
+		'conditional_media',
+		'doorbell',
+		'music_assistant',
+		'iframe',
+		'remote',
+		'movie_pilot'
 	];
-	$: showSizeOptions = !!sel?.type && sizedMainTypes.includes(sel.type) && !sidebarItem();
+	const legacyLargeTileTypes = ['conditional_media', 'picture_elements', 'camera', 'doorbell', 'movie_pilot'];
+	$: showSizeOptions =
+		!!sel?.type &&
+		sizedMainTypes.includes(sel.type) &&
+		!($dashboard?.sidebar ?? []).some((item) => item?.id === sel?.id);
 
 	function setSize(size: 'small' | 'medium' | 'large') {
 		if (!sel) return;
-		sel.size = size;
+		sel.tile_size = size;
+		if (sel.type === 'button') sel.size = size;
 		$dashboard = $dashboard;
 		$record();
+	}
+
+	function selectedTileSize() {
+		return (
+			sel?.tile_size ||
+			(sel?.type === 'button' ? sel?.size : undefined) ||
+			(legacyLargeTileTypes.includes(sel?.type) ? 'large' : 'small')
+		);
 	}
 
 	/**
@@ -113,12 +136,11 @@
 
 <div class="container" use:portalToModal>
 	{#if $editMode && showSizeOptions}
-		<div class="size-options" role="group" aria-label="组件尺寸">
+		<div class="size-options" role="group" aria-label={$lang('button_size') || 'Tile size'}>
 			{#each ['small', 'medium', 'large'] as size}
 				<button
 					class="size-option"
-					class:selected={(sel?.size || 'small') === size}
-					title={size === 'small' ? '1 格' : size === 'medium' ? '上下 2 格' : '上下左右 4 格'}
+					class:selected={selectedTileSize() === size}
 					on:click={() => setSize(size as 'small' | 'medium' | 'large')}
 					use:Ripple={$ripple}
 				>

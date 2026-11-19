@@ -33,6 +33,7 @@
 	const stackHeight = $itemHeight * 1.65;
 
 	let mounted = false;
+	const legacyLargeTileTypes = ['conditional_media', 'picture_elements', 'camera', 'doorbell', 'movie_pilot'];
 	onMount(() => (mounted = true));
 
 	$: dndOptions = {
@@ -194,11 +195,19 @@
 	}
 
 	function itemStyles(item: any) {
-		const size = item?.size || 'small';
+		const size = itemSize(item);
 		const columns = size === 'large' ? 2 : 1;
 		const rows = size === 'small' ? 1 : 2;
-		const height = $itemHeight * rows + 6.4 * (rows - 1);
-		return `grid-column: span ${columns}; grid-row: span ${rows}; height: ${height}px; min-height: ${height}px; display: ${item?.type ? '' : 'none'};`;
+		const height = rows === 1 ? `${$itemHeight}px` : `calc(${$itemHeight * rows}px + var(--tile-gap))`;
+		return `grid-column: span ${columns}; grid-row: span ${rows}; height: ${height}; min-height: ${height}; display: ${item?.type ? '' : 'none'};`;
+	}
+
+	function itemSize(item: any) {
+		return (
+			item?.tile_size ||
+			(item?.type === 'button' ? item?.size : undefined) ||
+			(legacyLargeTileTypes.includes(item?.type) ? 'large' : 'small')
+		);
 	}
 
 	/**
@@ -373,7 +382,7 @@
 										id={item?.id}
 										data-is-dnd-shadow-item-hint={item?.[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
 										class="item"
-						data-size={item?.size || 'small'}
+										data-size={itemSize(item)}
 										animate:flip={{ duration: $motion }}
 										tabindex="-1"
 										style={itemStyles(item)}
@@ -444,7 +453,7 @@
 										id={item?.id}
 										data-is-dnd-shadow-item-hint={item?.[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
 										class="item"
-								data-size={item?.size || 'small'}
+										data-size={itemSize(item)}
 										animate:flip={{ duration: $motion }}
 										tabindex="-1"
 										style={itemStyles(item)}
@@ -519,7 +528,7 @@
 							id={item?.id}
 							data-is-dnd-shadow-item-hint={item?.[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
 							class="item"
-								data-size={item?.size || 'small'}
+							data-size={itemSize(item)}
 							animate:flip={{ duration: $motion }}
 							tabindex="-1"
 							style={itemStyles(item)}
@@ -568,12 +577,13 @@
 	}
 
 	.items {
+		--tile-gap: 0.4rem;
 		border-radius: 0.6rem;
 		outline-offset: -2px;
 		display: grid;
 		grid-template-columns: repeat(auto-fill, 14.5rem);
 		grid-auto-rows: 61.35px;
-		gap: 0.4rem;
+		gap: var(--tile-gap);
 		border-radius: 0.6rem;
 		height: 100%;
 	}
@@ -600,6 +610,7 @@
 		}
 
 		.items {
+			--tile-gap: 0.3rem;
 			display: grid;
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 			grid-auto-rows: 61.35px;
@@ -620,6 +631,7 @@
 		}
 
 		.items {
+			--tile-gap: 0.4rem;
 			display: grid;
 			grid-template-columns: repeat(3, minmax(0, 1fr));
 			grid-auto-rows: 61.35px;
@@ -635,7 +647,8 @@
 
 		.items {
 			grid-template-columns: repeat(auto-fill, 15.5rem);
-			gap: 0.5rem;
+			--tile-gap: 0.5rem;
+			gap: var(--tile-gap);
 		}
 
 		.horizontal-stack {
@@ -652,7 +665,8 @@
 
 		.items {
 			grid-template-columns: repeat(auto-fill, 17.5rem);
-			gap: 0.65rem;
+			--tile-gap: 0.65rem;
+			gap: var(--tile-gap);
 		}
 
 		.horizontal-stack {

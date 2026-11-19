@@ -11,6 +11,25 @@
 
 	let konva: KonvaViewer;
 	let canvas: HTMLDivElement;
+	let canvasObserver: ResizeObserver;
+	const designWidth = 470;
+	const designHeight = 265;
+
+	function resizeStage() {
+		if (!konva || !canvas) return;
+		const width = canvas.clientWidth;
+		const height = canvas.clientHeight;
+		if (!width || !height) return;
+
+		const scale = Math.min(width / designWidth, height / designHeight);
+		konva.stage.size({ width, height });
+		konva.layer.scale({ x: scale, y: scale });
+		konva.layer.position({
+			x: (width - designWidth * scale) / 2,
+			y: (height - designHeight * scale) / 2
+		});
+		konva.stage.batchDraw();
+	}
 
 	/**
 	 * Setup konva by importing it on
@@ -36,6 +55,10 @@
 					}
 				]
 			});
+
+			canvasObserver = new ResizeObserver(resizeStage);
+			canvasObserver.observe(canvas);
+			resizeStage();
 		}
 	});
 
@@ -76,6 +99,7 @@
 	 */
 	onDestroy(() => {
 		if (konva) konva.destroyViewer();
+		canvasObserver?.disconnect();
 	});
 </script>
 

@@ -118,7 +118,12 @@ function callOn(
 		const payload = Object.keys(data).length
 			? { message_id: String(id), command, args: data }
 			: { message_id: String(id), command };
-		entry.ws.send(JSON.stringify(payload));
+		try {
+			entry.ws.send(JSON.stringify(payload));
+		} catch (error) {
+			entry.pending.delete(id);
+			reject(error instanceof Error ? error : new Error(String(error)));
+		}
 	});
 }
 
@@ -131,7 +136,10 @@ export function connectMA(url: string, token: string): void {
 	if (existing && existing.ws.readyState < WebSocket.CLOSING && existing.token === token) {
 		return;
 	}
-	if (existing) connections.delete(url);
+	if (existing) {
+		connections.delete(url);
+		existing.ws.close();
+	}
 
 	const wsUrl = toWsUrl(url);
 	const ws = new WebSocket(wsUrl);
@@ -208,14 +216,20 @@ export function connectMA(url: string, token: string): void {
 					const items =
 						(result as { items?: MAQueueItem[] })?.items ?? (result as MAQueueItem[]) ?? [];
 					maQueueItems.update((m) => ({ ...m, [queue_id]: items }));
-				});
+				}).catch((error) => console.error('[MA] queue items error', error));
 			}
 		}
 	};
 
 	ws.onclose = () => {
-		if (connections.get(url) === entry) connections.delete(url);
-		if (activeUrl === url) activeUrl = null;
+		for (const pending of entry.pending.values()) {
+			pending.reject(new Error('Music Assistant connection closed'));
+		}
+		entry.pending.clear();
+		if (connections.get(url) === entry) {
+			connections.delete(url);
+			if (activeUrl === url) activeUrl = null;
+		}
 	};
 
 	activeUrl = url;

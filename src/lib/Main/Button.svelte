@@ -387,7 +387,7 @@
 
 <div
 	class="container"
-	data-size={sel?.size || 'small'}
+	data-size={sel?.tile_size || sel?.size || 'small'}
 	bind:this={container}
 	data-state={displayStateOn}
 	tabindex="-1"
