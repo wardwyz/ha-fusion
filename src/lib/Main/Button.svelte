@@ -572,10 +572,17 @@
 		border-radius: 1.1rem;
 	}
 
+	.container[data-size='extra_large'] {
+		--container-padding: 1.4rem;
+		border-radius: 1.2rem;
+	}
+
 	.container[data-size='medium'] .icon { --icon-size: 2.8rem; }
 	.container[data-size='large'] .icon { --icon-size: 3.4rem; }
+	.container[data-size='extra_large'] .icon { --icon-size: 4rem; }
 	.container[data-size='medium'] .name { font-size: 1.05rem; }
 	.container[data-size='large'] .name { font-size: 1.15rem; }
+	.container[data-size='extra_large'] .name { font-size: 1.25rem; }
 
 	.image {
 		background-size: cover;

@@ -7,6 +7,7 @@ import type { RequestHandler } from './$types';
 
 interface ThemeData {
 	title: string;
+	name?: string;
 	author: string;
 	attribution: string;
 	theme: object;
@@ -31,6 +32,7 @@ export const GET: RequestHandler = async ({ setHeaders }) => {
 				return {
 					file: file,
 					title: themeData?.title,
+					name: themeData?.name,
 					author: themeData?.author,
 					attribution: themeData?.attribution,
 					theme: themeData?.theme

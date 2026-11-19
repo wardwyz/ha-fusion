@@ -8,6 +8,7 @@
 
 	export let sel: any = undefined;
 	export let disableChangeType: boolean | undefined = undefined;
+	let activeTileSize: string;
 
 	function portalToModal(node: HTMLElement) {
 		const contents = node.closest('.contents') as HTMLElement | null;
@@ -66,14 +67,15 @@
 		'remote',
 		'movie_pilot'
 	];
-	const tileSizes = ['small', 'medium', 'large'] as const;
+	const tileSizes = ['small', 'medium', 'large', 'extra_large'] as const;
 	const legacyLargeTileTypes = ['conditional_media', 'picture_elements', 'camera', 'doorbell', 'movie_pilot'];
+	$: if ($dashboard !== undefined) activeTileSize = selectedTileSize();
 	$: showSizeOptions =
 		!!sel?.type &&
 		sizedMainTypes.includes(sel.type) &&
 		!($dashboard?.sidebar ?? []).some((item) => item?.id === sel?.id);
 
-	function setSize(size: 'small' | 'medium' | 'large') {
+	function setSize(size: 'small' | 'medium' | 'large' | 'extra_large') {
 		if (!sel) return;
 		sel.tile_size = size;
 		if (sel.type === 'button') sel.size = size;
@@ -141,11 +143,11 @@
 			{#each tileSizes as size}
 				<button
 					class="size-option"
-					class:selected={selectedTileSize() === size}
+					class:selected={activeTileSize === size}
 					on:click={() => setSize(size)}
 					use:Ripple={$ripple}
 				>
-					<span class="size-icon" class:medium={size === 'medium'} class:large={size === 'large'}>
+					<span class="size-icon" class:medium={size === 'medium'} class:large={size === 'large'} class:extra_large={size === 'extra_large'}>
 						<Icon icon="mdi:view-grid-outline" />
 					</span>
 					<span>{$lang(size)}</span>
@@ -221,11 +223,14 @@
 	.size-option.selected {
 		background: var(--theme-button-background-color-on, rgba(127, 127, 127, 0.2));
 		border-color: var(--theme-accent-color, currentColor);
+		box-shadow: 0 0 0 1px var(--theme-accent-color, currentColor) inset;
+		font-weight: 600;
 	}
 
 	.size-icon { display: grid; place-items: center; }
 	.size-icon.medium { transform: scaleY(1.15); }
 	.size-icon.large { transform: scale(1.18); }
+	.size-icon.extra_large { transform: scale(1.3); }
 
 	@media (max-width: 520px) {
 		.container { flex-wrap: wrap; gap: 0.55rem; }

@@ -151,7 +151,7 @@
 
 							<div class="description-area">
 								<div class="description">
-									<div class="name">{theme?.title}</div>
+									<div class="name">{theme?.name || theme?.title}</div>
 									<div class="author">{theme?.author}</div>
 									<div class="edit-area">
 										<div

@@ -34,6 +34,12 @@
 
 	let mounted = false;
 	const legacyLargeTileTypes = ['conditional_media', 'picture_elements', 'camera', 'doorbell', 'movie_pilot'];
+	const tileDimensions = {
+		small: { columns: 1, rows: 1 },
+		medium: { columns: 1, rows: 2 },
+		large: { columns: 2, rows: 3 },
+		extra_large: { columns: 2, rows: 4 }
+	} as const;
 	onMount(() => (mounted = true));
 
 	$: dndOptions = {
@@ -196,9 +202,9 @@
 
 	function itemStyles(item: any) {
 		const size = itemSize(item);
-		const columns = size === 'large' ? 2 : 1;
-		const rows = size === 'small' ? 1 : 2;
-		const height = rows === 1 ? `${$itemHeight}px` : `calc(${$itemHeight * rows}px + var(--tile-gap))`;
+		const { columns, rows } = tileDimensions[size as keyof typeof tileDimensions] ?? tileDimensions.small;
+		const rowGaps = Array(rows - 1).fill('var(--tile-gap)').join(' + ');
+		const height = rows === 1 ? `${$itemHeight}px` : `calc(${$itemHeight * rows}px + ${rowGaps})`;
 		return `grid-column: span ${columns}; grid-row: span ${rows}; height: ${height}; min-height: ${height}; display: ${item?.type ? '' : 'none'};`;
 	}
 
@@ -578,10 +584,11 @@
 
 	.items {
 		--tile-gap: 0.4rem;
+		--tile-min-width: 14.5rem;
 		border-radius: 0.6rem;
 		outline-offset: -2px;
 		display: grid;
-		grid-template-columns: repeat(auto-fill, 14.5rem);
+		grid-template-columns: repeat(auto-fill, minmax(min(var(--tile-min-width), calc((100% - var(--tile-gap)) / 2)), 1fr));
 		grid-auto-rows: 61.35px;
 		gap: var(--tile-gap);
 		border-radius: 0.6rem;
@@ -590,10 +597,20 @@
 
 	.item {
 		position: relative;
-		border-radius: 0.65rem;
+		border-radius: var(--theme-card-radius, 0.65rem);
+		border: var(--theme-card-border, 0 solid transparent);
+		box-shadow: var(--theme-card-shadow, none);
+		backdrop-filter: var(--theme-card-backdrop-filter, none);
+		-webkit-backdrop-filter: var(--theme-card-backdrop-filter, none);
+		overflow: var(--theme-card-overflow, visible);
 		display: flex;
 		min-width: 0;
+		transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
 	}
+
+	.item > :global(*) { border-radius: var(--theme-card-radius, inherit); }
+
+	.item:active { transform: scale(var(--theme-card-active-scale, 1)); }
 
 	.item > :global(*) { flex: 1; min-width: 0; }
 
@@ -612,7 +629,7 @@
 		.items {
 			--tile-gap: 0.3rem;
 			display: grid;
-			grid-template-columns: repeat(2, minmax(0, 1fr));
+			grid-template-columns: repeat(auto-fill, minmax(min(var(--tile-min-width), calc((100% - var(--tile-gap)) / 2)), 1fr));
 			grid-auto-rows: 61.35px;
 			gap: 0.3rem;
 		}
@@ -633,7 +650,7 @@
 		.items {
 			--tile-gap: 0.4rem;
 			display: grid;
-			grid-template-columns: repeat(3, minmax(0, 1fr));
+			grid-template-columns: repeat(auto-fill, minmax(min(var(--tile-min-width), calc((100% - var(--tile-gap)) / 2)), 1fr));
 			grid-auto-rows: 61.35px;
 		}
 	}
@@ -646,7 +663,8 @@
 		}
 
 		.items {
-			grid-template-columns: repeat(auto-fill, 15.5rem);
+			--tile-min-width: 15.5rem;
+			grid-template-columns: repeat(auto-fill, minmax(min(var(--tile-min-width), calc((100% - var(--tile-gap)) / 2)), 1fr));
 			--tile-gap: 0.5rem;
 			gap: var(--tile-gap);
 		}
@@ -664,7 +682,8 @@
 		}
 
 		.items {
-			grid-template-columns: repeat(auto-fill, 17.5rem);
+			--tile-min-width: 17.5rem;
+			grid-template-columns: repeat(auto-fill, minmax(min(var(--tile-min-width), calc((100% - var(--tile-gap)) / 2)), 1fr));
 			--tile-gap: 0.65rem;
 			gap: var(--tile-gap);
 		}

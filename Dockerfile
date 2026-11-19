@@ -10,6 +10,7 @@ RUN corepack enable && \
   corepack prepare pnpm@10.33.0 --activate && \
   rm -rf .svelte-kit && \
   pnpm install --frozen-lockfile && \
+  pnpm exec svelte-kit sync && \
   pnpm run build && \
   pnpm prune --prod
 

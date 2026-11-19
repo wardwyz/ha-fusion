@@ -247,6 +247,7 @@
 	"medium": "Medium",
 	"small": "Small",
 	"large": "Large",
+	"extra_large": "Extra large",
 	"menu": "Menu",
 	"mfa_code": "Two-factor authentication code",
 	"mfa_description": "Open the {mfa_module_name} on your device to view your two-factor authentication code.",

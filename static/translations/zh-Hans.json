@@ -248,6 +248,7 @@
 	"medium": "中",
 	"small": "小",
 	"large": "大",
+	"extra_large": "特大",
 	"menu": "菜单",
 	"mfa_code": "双重身份验证码",
 	"mfa_description": "打开您设备上的“{mfa_module_name}”可查看您的双重身份验证码。",
