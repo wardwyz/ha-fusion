@@ -26,6 +26,7 @@
 	const token = data?.token || '';
 	const maUrl = data?.maUrl || '';
 	const maToken = data?.maToken || '';
+	const lyricsOffset = Number(data?.lyricsOffset) || 0;
 	$: if (data?.locale) $selectedLanguage = data.locale;
 	const dailyQuoteSensorId = data?.dailyQuoteSensor ?? '';
 	let serverTimeOffset = 0;
@@ -129,7 +130,7 @@
 		if (!lyricLines.length || !playingQueue) return;
 		const elapsed = playingQueue.elapsed_time || 0;
 		const updated = playingQueue.elapsed_time_last_updated || Date.now() / 1000;
-		const position = elapsed + (playingQueue.state === 'playing' ? Math.max(0, Date.now() / 1000 - updated) : 0);
+		const position = elapsed + (playingQueue.state === 'playing' ? Math.max(0, Date.now() / 1000 - updated) : 0) + lyricsOffset;
 		let index = 0;
 		if (lyricLines[0].time != null) {
 			for (let i = 0; i < lyricLines.length; i++) {

@@ -21,6 +21,7 @@
 	let loginPassword = '';
 	let maToken: string = savedMA?.token || '';
 	let maUsername: string = savedMA?.username || '';
+	let lyricsOffset: number = Number(savedMA?.lyrics_offset ?? 0);
 	let connecting = false;
 	let loginError = '';
 
@@ -187,6 +188,11 @@
 		<input type="hidden" name="ma_server_url" value={serverUrl} />
 		<input type="hidden" name="ma_token" value={maToken} />
 		<input type="hidden" name="ma_username" value={maUsername} />
+		<label class="lyrics-offset">
+			<span>{$lang('lyrics_offset') || '歌词偏移（秒）'}</span>
+			<input class="input" type="number" name="ma_lyrics_offset" bind:value={lyricsOffset} step="0.1" />
+			<small>正值让歌词提前，负值让歌词延后</small>
+		</label>
 	</div>
 
 	<!-- MoviePilot -->
@@ -335,6 +341,20 @@
 		align-items: center;
 		gap: 0.8rem;
 		flex-wrap: wrap;
+	}
+
+	.lyrics-offset {
+		display: grid;
+		grid-template-columns: minmax(9rem, 1fr) minmax(8rem, 12rem);
+		align-items: center;
+		gap: 0.35rem 0.8rem;
+		margin-top: 0.75rem;
+		font-size: 0.9rem;
+	}
+
+	.lyrics-offset small {
+		grid-column: 1 / -1;
+		opacity: 0.6;
 	}
 
 	.ma-conn-label {

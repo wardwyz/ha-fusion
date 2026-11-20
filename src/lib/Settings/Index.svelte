@@ -49,6 +49,7 @@
 			const maUrl = form.ma_server_url as string | undefined;
 			const maToken = form.ma_token as string | undefined;
 			const maUser = form.ma_username as string | undefined;
+			const maLyricsOffset = Number(form.ma_lyrics_offset ?? 0);
 
 			const mpUrl = form.mp_server_url as string | undefined;
 			const mpToken = form.mp_token as string | undefined;
@@ -63,7 +64,8 @@
 						music_assistant: {
 							server_url: maUrl,
 							token: maToken,
-							...(maUser && { username: maUser })
+							...(maUser && { username: maUser }),
+							lyrics_offset: Number.isFinite(maLyricsOffset) ? maLyricsOffset : 0
 						}
 					}),
 				...(mpUrl &&
@@ -88,7 +90,8 @@
 				$configuration.addons.music_assistant = {
 					server_url: maUrl,
 					token: maToken,
-					...(maUser && { username: maUser })
+					...(maUser && { username: maUser }),
+					lyrics_offset: Number.isFinite(maLyricsOffset) ? maLyricsOffset : 0
 				};
 			} else {
 				delete $configuration.addons.music_assistant;

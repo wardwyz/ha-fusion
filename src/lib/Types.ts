@@ -29,6 +29,7 @@ export interface Addons {
 		server_url: string;
 		token: string;
 		username?: string;
+		lyrics_offset?: number;
 	};
 	movie_pilot?: {
 		server_url: string;

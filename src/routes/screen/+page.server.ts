@@ -13,6 +13,7 @@ export async function load({ request }): Promise<{
 	dailyQuoteSensor: string;
 	maUrl: string | undefined;
 	maToken: string | undefined;
+	lyricsOffset: number;
 	serverTime: number;
 }> {
 	// Load minimal config for HA WebSocket connection
@@ -42,6 +43,7 @@ export async function load({ request }): Promise<{
 		dailyQuoteSensor,
 		maUrl: maConfig?.server_url || undefined,
 		maToken: maConfig?.token || undefined,
+		lyricsOffset: Number(maConfig?.lyrics_offset) || 0,
 		serverTime: Date.now()
 	};
 }
