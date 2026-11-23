@@ -22,6 +22,7 @@
 		historyIndex
 	} from '$lib/Stores';
 	import { authentication } from '$lib/Socket';
+	import { getStates } from 'home-assistant-js-websocket';
 	import { connectMA, disconnectMA, isMAConnected } from '$lib/MusicAssistant';
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/environment';
@@ -171,6 +172,7 @@
 	let isConnecting = false;
 	let retryInterval: ReturnType<typeof setInterval>;
 	let maReconnectInterval: ReturnType<typeof setInterval>;
+	let syncStatesOnResume: (() => void) | undefined;
 
 	// Track active MA url so we can disconnect/reconnect on config change
 	let _maUrl = '';
@@ -204,9 +206,23 @@
 		}
 	}
 
+	async function refreshStatesAfterResume() {
+		if (document.visibilityState !== 'visible' || !$connection) return;
+		try {
+			const entityStates = await getStates($connection);
+			states.set(Object.fromEntries(entityStates.map((entity) => [entity.entity_id, entity])));
+		} catch (error) {
+			console.debug('Unable to refresh Home Assistant states after resume:', error);
+		}
+	}
+
 	onDestroy(() => {
 		clearInterval(retryInterval);
 		if (maReconnectInterval) clearInterval(maReconnectInterval);
+		if (syncStatesOnResume) {
+			document.removeEventListener('visibilitychange', syncStatesOnResume);
+			window.removeEventListener('focus', syncStatesOnResume);
+		}
 		if (_maUrl) disconnectMA(_maUrl);
 	});
 
@@ -226,6 +242,9 @@
 		document.documentElement.lang = $selectedLanguage || 'en';
 		connect();
 		retryInterval = setInterval(connect, 3000);
+		syncStatesOnResume = () => void refreshStatesAfterResume();
+		document.addEventListener('visibilitychange', syncStatesOnResume);
+		window.addEventListener('focus', syncStatesOnResume);
 
 		// Reconnect Music Assistant if the WebSocket drops
 		maReconnectInterval = setInterval(() => {

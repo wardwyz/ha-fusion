@@ -65,6 +65,24 @@ export async function authentication(configuration: Configuration) {
 			states.set(hassEntities);
 		});
 
+		// Keep the UI in sync from HA's standard state_changed event as well as
+		// the entity collection stream. The event subscription automatically
+		// resumes after the WebSocket reconnects.
+		conn.subscribeEvents(
+			(message: { data?: { entity_id?: string; new_state?: any } }) => {
+				const entityId = message?.data?.entity_id;
+				if (!entityId) return;
+
+				states.update((current) => {
+					const next = { ...(current ?? {}) };
+					if (message.data?.new_state) next[entityId] = message.data.new_state;
+					else delete next[entityId];
+					return next;
+				});
+			},
+			'state_changed'
+		);
+
 		// config
 		subscribeConfig(conn, (hassConfig) => {
 			config.set(hassConfig);

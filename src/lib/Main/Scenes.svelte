@@ -26,10 +26,17 @@
 			});
 		}
 
-		// generic turn_on
-		callService($connection, 'homeassistant', 'turn_on', {
-			entity_id: sel?.entity_id
-		});
+		// HA button entities must be pressed explicitly; retain the existing
+		// turn_on behavior for all other entities in the scenes module.
+		if (sel?.entity_id?.startsWith('button.')) {
+			callService($connection, 'button', 'press', {
+				entity_id: sel?.entity_id
+			});
+		} else {
+			callService($connection, 'homeassistant', 'turn_on', {
+				entity_id: sel?.entity_id
+			});
+		}
 
 		// delay styles
 		clearTimeout(timeout);
