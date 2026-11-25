@@ -49,6 +49,7 @@
 	let retryInterval: ReturnType<typeof setInterval>;
 	let _maConnected = false;
 	let maReconnectInterval: ReturnType<typeof setInterval> | null = null;
+	let preferredPlayerId: string | null = null;
 
 	async function connect() {
 		if (isConnecting || !hassUrl) return;
@@ -68,14 +69,23 @@
 		_maConnected = true;
 		connectMA(maUrl, maToken);
 	}
-	$: activeQueue = Object.values($maQueues).find((queue) => queue.state === 'playing') ?? null;
-	$: playingPlayer = $maPlayers.find((player) => player.playback_state === 'playing') ??
-		(activeQueue ? $maPlayers.find((player) => player.player_id === activeQueue.queue_id) : null);
+	// Keep the first selected playing player while it continues playing. This
+	// prevents a second player starting later from replacing it on the screen.
+	$: {
+		const preferredPlayer = $maPlayers.find((player) => player.player_id === preferredPlayerId);
+		if (!preferredPlayer || preferredPlayer.playback_state !== 'playing') {
+			preferredPlayerId = $maPlayers.find((player) => player.playback_state === 'playing')?.player_id ?? null;
+		}
+	}
+	$: playingPlayer = $maPlayers.find(
+		(player) => player.player_id === preferredPlayerId && player.playback_state === 'playing'
+	) ?? null;
+	$: activeQueue = playingPlayer ? $maQueues[playingPlayer.player_id] : null;
 	$: playingQueue = activeQueue ?? (playingPlayer ? $maQueues[playingPlayer.player_id] : null);
 	$: track = playingQueue?.current_item;
 	$: isMusicPlaying = !!playingPlayer && !!track;
 	$: partyUrl = maUrl && maToken
-		? `${maBaseUrl}/?code=${encodeURIComponent(maToken)}#/party?frameless=true`
+		? `${maBaseUrl}/?code=${encodeURIComponent(maToken)}#/party?frameless=true${playingPlayer ? `&player=${encodeURIComponent(playingPlayer.name)}` : ''}`
 		: '';
 	// --- fetch image list ---
 	async function fetchImages() {
