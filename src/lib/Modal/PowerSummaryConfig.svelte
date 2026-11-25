@@ -504,11 +504,15 @@
 		border-color: rgba(255, 255, 255, 0.35);
 	}
 
-	.tag-name-input{background:0 0;border:none;border-bottom:1px dashed rgba(255,255,255,.2);color:inherit;font-size:.75rem;padding:0;max-width:8rem;outline:none}.tag-name-input:focus{border-bottom-color:rgba(255,255,255,.5)}.excluded{opacity:.35;text-decoration:line-through}.entity-list{display:flex;flex-wrap:wrap;gap:.3rem}.exclude-tags {
+	.excluded {
+		opacity: 0.35;
+		text-decoration: line-through;
+	}
+
+	.entity-list {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.35rem;
-		margin-top: 0.4rem;
+		gap: 0.3rem;
 	}
 
 	.tag {

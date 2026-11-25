@@ -18,7 +18,6 @@
 	import { maPlayers, maQueues, connectMA, disconnectMA, isMAConnected } from '$lib/MusicAssistant';
 
 	export let data;
-	export let params;
 
 	// --- configuration ---
 	const intervalMs = (data?.imageInterval || 30) * 1000;

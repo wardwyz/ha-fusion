@@ -291,6 +291,7 @@
 		text-overflow: ellipsis;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 	}
 	.info-meta {
@@ -321,6 +322,7 @@
 		overflow: hidden;
 		display: -webkit-box;
 		-webkit-line-clamp: 4;
+		line-clamp: 4;
 		-webkit-box-orient: vertical;
 	}
 	.counter {
@@ -332,6 +334,9 @@
 
 	@media all and (max-width: 768px) {
 		.arrow { opacity: 1; width: 1.3rem; height: 1.3rem; }
-		.overview { -webkit-line-clamp: 2; }
+		.overview {
+			-webkit-line-clamp: 2;
+			line-clamp: 2;
+		}
 	}
 </style>
